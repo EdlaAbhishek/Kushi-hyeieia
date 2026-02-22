@@ -1,0 +1,36 @@
+# ==============================================================
+# Kushi Hygieia — .gitignore
+# ==============================================================
+
+# --- Secrets & Credentials ---
+.env
+credentials.json
+token.json
+
+# --- Temporary files (always regenerable) ---
+tmp/*
+!tmp/.gitkeep
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
