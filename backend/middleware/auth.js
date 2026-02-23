@@ -3,38 +3,36 @@
  * Supabase JWT verification middleware
  */
 
-const jwt = require('jsonwebtoken');
+// backend/middleware/auth.js
 
-function authenticate(req, res, next) {
-  const authHeader = req.headers.authorization;
+const { createClient } = require('@supabase/supabase-js');
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-  const token = authHeader.split(' ')[1];
-
+async function authenticate(req, res, next) {
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.SUPABASE_JWT_SECRET
-    );
+    const authHeader = req.headers.authorization;
 
-    req.user = {
-      id: decoded.sub,
-      email: decoded.email,
-      role:
-        decoded.app_metadata?.role ||
-        decoded.user_metadata?.role ||
-        'patient',
-    };
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
+    const token = authHeader.split(' ')[1];
+
+    const { data, error } = await supabase.auth.getUser(token);
+
+    if (error || !data?.user) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    req.user = data.user;
     next();
   } catch (err) {
-    return res.status(401).json({
-      error: 'Invalid or expired token',
-      details: err.message,
-    });
+    console.error('Auth middleware error:', err);
+    return res.status(500).json({ error: 'Server configuration error' });
   }
 }
 
