@@ -1,93 +1,68 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from './supabase'
+import { apiFetch } from './api'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
-    const [role, setRole] = useState(null)   // 'patient' | 'doctor' | 'admin'
+    const [role, setRole] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    // Fetch role — tries multiple sources in order
-    const fetchRole = async (authUser) => {
-        if (!authUser) { setRole(null); return }
+    const checkAuth = () => {
+        const token = localStorage.getItem('khushi_token');
+        const storedUser = localStorage.getItem('khushi_user');
 
-        // 1. Check user_metadata first (set during signup)
-        const metaRole = authUser.user_metadata?.role
-        if (metaRole === 'doctor' || metaRole === 'patient') {
-            console.log('[AuthContext] Role from metadata:', metaRole)
-            setRole(metaRole)
-            return
+        if (!token || !storedUser) {
+            setUser(null);
+            setRole(null);
+            setLoading(false);
+            return;
         }
 
-        // 2. Try profiles table
         try {
-            const { data } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', authUser.id)
-                .maybeSingle()
-
-            if (data?.role) {
-                console.log('[AuthContext] Role from profiles:', data.role)
-                setRole(data.role)
-                return
-            }
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            setRole(parsedUser.role || 'patient');
         } catch (e) {
-            console.warn('[AuthContext] profiles fetch failed:', e)
+            localStorage.removeItem('khushi_token');
+            localStorage.removeItem('khushi_user');
+            setUser(null);
+            setRole(null);
         }
-
-        // 3. Fallback: check doctors table
-        try {
-            const { data: docData } = await supabase
-                .from('doctors')
-                .select('id')
-                .eq('id', authUser.id)
-                .maybeSingle()
-
-            if (docData) {
-                console.log('[AuthContext] Role from doctors table: doctor')
-                setRole('doctor')
-                return
-            }
-        } catch (e) {
-            console.warn('[AuthContext] doctors check failed:', e)
-        }
-
-        // 4. Default
-        console.log('[AuthContext] Defaulting to patient')
-        setRole('patient')
+        setLoading(false);
     }
 
     useEffect(() => {
-        let mounted = true
-
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            const u = session?.user ?? null
-            if (!mounted) return
-            setUser(u)
-            if (u) {
-                await fetchRole(u)
-            }
-            if (mounted) setLoading(false)
-        })
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            const u = session?.user ?? null
-            if (!mounted) return
-            setUser(u)
-            if (u) {
-                await fetchRole(u)
-            } else {
-                setRole(null)
-            }
-        })
-
-        return () => { mounted = false; subscription.unsubscribe() }
+        checkAuth();
     }, [])
 
-    const signOut = async () => {
-        await supabase.auth.signOut()
+    const login = async (email, password) => {
+        const data = await apiFetch('/api/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
+        })
+        localStorage.setItem('khushi_token', data.token);
+        localStorage.setItem('khushi_user', JSON.stringify(data.user));
+        setUser(data.user);
+        setRole(data.user.role || 'patient');
+        return data.user;
+    }
+
+    const signup = async (userData) => {
+        const data = await apiFetch('/api/auth/register', {
+            method: 'POST',
+            body: JSON.stringify(userData)
+        })
+        localStorage.setItem('khushi_token', data.token);
+        localStorage.setItem('khushi_user', JSON.stringify(data.user));
+        setUser(data.user);
+        setRole(data.user.role || 'patient');
+        return data.user;
+    }
+
+    const signOut = () => {
+        localStorage.removeItem('khushi_token');
+        localStorage.removeItem('khushi_user');
         setUser(null)
         setRole(null)
     }
@@ -96,7 +71,7 @@ export function AuthProvider({ children }) {
     const isPatient = role === 'patient' || (!role && !!user)
 
     return (
-        <AuthContext.Provider value={{ user, role, loading, signOut, isDoctor, isPatient }}>
+        <AuthContext.Provider value={{ user, role, loading, login, signup, signOut, isDoctor, isPatient }}>
             {children}
         </AuthContext.Provider>
     )

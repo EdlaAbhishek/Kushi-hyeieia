@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../services/supabase'
 import { useAuth } from '../services/AuthContext'
 
 export default function DoctorDashboard() {
@@ -19,65 +18,32 @@ export default function DoctorDashboard() {
         setLoading(true)
         setFetchError(null)
 
-        const { data: { user: currentUser } } = await supabase.auth.getUser()
-        if (!currentUser) { setFetchError('Session expired.'); setLoading(false); return }
+        if (!user) { setFetchError('Session expired.'); setLoading(false); return }
 
-        // Find doctor record linked to this user
-        const { data: docData } = await supabase
-            .from('doctors')
-            .select('id')
-            .eq('id', currentUser.id)
-            .maybeSingle()
-
-        const doctorId = docData?.id || currentUser.id
-
-        const { data, error } = await supabase
-            .from('appointments')
-            .select('id, appointment_date, appointment_time, status, appointment_type, patient_id, notes')
-            .eq('doctor_id', doctorId)
-            .order('appointment_date', { ascending: false })
-
-        if (error) {
-            setFetchError(error.message)
-            setLoading(false)
-            return
+        try {
+            const data = await apiFetch('/api/appointments/doctor')
+            setAppointments(data.appointments || [])
+        } catch (err) {
+            setFetchError(err.message)
+            setAppointments([])
         }
-
-        // Try to fetch patient names from profiles
-        const patientIds = [...new Set((data || []).map(a => a.patient_id).filter(Boolean))]
-        let patientMap = {}
-        if (patientIds.length > 0) {
-            const { data: profiles } = await supabase
-                .from('profiles')
-                .select('id, full_name')
-                .in('id', patientIds)
-            if (profiles) {
-                profiles.forEach(p => { patientMap[p.id] = p.full_name })
-            }
-        }
-
-        const enriched = (data || []).map(a => ({
-            ...a,
-            patient_name: patientMap[a.patient_id] || `Patient ${a.patient_id?.slice(0, 6) || ''}...`
-        }))
-
-        setAppointments(enriched)
         setLoading(false)
     }
 
-    useEffect(() => { fetchAppointments() }, [])
+    useEffect(() => { fetchAppointments() }, [user])
 
     const updateStatus = async (appointmentId, newStatus) => {
         setUpdatingId(appointmentId)
-        const { error } = await supabase
-            .from('appointments')
-            .update({ status: newStatus })
-            .eq('id', appointmentId)
-
-        if (!error) {
+        try {
+            await apiFetch(`/api/appointments/${appointmentId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: newStatus })
+            })
             setAppointments(prev => prev.map(a =>
                 a.id === appointmentId ? { ...a, status: newStatus } : a
             ))
+        } catch (err) {
+            setFetchError(err.message)
         }
         setUpdatingId(null)
     }
@@ -91,15 +57,16 @@ export default function DoctorDashboard() {
         if (!notesModal) return
         setSavingNotes(true)
 
-        const { error } = await supabase
-            .from('appointments')
-            .update({ notes: notesText })
-            .eq('id', notesModal)
-
-        if (!error) {
+        try {
+            await apiFetch(`/api/appointments/${notesModal}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ notes: notesText })
+            })
             setAppointments(prev => prev.map(a =>
                 a.id === notesModal ? { ...a, notes: notesText } : a
             ))
+        } catch (err) {
+            setFetchError(err.message)
         }
         setSavingNotes(false)
         setNotesModal(null)

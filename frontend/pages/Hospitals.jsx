@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../services/supabase'
 import { useAuth } from '../services/AuthContext'
+import { apiFetch } from '../services/api'
 
 export default function Hospitals() {
     const { user } = useAuth()
@@ -30,14 +30,13 @@ export default function Hospitals() {
 
     useEffect(() => {
         async function fetchTeleconsultDoctors() {
-            const { data, error } = await supabase
-                .from('doctors')
-                .select('id, full_name, specialty, hospital_name')
-                .eq('available', true)
-                .limit(6)
-
-            if (!error && data) {
-                setTeleconsultDoctors(data)
+            try {
+                const data = await apiFetch('/api/doctors')
+                if (data && data.doctors) {
+                    setTeleconsultDoctors(data.doctors.slice(0, 6))
+                }
+            } catch (err) {
+                // handle silently for display
             }
             setLoadingDocs(false)
         }
@@ -65,8 +64,7 @@ export default function Hospitals() {
         setBookingError('')
 
         try {
-            const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
-            if (authError || !currentUser) {
+            if (!user) {
                 setBookingError('Session expired. Please log in again.')
                 return
             }
@@ -74,21 +72,19 @@ export default function Hospitals() {
             const today = new Date().toISOString().split('T')[0]
             if (bookingDate < today) {
                 setBookingError('Date cannot be in the past.')
+                setBookingLoading(false)
                 return
             }
 
-            const { error: insertError } = await supabase
-                .from('appointments')
-                .insert([{
-                    patient_id: currentUser.id,
+            await apiFetch('/api/appointments', {
+                method: 'POST',
+                body: JSON.stringify({
                     doctor_id: selectedDoctor.id,
                     appointment_date: bookingDate,
                     appointment_time: bookingTime,
-                    status: 'pending',
                     appointment_type: 'teleconsultation'
-                }])
-
-            if (insertError) throw new Error(insertError.message)
+                })
+            })
 
             setBookingSuccess(`Teleconsultation booked with ${selectedDoctor.full_name}!`)
             setTimeout(handleCloseBooking, 2500)

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../services/supabase'
 import { useAuth } from '../services/AuthContext'
+import { apiFetch } from '../services/api'
 
 export default function Doctors() {
     const { user } = useAuth()
@@ -25,16 +25,13 @@ export default function Doctors() {
             setLoading(true)
             setFetchError(null)
 
-            const { data, error } = await supabase
-                .from('doctors')
-                .select('*')
-
-            if (error) {
-                console.error('Supabase fetch error:', error.message)
-                setFetchError(error.message)
+            try {
+                const data = await apiFetch('/api/doctors')
+                setDoctors(data.doctors || [])
+            } catch (err) {
+                console.error('Fetch error:', err.message)
+                setFetchError(err.message)
                 setDoctors([])
-            } else {
-                setDoctors(data || [])
             }
 
             setLoading(false)
@@ -84,44 +81,27 @@ export default function Doctors() {
         setBookingError('')
 
         try {
-            // 1. Fresh check of the logged-in user to satisfy RLS
-            const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
-
-            if (authError || !currentUser) {
+            if (!user) {
                 setBookingError('Session expired. Please log in again.')
                 setTimeout(() => navigate('/login'), 2000)
                 return
             }
 
-            // 2. Simple validation
             const today = new Date().toISOString().split('T')[0]
             if (bookingDate < today) {
                 setBookingError('Appointment date cannot be in the past.')
+                setBookingLoading(false)
                 return
             }
 
-            // 3. Construct booking data (Exact columns confirmed by schema check)
-            const bookingData = {
-                patient_id: currentUser.id,
-                doctor_id: selectedDoctor.id,
-                appointment_date: bookingDate,
-                appointment_time: bookingTime,
-                status: 'pending'
-            }
-
-            console.log('Final booking attempt with:', bookingData)
-
-            const { error: insertError } = await supabase
-                .from('appointments')
-                .insert([bookingData])
-
-            if (insertError) {
-                console.error('Record Insert Error:', insertError)
-                if (insertError.code === '42501') {
-                    throw new Error('RLS Error: Your account does not have permission to insert into appointments. Please verify database policies.')
-                }
-                throw new Error(insertError.message || 'Failed to book appointment.')
-            }
+            await apiFetch('/api/appointments', {
+                method: 'POST',
+                body: JSON.stringify({
+                    doctor_id: selectedDoctor.id,
+                    appointment_date: bookingDate,
+                    appointment_time: bookingTime
+                })
+            })
 
             setBookingSuccess(`Appointment booked successfully with ${selectedDoctor.full_name}!`)
             setTimeout(() => {

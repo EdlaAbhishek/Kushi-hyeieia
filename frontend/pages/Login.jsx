@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../services/supabase'
+import { useAuth } from '../services/AuthContext'
 
 export default function Login() {
     const [email, setEmail] = useState('')
@@ -8,62 +8,23 @@ export default function Login() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const navigate = useNavigate()
+    const { login } = useAuth()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
         setError('')
 
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-
-        if (signInError) {
+        try {
+            const user = await login(email, password)
+            if (user.role === 'doctor') {
+                navigate('/doctor-dashboard')
+            } else {
+                navigate('/dashboard')
+            }
+        } catch (err) {
+            setError(err.message)
             setLoading(false)
-            setError(signInError.message)
-            return
-        }
-
-        // Determine role and redirect accordingly
-        const authUser = signInData?.user
-        let userRole = 'patient'
-
-        // 1. Check user_metadata (most reliable — set at signup)
-        if (authUser?.user_metadata?.role) {
-            userRole = authUser.user_metadata.role
-        } else {
-            // 2. Try profiles table
-            try {
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', authUser.id)
-                    .maybeSingle()
-                if (profileData?.role) userRole = profileData.role
-            } catch (e) {
-                // ignore
-            }
-
-            // 3. Try doctors table
-            if (userRole === 'patient') {
-                try {
-                    const { data: docData } = await supabase
-                        .from('doctors')
-                        .select('id')
-                        .eq('id', authUser.id)
-                        .maybeSingle()
-                    if (docData) userRole = 'doctor'
-                } catch (e) {
-                    // ignore
-                }
-            }
-        }
-
-        setLoading(false)
-        console.log('[Login] Detected role:', userRole, '→ redirecting')
-
-        if (userRole === 'doctor') {
-            navigate('/doctor-dashboard')
-        } else {
-            navigate('/dashboard')
         }
     }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../services/supabase'
+import { useAuth } from '../services/AuthContext'
+import { apiFetch } from '../services/api'
 
 export default function Signup() {
     const [name, setName] = useState('')
@@ -13,6 +14,7 @@ export default function Signup() {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
     const navigate = useNavigate()
+    const { signup } = useAuth()
 
     const specialtyOptions = [
         'Cardiology', 'Dermatology', 'Endocrinology', 'Gastroenterology',
@@ -27,70 +29,32 @@ export default function Signup() {
         setError('')
         setSuccess('')
 
-        // Validate doctor fields
         if (role === 'doctor') {
             if (!specialty) { setError('Please select a specialty.'); setLoading(false); return }
             if (!hospitalName.trim()) { setError('Please enter your hospital name.'); setLoading(false); return }
         }
 
-        // 1. Sign up with Supabase Auth
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { full_name: name, role } },
-        })
+        try {
+            await signup({ full_name: name, email, password, role })
 
-        if (signUpError) {
-            setLoading(false)
-            setError(signUpError.message)
-            return
-        }
-
-        const userId = signUpData?.user?.id
-        if (!userId) {
-            setLoading(false)
-            setError('Account created but user ID not returned. Please sign in.')
-            setTimeout(() => navigate('/login'), 2000)
-            return
-        }
-
-        // 2. Create profile row
-        const { error: profileError } = await supabase.from('profiles').upsert({
-            id: userId,
-            full_name: name,
-            email,
-            role
-        }, { onConflict: 'id' })
-
-        if (profileError) {
-            console.warn('Profile insert warning:', profileError.message)
-        }
-
-        // 3. If doctor → create doctors table row
-        if (role === 'doctor') {
-            const { error: doctorError } = await supabase.from('doctors').insert({
-                id: userId,
-                full_name: name,
-                specialty,
-                hospital_name: hospitalName.trim(),
-                available: true,
-                teleconsultation_available: true
-            })
-
-            if (doctorError) {
-                console.error('Doctor row insert error:', doctorError.message)
-                // Don't block signup — profile is already created
-                if (doctorError.code === '42501') {
-                    console.warn('RLS blocked doctor insert. Row may need manual creation.')
-                }
-            } else {
-                console.log('Doctor profile created successfully')
+            if (role === 'doctor') {
+                await apiFetch('/api/doctors/register', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        specialty,
+                        registration_no: 'N/A', // Frontend doesn't request it, backend needs it
+                        bio: `Doctor at ${hospitalName.trim()}`
+                    })
+                })
             }
-        }
 
-        setLoading(false)
-        setSuccess('Account created! Check your email to confirm, then sign in.')
-        setTimeout(() => navigate('/login'), 3000)
+            setLoading(false)
+            setSuccess('Account created! Redirecting to login...')
+            setTimeout(() => navigate('/login'), 2000)
+        } catch (err) {
+            setError(err.message)
+            setLoading(false)
+        }
     }
 
     return (

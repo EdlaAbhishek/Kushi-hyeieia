@@ -14,19 +14,16 @@ async function getSlots(req, res, next) {
 
 async function book(req, res, next) {
     try {
-        const { doctorId, scheduledAt, type, notes } = req.body;
-        const patientId = req.user.id;
-
-        // Verify doctor exists
-        const doctor = await Doctor.findById(doctorId);
-        if (!doctor) return res.status(404).json({ error: 'Doctor not found' });
+        const { doctor_id, appointment_date, appointment_time } = req.body;
+        const patient_id = req.user.id;
 
         const appointment = await Appointment.create({
-            patient_id: patientId,
-            doctor_id: doctorId,
-            scheduled_at: scheduledAt,
-            type,
-            notes,
+            patient_id,
+            doctor_id,
+            appointment_date,
+            appointment_time,
+            appointment_type: 'in-person',
+            notes: '',
         });
 
         res.status(201).json({ appointment });
@@ -40,15 +37,36 @@ async function getMyAppointments(req, res, next) {
     } catch (err) { next(err); }
 }
 
+async function getDoctorAppointments(req, res, next) {
+    try {
+        const list = await Appointment.findByDoctor(req.user.id);
+        res.json({ appointments: list });
+    } catch (err) { next(err); }
+}
+
+async function updateAppointment(req, res, next) {
+    try {
+        const { id } = req.params;
+        const { status, notes } = req.body;
+
+        if (status) await Appointment.updateStatus(id, status);
+        if (notes !== undefined) await Appointment.updateNotes(id, notes);
+
+        res.json({ message: 'Appointment updated' });
+    } catch (err) { next(err); }
+}
+
 async function cancel(req, res, next) {
     try {
         const appt = await Appointment.findById(req.params.id);
         if (!appt) return res.status(404).json({ error: 'Appointment not found' });
-        if (appt.patient_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
+        if (appt.patient_id !== req.user.id && appt.doctor_id !== req.user.id) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
 
         await Appointment.cancel(req.params.id);
         res.json({ message: 'Appointment cancelled' });
     } catch (err) { next(err); }
 }
 
-module.exports = { getSlots, book, getMyAppointments, cancel };
+module.exports = { getSlots, book, getMyAppointments, getDoctorAppointments, updateAppointment, cancel };

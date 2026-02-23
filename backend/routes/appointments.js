@@ -16,15 +16,17 @@ router.get('/slots',
 
 router.post('/',
     [
-        body('doctorId').isUUID(),
-        body('scheduledAt').isISO8601(),
-        body('type').isIn(['in-person', 'telehealth']),
+        body('doctor_id').notEmpty(),
+        body('appointment_date').notEmpty(),
+        body('appointment_time').notEmpty(),
         validate,
     ],
     controller.book
 );
 
 router.get('/mine', controller.getMyAppointments);
+router.get('/doctor', controller.getDoctorAppointments);
+router.patch('/:id', controller.updateAppointment);
 router.delete('/:id', controller.cancel);
 
 module.exports = router;

@@ -16,7 +16,17 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({ origin: config.ALLOWED_ORIGIN, credentials: true }));
+const allowedOrigins = (config.ALLOWED_ORIGIN || '').split(',');
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || origin.indexOf('localhost') !== -1 || origin.endsWith('.vercel.app') || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 
 // Body parsing
 app.use(express.json({ limit: '10kb' }));

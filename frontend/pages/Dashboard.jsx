@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../services/supabase'
 import { useAuth } from '../services/AuthContext'
 
 export default function Dashboard() {
@@ -14,44 +13,26 @@ export default function Dashboard() {
             setLoading(true)
             setFetchError(null)
 
-            const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
+            try {
+                if (!user) {
+                    setFetchError('Unable to verify your session. Please log in again.')
+                    setLoading(false)
+                    return
+                }
 
-            if (authError || !currentUser) {
-                setFetchError('Unable to verify your session. Please log in again.')
-                setLoading(false)
-                return
-            }
-
-            const { data, error } = await supabase
-                .from('appointments')
-                .select(`
-                    id,
-                    appointment_date,
-                    appointment_time,
-                    status,
-                    appointment_type,
-                    doctors (
-                        full_name,
-                        specialty,
-                        hospital_name
-                    )
-                `)
-                .eq('patient_id', currentUser.id)
-                .order('appointment_date', { ascending: false })
-
-            if (error) {
-                console.error('Appointments fetch error:', error.message)
-                setFetchError(error.message)
+                const data = await apiFetch('/api/appointments/mine')
+                setAppointments(data.appointments || [])
+            } catch (err) {
+                console.error('Appointments fetch error:', err.message)
+                setFetchError(err.message)
                 setAppointments([])
-            } else {
-                setAppointments(data || [])
             }
 
             setLoading(false)
         }
 
         fetchAppointments()
-    }, [])
+    }, [user])
 
     const getStatusClass = (status) => {
         switch (status) {
