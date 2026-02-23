@@ -24,16 +24,11 @@ async function authenticate(req, res, next) {
 
     const { data, error } = await supabase.auth.getUser(token);
 
-    if (error || !data?.user) {
+    if (error || !data.user) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
     req.user = data.user;
     next();
   } catch (err) {
-    console.error('Auth middleware error:', err);
-    return res.status(500).json({ error: 'Server configuration error' });
-  }
-}
-
-module.exports = { authenticate };
+    console
