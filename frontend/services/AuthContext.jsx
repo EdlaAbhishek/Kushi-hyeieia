@@ -8,6 +8,15 @@ export function AuthProvider({ children }) {
   const [role, setRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // 🔥 Save token helper
+  const saveToken = async () => {
+    const { data } = await supabase.auth.getSession()
+    const token = data?.session?.access_token
+    if (token) {
+      localStorage.setItem('khushi_token', token)
+    }
+  }
+
   useEffect(() => {
     let mounted = true
 
@@ -20,9 +29,11 @@ export function AuthProvider({ children }) {
         if (session?.user) {
           setUser(session.user)
           setRole(session.user.user_metadata?.role || 'patient')
+          await saveToken() // ✅ store token on reload
         } else {
           setUser(null)
           setRole(null)
+          localStorage.removeItem('khushi_token')
         }
       } catch (err) {
         console.error("Auth init error:", err)
@@ -35,31 +46,41 @@ export function AuthProvider({ children }) {
 
     initAuth()
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+    const { data: { subscription } } =
+      supabase.auth.onAuthStateChange(async (_event, session) => {
         if (!mounted) return
 
         if (session?.user) {
           setUser(session.user)
           setRole(session.user.user_metadata?.role || 'patient')
+          await saveToken() // ✅ store token on login/signup
         } else {
           setUser(null)
           setRole(null)
+          localStorage.removeItem('khushi_token')
         }
 
         setLoading(false)
-      }
-    )
+      })
 
     return () => {
       mounted = false
-      listener?.subscription?.unsubscribe()
+      subscription?.unsubscribe()
     }
   }, [])
 
   const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
     if (error) throw error
+
+    await saveToken() // ✅ store token immediately
+
+    setUser(data.user)
+    setRole(data.user.user_metadata?.role || 'patient')
+
     return data.user
   }
 
@@ -72,11 +93,20 @@ export function AuthProvider({ children }) {
       }
     })
     if (error) throw error
+
+    await saveToken()
+
+    if (data.user) {
+      setUser(data.user)
+      setRole(data.user.user_metadata?.role || 'patient')
+    }
+
     return data.user
   }
 
   const signOut = async () => {
     await supabase.auth.signOut()
+    localStorage.removeItem('khushi_token')
     setUser(null)
     setRole(null)
   }
