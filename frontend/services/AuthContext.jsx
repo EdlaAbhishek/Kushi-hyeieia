@@ -37,31 +37,61 @@ export function AuthProvider({ children }) {
     }
 
     useEffect(() => {
-        // Check active session on load
+        let mounted = true;
+
         const getSession = async () => {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error || !session) {
-                setLoading(false);
-                return;
+            try {
+                // Safeguard against lock timeouts
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (!mounted) return;
+                if (error) {
+                    console.error("Session get error", error);
+                    setUser(null);
+                    setRole(null);
+                    setLoading(false);
+                    return;
+                }
+                if (!session) {
+                    setLoading(false);
+                    return;
+                }
+
+                await fetchProfile(session.user);
+            } catch (err) {
+                console.error("LockManager/Session freeze detected:", err);
+                if (mounted) {
+                    setUser(null);
+                    setRole(null);
+                    setLoading(false);
+                }
             }
-            await fetchProfile(session.user);
         }
 
         getSession();
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session?.user) {
-                await fetchProfile(session.user);
-            } else {
-                setUser(null);
-                setRole(null);
-                localStorage.removeItem('khushi_token');
+            if (!mounted) return;
+            try {
+                if (session?.user) {
+                    await fetchProfile(session.user);
+                } else {
+                    setUser(null);
+                    setRole(null);
+                    localStorage.removeItem('khushi_token');
+                    setLoading(false);
+                }
+            } catch (err) {
+                console.error("Auth state change error:", err);
                 setLoading(false);
             }
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            mounted = false;
+            if (subscription) subscription.unsubscribe();
+        };
     }, []);
 
     const login = async (email, password) => {
