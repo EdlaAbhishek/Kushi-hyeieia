@@ -2,42 +2,58 @@
  * backend/middleware/auth.js
  * Supabase JWT verification middleware
  */
-// backend/middleware/auth.js
-
-const { createClient } = require('@supabase/supabase-js');
-
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("Missing Supabase environment variables");
-}
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const jwt = require('jsonwebtoken');
 
 async function authenticate(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Authentication required" });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('[Auth Middleware] Token missing or improperly formatted');
+      return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split(' ')[1];
 
-    const { data, error } = await supabase.auth.getUser(token);
-
-    if (error || !data?.user) {
-      return res.status(401).json({ error: "Invalid or expired token" });
+    if (!process.env.SUPABASE_JWT_SECRET) {
+      console.error('[Auth Middleware] Missing SUPABASE_JWT_SECRET environment variable!');
+      return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    req.user = data.user;
-    next();
+    jwt.verify(token, process.env.SUPABASE_JWT_SECRET, (err, decoded) => {
+      if (err) {
+        console.error('[Auth Middleware] Invalid or expired token:', err.message);
+        return res.status(401).json({ error: 'Invalid or expired token' });
+      }
 
+      // Map the token payload to req.user
+      req.user = {
+        ...decoded,
+        id: decoded.sub // Ensure req.user.id is always available
+      };
+
+      next();
+    });
   } catch (err) {
-    console.error("Auth middleware error:", err.message);
-    return res.status(500).json({ error: "Server configuration error" });
+    console.error('[Auth Middleware] Unexpected error:', err.message);
+    return res.status(500).json({ error: 'Server configuration error' });
   }
 }
 
-module.exports = { authenticate };
+function authorise(...roles) {
+  return (req, res, next) => {
+    const userRole =
+      req.user?.app_metadata?.role ||
+      req.user?.user_metadata?.role ||
+      'patient';
+
+    if (!roles.includes(userRole)) {
+      console.error(`[Auth Middleware] User with role ${userRole} attempted to access route restricted to ${roles.join(', ')}`);
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+
+    next();
+  };
+}
+
+module.exports = { authenticate, authorise };
