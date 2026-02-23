@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
-
+import { apiFetch } from '../services/api'
 export default function DoctorDashboard() {
     const { user } = useAuth()
     const [appointments, setAppointments] = useState([])
