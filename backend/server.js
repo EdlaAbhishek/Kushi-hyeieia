@@ -1,8 +1,4 @@
-/**
- * backend/server.js
- * Express application entry point.
- */
-
+require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -42,9 +38,9 @@ app.use((_req, res) => res.status(404).json({ error: 'Route not found' }));
 // Global error handler (must be last)
 app.use(errorHandler);
 
-const PORT = config.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Khushi Hygieia API running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;

@@ -1,17 +1,12 @@
 /**
  * backend/models/db.js
- * PostgreSQL connection pool. All models use this.
+ * PostgreSQL connection pool for Supabase production.
  */
 const { Pool } = require('pg');
-const config = require('../config');
 
 const pool = new Pool({
-    host: config.DB_HOST,
-    port: config.DB_PORT,
-    database: config.DB_NAME,
-    user: config.DB_USER,
-    password: config.DB_PASS,
-    ssl: config.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
 });
 
-module.exports = { query: pool.query.bind(pool) };
+module.exports = pool;
