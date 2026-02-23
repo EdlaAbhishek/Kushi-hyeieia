@@ -9,7 +9,7 @@ const Doctor = {
             SELECT d.id, d.specialty, d.bio, d.verified,
                    u.full_name, h.name AS hospital_name, h.city
             FROM doctors d
-            JOIN users u ON d.user_id = u.id
+            JOIN profiles u ON d.user_id = u.id
             LEFT JOIN hospitals h ON d.hospital_id = h.id
             WHERE d.verified = TRUE
         `;
@@ -24,7 +24,7 @@ const Doctor = {
         const { rows } = await db.query(
             `SELECT d.*, u.full_name, u.email, h.name AS hospital_name
              FROM doctors d
-             JOIN users u ON d.user_id = u.id
+             JOIN profiles u ON d.user_id = u.id
              LEFT JOIN hospitals h ON d.hospital_id = h.id
              WHERE d.id = $1`,
             [id]
