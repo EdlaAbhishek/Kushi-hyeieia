@@ -42,6 +42,7 @@ export default function Signup() {
                     method: 'POST',
                     body: JSON.stringify({
                         specialty,
+                        hospital_name: hospitalName.trim(),
                         registration_no: 'N/A', // Frontend doesn't request it, backend needs it
                         bio: `Doctor at ${hospitalName.trim()}`
                     })
