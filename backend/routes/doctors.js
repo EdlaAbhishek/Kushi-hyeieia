@@ -8,10 +8,10 @@ const pool = require('../db');
 router.get('/', async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT d.id, d.specialty, d.hospital, p.full_name
+            SELECT d.id, d.specialty, d.hospital_name as hospital, u.full_name
             FROM doctors d
-            JOIN profiles p ON d.profile_id = p.id
-            ORDER BY p.full_name
+            JOIN profiles u ON d.id = u.id
+            ORDER BY u.full_name
         `);
 
         res.json(result.rows);
