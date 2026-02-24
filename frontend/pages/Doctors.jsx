@@ -27,7 +27,7 @@ export default function Doctors() {
 
             try {
                 const data = await apiFetch('/api/doctors')
-                setDoctors(data.doctors || [])
+                setDoctors(Array.isArray(data) ? data : (data.doctors || []))
             } catch (err) {
                 console.error('Fetch error:', err.message)
                 setFetchError(err.message)
