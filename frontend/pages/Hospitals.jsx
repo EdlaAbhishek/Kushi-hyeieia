@@ -190,7 +190,7 @@ export default function Hospitals() {
                                     </div>
                                     <div className="teleconsult-card-meta">
                                         <span className="appointment-label">Hospital</span>
-                                        <span className="appointment-value">{doc.hospital_name || '—'}</span>
+                                        <span className="appointment-value">{doc.hospital || '—'}</span>
                                     </div>
                                     <div className="teleconsult-card-meta">
                                         <span className="appointment-label">Mode</span>

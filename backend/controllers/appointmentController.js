@@ -14,7 +14,7 @@ async function getSlots(req, res, next) {
 
 async function book(req, res, next) {
     try {
-        const { doctor_id, appointment_date, appointment_time } = req.body;
+        const { doctor_id, appointment_date, appointment_time, appointment_type } = req.body;
         const patient_id = req.user.id;
 
         const appointment = await Appointment.create({
@@ -22,7 +22,7 @@ async function book(req, res, next) {
             doctor_id,
             appointment_date,
             appointment_time,
-            appointment_type: 'in-person',
+            appointment_type: appointment_type || 'in-person',
             notes: '',
         });
 

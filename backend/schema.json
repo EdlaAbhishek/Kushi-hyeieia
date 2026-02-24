@@ -1,0 +1,132 @@
+[
+  {
+    "table_name": "appointments",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "patient_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "doctor_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "appointment_date",
+    "data_type": "date"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "appointment_time",
+    "data_type": "time without time zone"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "status",
+    "data_type": "text"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "scheduled_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "appointment_type",
+    "data_type": "text"
+  },
+  {
+    "table_name": "appointments",
+    "column_name": "notes",
+    "data_type": "text"
+  },
+  {
+    "table_name": "doctors",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "doctors",
+    "column_name": "full_name",
+    "data_type": "text"
+  },
+  {
+    "table_name": "doctors",
+    "column_name": "specialty",
+    "data_type": "text"
+  },
+  {
+    "table_name": "doctors",
+    "column_name": "hospital_name",
+    "data_type": "text"
+  },
+  {
+    "table_name": "doctors",
+    "column_name": "available",
+    "data_type": "boolean"
+  },
+  {
+    "table_name": "doctors",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_name": "doctors",
+    "column_name": "teleconsultation_available",
+    "data_type": "boolean"
+  },
+  {
+    "table_name": "emergency_requests",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "emergency_requests",
+    "column_name": "user_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "emergency_requests",
+    "column_name": "location",
+    "data_type": "text"
+  },
+  {
+    "table_name": "emergency_requests",
+    "column_name": "status",
+    "data_type": "text"
+  },
+  {
+    "table_name": "emergency_requests",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "table_name": "profiles",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "profiles",
+    "column_name": "full_name",
+    "data_type": "text"
+  },
+  {
+    "table_name": "profiles",
+    "column_name": "role",
+    "data_type": "text"
+  },
+  {
+    "table_name": "profiles",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone"
+  }
+]
