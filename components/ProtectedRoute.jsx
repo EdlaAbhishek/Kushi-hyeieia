@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 
 export default function ProtectedRoute({ allowedRoles }) {
-    const { user, role, loading } = useAuth()
+    const { user, loading } = useAuth()
     const location = useLocation()
 
     if (loading) {
@@ -17,7 +17,7 @@ export default function ProtectedRoute({ allowedRoles }) {
 
     // If specific roles are required, check them
     if (allowedRoles && allowedRoles.length > 0) {
-        const effectiveRole = role || 'patient'
+        const effectiveRole = user?.user_metadata?.role || 'patient'
         if (!allowedRoles.includes(effectiveRole)) {
             // STOP infinite loop: only redirect if not already on the target route
             const targetPath = effectiveRole === 'doctor' ? '/doctor-dashboard' : '/dashboard'
