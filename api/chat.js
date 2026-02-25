@@ -27,14 +27,21 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
-        if (!data.choices) {
-            return res.status(500).json({ error: "Invalid AI response" });
+        if (!response.ok) {
+            console.error("OpenAI API Error:", data);
+            return res.status(response.status).json({ error: data.error?.message || "OpenAI API error", details: data });
+        }
+
+        if (!data.choices || data.choices.length === 0) {
+            console.error("OpenAI Invalid Response format:", data);
+            return res.status(500).json({ error: "Invalid AI response", details: data });
         }
 
         return res.status(200).json({
             reply: data.choices[0].message.content,
         });
     } catch (error) {
-        return res.status(500).json({ error: "AI failed" });
+        console.error("Chat API caught exception:", error);
+        return res.status(500).json({ error: "AI failed", details: error.message });
     }
 }
