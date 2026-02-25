@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
-import { apiFetch } from '../services/api'
+import { supabase } from '../services/supabase'
 export default function Dashboard() {
     const { user } = useAuth()
     const [appointments, setAppointments] = useState([])
@@ -20,8 +20,13 @@ export default function Dashboard() {
                     return
                 }
 
-                const data = await apiFetch('/api/appointments/mine')
-                setAppointments(data.appointments || [])
+                const { data, error } = await supabase
+                    .from('appointments')
+                    .select('*, doctors(*)')
+                    .eq('patient_id', user.id)
+                    .order('appointment_date', { ascending: false })
+                if (error) throw error
+                setAppointments(data || [])
             } catch (err) {
                 console.error('Appointments fetch error:', err.message)
                 setFetchError(err.message)

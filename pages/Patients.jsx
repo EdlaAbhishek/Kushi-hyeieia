@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
-import { apiFetch } from '../services/api'
+import { supabase } from '../services/supabase'
 
 export default function Patients() {
     const { user } = useAuth()
@@ -13,10 +13,14 @@ export default function Patients() {
             if (!user) { setLoadingCare(false); return }
 
             try {
-                const data = await apiFetch('/api/appointments/mine')
-                if (data && data.appointments) {
-                    const completed = data.appointments.filter(a => a.status === 'completed').slice(0, 6)
-                    setCompletedAppts(completed)
+                const { data, error } = await supabase
+                    .from('appointments')
+                    .select('*, doctors(*)')
+                    .eq('patient_id', user.id)
+                    .eq('status', 'completed')
+                    .limit(6)
+                if (data) {
+                    setCompletedAppts(data)
                 }
             } catch (err) {
                 // Ignore error silently

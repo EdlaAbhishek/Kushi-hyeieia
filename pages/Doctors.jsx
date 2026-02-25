@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
-import { apiFetch } from '../services/api'
+import { supabase } from '../services/supabase'
 
 export default function Doctors() {
     const { user } = useAuth()
@@ -26,8 +26,9 @@ export default function Doctors() {
             setFetchError(null)
 
             try {
-                const data = await apiFetch('/api/doctors')
-                setDoctors(Array.isArray(data) ? data : (data.doctors || []))
+                const { data, error } = await supabase.from('doctors').select('*')
+                if (error) throw error
+                setDoctors(data || [])
             } catch (err) {
                 console.error('Fetch error:', err.message)
                 setFetchError(err.message)
@@ -94,14 +95,14 @@ export default function Doctors() {
                 return
             }
 
-            await apiFetch('/api/appointments', {
-                method: 'POST',
-                body: JSON.stringify({
-                    doctor_id: selectedDoctor.id,
-                    appointment_date: bookingDate,
-                    appointment_time: bookingTime
-                })
-            })
+            const { error: insertError } = await supabase.from('appointments').insert([{
+                doctor_id: selectedDoctor.id,
+                patient_id: user.id,
+                appointment_date: bookingDate,
+                appointment_time: bookingTime,
+                status: 'pending'
+            }])
+            if (insertError) throw insertError
 
             setBookingSuccess(`Appointment booked successfully with ${selectedDoctor.full_name}!`)
             setTimeout(() => {

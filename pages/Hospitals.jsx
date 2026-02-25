@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
-import { apiFetch } from '../services/api'
+import { supabase } from '../services/supabase'
 
 export default function Hospitals() {
     const { user } = useAuth()
@@ -31,9 +31,9 @@ export default function Hospitals() {
     useEffect(() => {
         async function fetchTeleconsultDoctors() {
             try {
-                const data = await apiFetch('/api/doctors')
-                if (data && data.doctors) {
-                    setTeleconsultDoctors(data.doctors.slice(0, 6))
+                const { data, error } = await supabase.from('doctors').select('*').limit(6)
+                if (data) {
+                    setTeleconsultDoctors(data)
                 }
             } catch (err) {
                 // handle silently for display
@@ -76,15 +76,15 @@ export default function Hospitals() {
                 return
             }
 
-            await apiFetch('/api/appointments', {
-                method: 'POST',
-                body: JSON.stringify({
-                    doctor_id: selectedDoctor.id,
-                    appointment_date: bookingDate,
-                    appointment_time: bookingTime,
-                    appointment_type: 'teleconsultation'
-                })
-            })
+            const { error: insertError } = await supabase.from('appointments').insert([{
+                doctor_id: selectedDoctor.id,
+                patient_id: user.id,
+                appointment_date: bookingDate,
+                appointment_time: bookingTime,
+                appointment_type: 'teleconsultation',
+                status: 'pending'
+            }])
+            if (insertError) throw insertError
 
             setBookingSuccess(`Teleconsultation booked with ${selectedDoctor.full_name}!`)
             setTimeout(handleCloseBooking, 2500)

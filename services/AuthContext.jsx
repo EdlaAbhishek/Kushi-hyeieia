@@ -14,7 +14,6 @@ export function AuthProvider({ children }) {
 
       if (session) {
         setUser(session.user)
-        localStorage.setItem('khushi_token', session.access_token)
       }
 
       setLoading(false)
@@ -26,10 +25,8 @@ export function AuthProvider({ children }) {
       async (_event, session) => {
         if (session) {
           setUser(session.user)
-          localStorage.setItem('khushi_token', session.access_token)
         } else {
           setUser(null)
-          localStorage.removeItem('khushi_token')
         }
       }
     )
@@ -63,7 +60,6 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     await supabase.auth.signOut()
-    localStorage.removeItem('khushi_token')
   }
 
   return (

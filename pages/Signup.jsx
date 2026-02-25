@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
-import { apiFetch } from '../services/api'
+import { supabase } from '../services/supabase'
 
 export default function Signup() {
     const [name, setName] = useState('')
@@ -38,15 +38,16 @@ export default function Signup() {
             await signup({ full_name: name, email, password, role })
 
             if (role === 'doctor') {
-                await apiFetch('/api/doctors/register', {
-                    method: 'POST',
-                    body: JSON.stringify({
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    await supabase.from('doctors').insert([{
+                        id: user.id,
+                        full_name: name,
                         specialty,
-                        hospital_name: hospitalName.trim(),
-                        registration_no: 'N/A', // Frontend doesn't request it, backend needs it
-                        bio: `Doctor at ${hospitalName.trim()}`
-                    })
-                })
+                        hospital: hospitalName.trim(),
+                        verified: false
+                    }])
+                }
             }
 
             setLoading(false)

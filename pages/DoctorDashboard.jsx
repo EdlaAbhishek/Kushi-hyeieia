@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
-import { apiFetch } from '../services/api'
+import { supabase } from '../services/supabase'
 export default function DoctorDashboard() {
     const { user } = useAuth()
     const [appointments, setAppointments] = useState([])
@@ -21,8 +21,13 @@ export default function DoctorDashboard() {
         if (!user) { setFetchError('Session expired.'); setLoading(false); return }
 
         try {
-            const data = await apiFetch('/api/appointments/doctor')
-            setAppointments(data.appointments || [])
+            const { data, error } = await supabase
+                .from('appointments')
+                .select('*')
+                .eq('doctor_id', user.id)
+                .order('appointment_date', { ascending: false })
+            if (error) throw error
+            setAppointments(data || [])
         } catch (err) {
             setFetchError(err.message)
             setAppointments([])
@@ -35,10 +40,11 @@ export default function DoctorDashboard() {
     const updateStatus = async (appointmentId, newStatus) => {
         setUpdatingId(appointmentId)
         try {
-            await apiFetch(`/api/appointments/${appointmentId}`, {
-                method: 'PATCH',
-                body: JSON.stringify({ status: newStatus })
-            })
+            const { error } = await supabase
+                .from('appointments')
+                .update({ status: newStatus })
+                .eq('id', appointmentId)
+            if (error) throw error
             setAppointments(prev => prev.map(a =>
                 a.id === appointmentId ? { ...a, status: newStatus } : a
             ))
@@ -58,10 +64,11 @@ export default function DoctorDashboard() {
         setSavingNotes(true)
 
         try {
-            await apiFetch(`/api/appointments/${notesModal}`, {
-                method: 'PATCH',
-                body: JSON.stringify({ notes: notesText })
-            })
+            const { error } = await supabase
+                .from('appointments')
+                .update({ notes: notesText })
+                .eq('id', notesModal)
+            if (error) throw error
             setAppointments(prev => prev.map(a =>
                 a.id === notesModal ? { ...a, notes: notesText } : a
             ))
