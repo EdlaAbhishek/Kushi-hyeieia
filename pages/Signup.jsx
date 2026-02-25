@@ -35,19 +35,17 @@ export default function Signup() {
         }
 
         try {
-            await signup({ full_name: name, email, password, role })
+            const user = await signup({ full_name: name, email, password, role })
 
-            if (role === 'doctor') {
-                const { data: { user } } = await supabase.auth.getUser()
-                if (user) {
-                    await supabase.from('doctors').insert([{
-                        id: user.id,
-                        full_name: name,
-                        specialty,
-                        hospital: hospitalName.trim(),
-                        verified: false
-                    }])
-                }
+            if (role === 'doctor' && user) {
+                const { error: insertError } = await supabase.from('doctors').insert([{
+                    id: user.id,
+                    full_name: name,
+                    specialty,
+                    hospital: hospitalName.trim(),
+                    verified: false
+                }])
+                if (insertError) throw insertError
             }
 
             setLoading(false)
