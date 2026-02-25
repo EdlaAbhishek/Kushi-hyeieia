@@ -34,32 +34,19 @@ export default function AiChat() {
         setLoading(true)
 
         try {
-            // Build context from last 10 messages for conversation memory
-            const context = messages.slice(-10).map(m => ({
-                role: m.role === 'assistant' ? 'assistant' : 'user',
-                content: m.content
-            }))
-
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: trimmed, context })
+                body: JSON.stringify({ message: trimmed })
             })
 
             const data = await res.json()
 
-            const assistantMsg = {
-                role: 'assistant',
-                content: data.reply || 'Sorry, I could not process that request.',
-                emergency: data.emergency || false
-            }
+            if (data.error) throw new Error(data.error)
 
-            setMessages(prev => [...prev, assistantMsg])
-        } catch {
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: 'Connection error. Please check that the backend server is running and try again.'
-            }])
+            setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+        } catch (err) {
+            setMessages(prev => [...prev, { role: 'assistant', content: 'AI error occurred.' }])
         } finally {
             setLoading(false)
         }

@@ -1,45 +1,40 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+    if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method not allowed" });
     }
 
     try {
-        const { message, context } = req.body;
-        if (!message) return res.status(400).json({ error: 'Message is required' });
+        const { message } = req.body;
 
-        // Ensure the API key is provided
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: 'Server misconfiguration: missing API key' });
+        if (!message) {
+            return res.status(400).json({ error: "Message required" });
         }
 
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-        let prompt = `You are Khushi Care AI, a healthcare assistant.\n\n`;
-        if (context && context.length > 0) {
-            prompt += "Previous conversation:\n";
-            context.forEach(msg => {
-                prompt += `${msg.role}: ${msg.content}\n`;
-            });
-            prompt += "\n";
-        }
-        prompt += `user: ${message}`;
-
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-
-        // Simple mock check for emergency keywords
-        const isEmergency = /heart attack|stroke|severe bleeding|chest pain|difficulty breathing|suicide/i.test(message);
-
-        return res.status(200).json({
-            reply: response.text(),
-            emergency: isEmergency
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "You are a helpful healthcare AI assistant." },
+                    { role: "user", content: message }
+                ],
+            }),
         });
 
+        const data = await response.json();
+
+        if (!data.choices) {
+            return res.status(500).json({ error: "Invalid AI response" });
+        }
+
+        return res.status(200).json({
+            reply: data.choices[0].message.content,
+        });
     } catch (error) {
-        console.error('AI Chat Error:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ error: "AI failed" });
     }
 }
