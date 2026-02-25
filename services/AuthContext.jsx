@@ -6,6 +6,8 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState(null)
+  const isDoctor = role === 'doctor'
 
   useEffect(() => {
     const initSession = async () => {
@@ -14,6 +16,7 @@ export function AuthProvider({ children }) {
 
       if (session) {
         setUser(session.user)
+        setRole(session.user?.user_metadata?.role || 'patient')
       }
 
       setLoading(false)
@@ -25,8 +28,10 @@ export function AuthProvider({ children }) {
       async (_event, session) => {
         if (session) {
           setUser(session.user)
+          setRole(session.user?.user_metadata?.role || 'patient')
         } else {
           setUser(null)
+          setRole(null)
         }
       }
     )
@@ -64,7 +69,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, signOut }}>
+    <AuthContext.Provider value={{ user, loading, role, isDoctor, login, signup, signOut }}>
       {children}
     </AuthContext.Provider>
   )
