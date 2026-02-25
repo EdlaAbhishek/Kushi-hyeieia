@@ -51,8 +51,14 @@ export default function Signup() {
             }
 
             setLoading(false)
-            setSuccess('Account created! Redirecting to login...')
-            setTimeout(() => navigate('/login'), 2000)
+            setSuccess('Account created! Redirecting to dashboard...')
+            setTimeout(() => {
+                if (role === 'doctor') {
+                    navigate('/doctor-dashboard')
+                } else {
+                    navigate('/dashboard')
+                }
+            }, 2000)
         } catch (err) {
             setError(err.message)
             setLoading(false)

@@ -16,9 +16,13 @@ export default function Login() {
         setError('')
 
         try {
-            await login(email, password)
-            // Navigation handled by the AuthContext role update triggering ProtectedRoute
-            navigate('/dashboard')
+            const user = await login(email, password)
+            const role = user?.user_metadata?.role || 'patient'
+            if (role === 'doctor') {
+                navigate('/doctor-dashboard')
+            } else {
+                navigate('/dashboard')
+            }
         } catch (err) {
             setError(err.message || 'Login failed')
             setLoading(false)

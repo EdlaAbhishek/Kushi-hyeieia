@@ -42,6 +42,7 @@ export function AuthProvider({ children }) {
       password,
     })
     if (error) throw error
+    return data.user
   }
 
   const signup = async ({ email, password, full_name, role }) => {
