@@ -17,10 +17,10 @@ export default function Signup() {
     const { signup } = useAuth()
 
     const specialtyOptions = [
-        'Cardiology', 'Dermatology', 'Endocrinology', 'Gastroenterology',
-        'General Medicine', 'Neurology', 'Oncology', 'Ophthalmology',
-        'Orthopedics', 'Pediatrics', 'Psychiatry', 'Pulmonology',
-        'Radiology', 'Surgery', 'Urology'
+        'Anesthesiology', 'Cardiology', 'Dentistry', 'Dermatology', 'Endocrinology',
+        'ENT (Ear, Nose, Throat)', 'Eye Specialist', 'Gastroenterology', 'General Medicine', 'Nephrology', 'Neurology',
+        'Obstetrics and Gynecology', 'Oncology', 'Ophthalmology', 'Orthopedics',
+        'Pathology', 'Pediatrics', 'Plastic Surgery', 'Psychiatry', 'Pulmonology', 'Radiology', 'Rheumatology', 'Surgery', 'Urology', 'Vascular Surgery'
     ]
 
     const handleSubmit = async (e) => {
