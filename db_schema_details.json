@@ -1,0 +1,26 @@
+{
+  "doctors": {
+    "exists": true,
+    "columns": [
+      "id",
+      "full_name",
+      "specialty",
+      "hospital_name",
+      "available",
+      "created_at",
+      "teleconsultation_available",
+      "email",
+      "hospital",
+      "verified",
+      "role",
+      "user_id"
+    ]
+  },
+  "patients": {
+    "exists": true
+  },
+  "users": {
+    "exists": false,
+    "error": "Could not find the table 'public.users' in the schema cache"
+  }
+}

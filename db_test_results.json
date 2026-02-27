@@ -1,0 +1,9 @@
+{
+  "patient_error": {
+    "code": "23503",
+    "details": "Key is not present in table \"users\".",
+    "hint": null,
+    "message": "insert or update on table \"patients\" violates foreign key constraint \"patients_id_fkey\""
+  },
+  "doctor_error": null
+}
