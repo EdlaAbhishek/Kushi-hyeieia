@@ -41,10 +41,12 @@ export default function Signup() {
                 if (role === 'doctor') {
                     const { error: insertError } = await supabase.from('doctors').insert([{
                         id: user.id,
+                        user_id: user.id,
                         full_name: name,
                         email: email,
                         specialty,
                         hospital: hospitalName.trim(),
+                        hospital_name: hospitalName.trim(),
                         verified: false
                     }])
                     if (insertError) {
