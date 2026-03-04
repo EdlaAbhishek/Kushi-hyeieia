@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
+import { Calendar, Package, FileText, Check, ArrowRight } from 'lucide-react'
 
 export default function Patients() {
     const { user } = useAuth()
@@ -54,34 +55,34 @@ export default function Patients() {
                     <div className="grid-3">
                         <div className="card">
                             <div className="card-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                                <Calendar size={22} />
                             </div>
                             <h3 className="card-title">Book Appointment</h3>
                             <p className="card-text">Schedule visits with leading doctors across all medical specialties through our verified network.</p>
-                            <Link to="/doctors" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>Search Doctors</Link>
+                            <Link to="/doctors" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>Search Doctors <ArrowRight size={15} /></Link>
                         </div>
                         <div className="card">
-                            <div className="card-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>
+                            <div className="card-icon" style={{ background: '#F0FDFA', color: '#0D9488' }}>
+                                <Package size={22} />
                             </div>
                             <h3 className="card-title">Medicine & Blood Locator</h3>
                             <p className="card-text">Real-time inventory checks for essential medicines and nearby blood donor availability.</p>
-                            <Link to="/hospitals" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>Locate Resources</Link>
+                            <Link to="/services" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>Locate Resources <ArrowRight size={15} /></Link>
                         </div>
                         <div className="card">
-                            <div className="card-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                            <div className="card-icon" style={{ background: '#FFF7ED', color: '#C2410C' }}>
+                                <FileText size={22} />
                             </div>
                             <h3 className="card-title">Electronic Health Records</h3>
                             <p className="card-text">Access your consultation history, lab reports, and prescriptions in a secure, encrypted vault.</p>
-                            <Link to="/dashboard" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>My Dashboard</Link>
+                            <Link to="/dashboard" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>My Dashboard <ArrowRight size={15} /></Link>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* ─── Post Patient Care ─── */}
-            <section className="section section-bg">
+            <section className="section" style={{ background: '#F8FAFC' }}>
                 <div className="container">
                     <div className="section-header">
                         <h2 className="section-title">Post Care & Recovery Support</h2>
@@ -147,11 +148,11 @@ export default function Patients() {
                         <h3>AI-Powered Health Analytics</h3>
                         <p>Khushi Hygieia utilizes advanced analytics to provide diagnostic support and preventive health recommendations based on your historical health data.</p>
                         <ul className="split-list">
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg><span>Condition tracking and vital sign monitoring</span></li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg><span>Automated prescription refill alerts</span></li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg><span>Seamless insurance claim processing</span></li>
+                            <li><Check size={20} /><span>Condition tracking and vital sign monitoring</span></li>
+                            <li><Check size={20} /><span>Automated prescription refill alerts</span></li>
+                            <li><Check size={20} /><span>Seamless insurance claim processing</span></li>
                         </ul>
-                        <Link to="/chat" className="btn btn-primary">Ask AI Assistant</Link>
+                        <Link to="/chat" className="btn btn-primary">Ask AI Assistant <ArrowRight size={15} /></Link>
                     </div>
                     <div className="ai-preview-card">
                         <div className="ai-preview-header">

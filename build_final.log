@@ -1,0 +1,13 @@
+﻿
+> khushi-hygieia@1.0.0 build
+> vite build
+
+[36mvite v6.4.1 [32mbuilding for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 1801 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                 [39m[1m[2m  0.92 kB[22m[1m[22m[2m Γöé gzip:   0.50 kB[22m
+[2mdist/[22m[35massets/index-ayIfB0JK.css  [39m[1m[2m 29.50 kB[22m[1m[22m[2m Γöé gzip:   6.29 kB[22m
+[2mdist/[22m[36massets/index-BEOcSyKI.js   [39m[1m[2m461.07 kB[22m[1m[22m[2m Γöé gzip: 127.62 kB[22m
+[32mΓ£ô built in 2.93s[39m

@@ -13,6 +13,7 @@ import Hospitals from './pages/Hospitals'
 import TeleconsultRoom from './pages/TeleconsultRoom'
 import Patients from './pages/Patients'
 import Services from './pages/Services'
+import Insurance from './pages/Insurance'
 import Emergency from './pages/Emergency'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -45,6 +46,7 @@ export default function App() {
                         <Route path="/doctors" element={<Doctors />} />
                         <Route path="/patients" element={<Patients />} />
                         <Route path="/services" element={<Services />} />
+                        <Route path="/insurance" element={<Insurance />} />
                     </Route>
                 </Route>
 

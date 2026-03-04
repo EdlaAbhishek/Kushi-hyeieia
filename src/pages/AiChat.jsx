@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../services/AuthContext'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 export default function AiChat() {
     const { user } = useAuth()
@@ -29,24 +30,35 @@ export default function AiChat() {
         if (!trimmed || loading) return
 
         const userMsg = { role: 'user', content: trimmed }
-        setMessages(prev => [...prev, userMsg])
+        const newMessages = [...messages, userMsg]
+        setMessages(newMessages)
         setInput('')
         setLoading(true)
 
         try {
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: trimmed })
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY
+            if (!apiKey) throw new Error("Gemini API key is missing. Please add VITE_GEMINI_API_KEY to your .env file.")
+
+            const genAI = new GoogleGenerativeAI(apiKey)
+            const model = genAI.getGenerativeModel({
+                model: 'gemini-1.5-flash',
+                systemInstruction: "You are Khushi Care AI, a helpful, professional, empathy-driven healthcare assistant for an Indian web platform. Provide general health guidance, answer medical platform questions, but always remind users to consult a doctor for serious concerns. Keep answers clear, friendly, and concise."
             })
 
-            const data = await res.json()
+            // Filter out the initial greeting to avoid confusing the model, or map it to 'model'
+            const history = newMessages.map(m => ({
+                role: m.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: m.content }]
+            })).slice(1, -1) // Exclude the first greeting and the last user message
 
-            if (data.error) throw new Error(data.error)
+            const chat = model.startChat({ history })
+            const result = await chat.sendMessage(trimmed)
+            const responseText = result.response.text()
 
-            setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+            setMessages(prev => [...prev, { role: 'assistant', content: responseText }])
         } catch (err) {
-            setMessages(prev => [...prev, { role: 'assistant', content: 'AI error occurred.' }])
+            console.error(err)
+            setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message || 'AI service unavailable.'}` }])
         } finally {
             setLoading(false)
         }

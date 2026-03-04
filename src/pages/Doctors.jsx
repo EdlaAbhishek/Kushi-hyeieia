@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
+import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight } from 'lucide-react'
 
 export default function Doctors() {
     const { user } = useAuth()
@@ -19,6 +20,23 @@ export default function Doctors() {
     const [bookingLoading, setBookingLoading] = useState(false)
     const [bookingSuccess, setBookingSuccess] = useState('')
     const [bookingError, setBookingError] = useState('')
+
+    // Lab Test states
+    const [labTest, setLabTest] = useState('')
+    const [labDate, setLabDate] = useState('')
+    const [labLoading, setLabLoading] = useState(false)
+    const [labSuccess, setLabSuccess] = useState('')
+
+    const labTestsList = [
+        "Complete Blood Count (CBC)",
+        "Lipid Profile",
+        "Thyroid Profile (T3, T4, TSH)",
+        "Diabetes Screening (HbA1c)",
+        "Liver Function Test (LFT)",
+        "Kidney Function Test (KFT)",
+        "Vitamin D & B12",
+        "Full Body Checkup"
+    ]
 
     useEffect(() => {
         async function fetchDoctors() {
@@ -116,6 +134,24 @@ export default function Doctors() {
         }
     }
 
+    const handleLabBooking = (e) => {
+        e.preventDefault()
+        if (!user) {
+            navigate('/login')
+            return
+        }
+        setLabLoading(true)
+        setLabSuccess('')
+
+        // Mock backend request for lab booking
+        setTimeout(() => {
+            setLabLoading(false)
+            setLabSuccess(`Successfully booked Home Collection for ${labTest} on ${labDate}. Our phlebotomist will contact you shortly.`)
+            setLabTest('')
+            setLabDate('')
+        }, 1200)
+    }
+
     return (
         <>
             <section className="page-header">
@@ -125,6 +161,7 @@ export default function Doctors() {
                 </div>
             </section>
 
+            {/* ─── Specialty Filter ─── */}
             <section className="section">
                 <div className="container">
                     <div className="section-header">
@@ -133,102 +170,171 @@ export default function Doctors() {
                     </div>
 
                     {!loading && availableSpecialties.length === 0 && (
-                        <p style={{ color: 'var(--text-muted)' }}>No specialties found in current inventory.</p>
+                        <p style={{ color: '#64748B' }}>No specialties found in current inventory.</p>
                     )}
 
-                    <div className="grid-3">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                         {availableSpecialties.map(spec => (
-                            <div
+                            <button
                                 key={spec}
-                                className={`card specialty-card${selectedSpecialty === spec ? ' specialty-active' : ''}`}
                                 onClick={() => setSelectedSpecialty(prev => prev === spec ? null : spec)}
+                                className="specialty-pill"
+                                style={{
+                                    background: selectedSpecialty === spec ? 'var(--primary)' : '#fff',
+                                    color: selectedSpecialty === spec ? '#fff' : '#334155',
+                                    border: `1.5px solid ${selectedSpecialty === spec ? 'var(--primary)' : '#CBD5E1'}`,
+                                    padding: '0.45rem 1rem',
+                                    borderRadius: '100px',
+                                    fontSize: '0.82rem',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    fontFamily: 'var(--font)',
+                                    transition: 'all 0.2s'
+                                }}
                             >
-                                <h3 className="card-title">{spec}</h3>
-                                <p className="card-text">Specialised care in {spec.toLowerCase()} for patient wellness.</p>
-                            </div>
+                                {spec}
+                            </button>
                         ))}
                     </div>
 
                     {selectedSpecialty && (
-                        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                        <div style={{ marginTop: '1rem' }}>
                             <button
                                 className="btn btn-outline"
                                 onClick={() => setSelectedSpecialty(null)}
+                                style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}
                             >
-                                Show All Doctors
+                                Clear Filter
                             </button>
                         </div>
                     )}
                 </div>
             </section>
 
-            <section className="section section-bg">
+            {/* ─── Doctor Cards ─── */}
+            <section className="section" style={{ background: '#F8FAFC', paddingTop: '2.5rem' }}>
                 <div className="container">
                     <div className="section-header">
-                        <h2 className="section-title">
+                        <h2 className="section-title" style={{ color: '#1E293B' }}>
                             {selectedSpecialty ? `${selectedSpecialty} Specialists` : 'All Verified Doctors'}
                         </h2>
-                        <p className="section-subtitle">
+                        <p className="section-subtitle" style={{ color: '#64748B' }}>
                             {loading
                                 ? 'Loading doctors...'
-                                : `${filteredDoctors.length} doctor${filteredDoctors.length !== 1 ? 's' : ''} found`}
+                                : `${filteredDoctors.length} doctor${filteredDoctors.length !== 1 ? 's' : ''} available`}
                         </p>
                     </div>
 
                     {fetchError && (
-                        <div className="auth-error" style={{ maxWidth: 600, margin: '0 auto 1.5rem' }}>
+                        <div className="auth-error" style={{ maxWidth: 600, marginBottom: '1.5rem' }}>
                             <strong>Database error:</strong> {fetchError}
                         </div>
                     )}
 
                     {loading && (
-                        <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem 0' }}>
-                            Fetching doctors from database...
-                        </p>
+                        <div className="dashboard-loading">
+                            <div className="loading-spinner"></div>
+                            <p>Fetching doctors from database...</p>
+                        </div>
                     )}
 
                     {!loading && !fetchError && filteredDoctors.length === 0 && (
-                        <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem 0' }}>
-                            No doctors available for <strong>{selectedSpecialty || 'the selected criteria'}</strong>.
-                        </p>
+                        <div className="dashboard-empty">
+                            <div className="dashboard-empty-icon">🔍</div>
+                            <h3>No doctors found</h3>
+                            <p>No doctors available for <strong>{selectedSpecialty || 'the selected criteria'}</strong>.</p>
+                        </div>
                     )}
 
                     {!loading && filteredDoctors.length > 0 && (
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Specialty</th>
-                                    <th>Hospital</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredDoctors.map(doc => (
-                                    <tr key={doc.id}>
-                                        <td style={{ fontWeight: 600, color: 'var(--text-dark)' }}>{doc.full_name}</td>
-                                        <td>{doc.specialty}</td>
-                                        <td>{doc.hospital || '—'}</td>
-                                        <td>
-                                            <span className={`status-badge ${doc.verified ? 'status-verified' : 'status-pending'}`}>
-                                                {doc.verified ? 'Verified' : 'Pending'}
+                        <div className="doctor-grid">
+                            {filteredDoctors.map(doc => (
+                                <div key={doc.id} className="doctor-card">
+                                    <div className="doctor-card-top">
+                                        <div className="doctor-avatar">
+                                            <span style={{ fontSize: '1.2rem', fontWeight: '800', fontFamily: 'var(--font-heading)' }}>
+                                                {doc.full_name.charAt(0).toUpperCase()}
                                             </span>
-                                        </td>
-                                        <td>
-                                            <button
-                                                className="btn btn-primary"
-                                                style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                                                onClick={() => handleOpenBooking(doc)}
-                                            >
-                                                Book
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <h3 className="doctor-name">{doc.full_name}</h3>
+                                            <p className="doctor-specialty-text">{doc.specialty}</p>
+                                        </div>
+                                        <span className={`status-badge ${doc.verified ? 'status-verified' : 'status-pending'}`}>
+                                            {doc.verified ? 'Verified' : 'Pending'}
+                                        </span>
+                                    </div>
+                                    <div className="doctor-card-details">
+                                        <div className="doctor-detail-row">
+                                            <MapPin size={14} />
+                                            <span>{doc.hospital || 'Hospital not listed'}</span>
+                                        </div>
+                                        <div className="doctor-detail-row">
+                                            <Clock size={14} />
+                                            <span>Available for appointments</span>
+                                        </div>
+                                    </div>
+                                    <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => handleOpenBooking(doc)}>
+                                        Book Appointment <ArrowRight size={15} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     )}
+                </div>
+            </section>
+
+            {/* ─── Lab Test Booking ─── */}
+            <section className="section">
+                <div className="container">
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '3rem', flexWrap: 'wrap' }}>
+                        <div style={{ flex: '1 1 340px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
+                                <div style={{ width: 40, height: 40, borderRadius: 10, background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <TestTubes size={20} />
+                                </div>
+                                <h2 className="section-title" style={{ margin: 0, fontSize: '1.35rem', color: '#1E293B' }}>Pathology & Diagnostics</h2>
+                            </div>
+                            <p style={{ color: '#64748B', marginBottom: '1.5rem', lineHeight: 1.7, fontSize: '0.9rem' }}>
+                                Get lab tests done from the comfort of your home. We send a certified phlebotomist to collect samples and deliver digital reports within 24 hours.
+                            </p>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                {labTestsList.map(t => (
+                                    <span key={t} style={{ background: '#F1F5F9', color: '#475569', padding: '0.3rem 0.65rem', borderRadius: 100, fontSize: '0.72rem', fontWeight: 500 }}>{t}</span>
+                                ))}
+                            </div>
+                        </div>
+                        <div style={{ flex: '1 1 340px', maxWidth: 480 }}>
+                            <div className="form-card">
+                                {labSuccess && (
+                                    <div className="auth-success" style={{ marginBottom: '1.25rem' }}>
+                                        ✓ {labSuccess}
+                                    </div>
+                                )}
+                                <form onSubmit={handleLabBooking}>
+                                    <div className="form-group">
+                                        <label className="form-label">Select Lab Test / Package</label>
+                                        <select className="form-control" value={labTest} onChange={(e) => setLabTest(e.target.value)} required>
+                                            <option value="" disabled>Choose a test...</option>
+                                            {labTestsList.map(t => <option key={t} value={t}>{t}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Preferred Collection Date</label>
+                                        <input
+                                            type="date" className="form-control"
+                                            value={labDate} onChange={(e) => setLabDate(e.target.value)}
+                                            min={new Date().toISOString().split('T')[0]} required
+                                        />
+                                    </div>
+                                    <button className="btn btn-primary" disabled={labLoading} style={{ width: '100%', marginTop: '0.25rem' }}>
+                                        <CalendarDays size={16} />
+                                        {labLoading ? 'Processing...' : 'Book Home Collection'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -255,28 +361,18 @@ export default function Doctors() {
                                 <div className="form-group">
                                     <label className="form-label">Appointment Date</label>
                                     <input
-                                        className="form-control"
-                                        type="date"
-                                        value={bookingDate}
-                                        onChange={e => setBookingDate(e.target.value)}
-                                        required
+                                        className="form-control" type="date"
+                                        value={bookingDate} onChange={e => setBookingDate(e.target.value)} required
                                     />
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Preferred Time</label>
                                     <input
-                                        className="form-control"
-                                        type="time"
-                                        value={bookingTime}
-                                        onChange={e => setBookingTime(e.target.value)}
-                                        required
+                                        className="form-control" type="time"
+                                        value={bookingTime} onChange={e => setBookingTime(e.target.value)} required
                                     />
                                 </div>
-                                <button
-                                    className="btn btn-primary"
-                                    style={{ width: '100%', marginTop: '1rem' }}
-                                    disabled={bookingLoading}
-                                >
+                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={bookingLoading}>
                                     {bookingLoading ? 'Confirming...' : 'Confirm Appointment'}
                                 </button>
                             </form>

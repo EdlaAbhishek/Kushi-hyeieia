@@ -1,45 +1,71 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
+import { useState } from 'react'
+import { Menu, X } from 'lucide-react'
 
 export default function MainLayout() {
     const { user, role, signOut, isDoctor } = useAuth()
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const userName = user?.user_metadata?.full_name || user?.email || ''
 
     const dashboardPath = isDoctor ? '/doctor-dashboard' : '/dashboard'
+
+    const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
+    const closeMenu = () => setIsMobileMenuOpen(false)
 
     return (
         <>
             <header className={`navbar ${isDoctor ? 'navbar-doctor' : ''}`}>
                 <div className="container nav-container">
-                    <NavLink to="/" className="logo">
+                    <NavLink to="/" className="logo" onClick={closeMenu}>
                         <img src="/assets/logo.png" alt="Khushi Hygieia" />
                     </NavLink>
-                    <nav className="nav-links">
-                        <NavLink to="/" end>Home</NavLink>
+
+                    <button className="hamburger" onClick={toggleMenu}>
+                        {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                    </button>
+
+                    <nav className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
+                        <NavLink to="/" end onClick={closeMenu}>Home</NavLink>
 
                         {/* Patient nav */}
                         {!isDoctor && (
                             <>
-                                <NavLink to="/patients">Patients</NavLink>
-                                <NavLink to="/doctors">Doctors</NavLink>
-                                <NavLink to="/hospitals">Hospitals</NavLink>
-                                <NavLink to="/services">Services</NavLink>
-                                <NavLink to="/chat">AI Chat</NavLink>
+                                <NavLink to="/patients" onClick={closeMenu}>Patients</NavLink>
+                                <NavLink to="/doctors" onClick={closeMenu}>Doctors</NavLink>
+                                <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
+                                <NavLink to="/insurance" onClick={closeMenu}>Insurance</NavLink>
+                                <NavLink to="/services" onClick={closeMenu}>Services</NavLink>
+                                <NavLink to="/chat" onClick={closeMenu}>AI Chat</NavLink>
                             </>
                         )}
 
                         {/* Doctor nav */}
                         {isDoctor && (
                             <>
-                                <NavLink to="/doctor-dashboard">My Appointments</NavLink>
-                                <NavLink to="/hospitals">Hospitals</NavLink>
+                                <NavLink to="/doctor-dashboard" onClick={closeMenu}>My Appointments</NavLink>
+                                <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
                             </>
                         )}
 
-                        <NavLink to="/about">About</NavLink>
-                        <NavLink to="/contact">Contact</NavLink>
+                        <NavLink to="/about" onClick={closeMenu}>About</NavLink>
+                        <NavLink to="/contact" onClick={closeMenu}>Contact</NavLink>
+
+                        {/* Mobile Actions */}
+                        <div className="mobile-actions">
+                            {user && (
+                                <>
+                                    <NavLink to={dashboardPath} className="btn btn-primary" onClick={closeMenu}>
+                                        {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
+                                    </NavLink>
+                                    <span className="nav-user">{userName}</span>
+                                    <button className="btn btn-outline" onClick={() => { signOut(); closeMenu(); }}>Sign Out</button>
+                                </>
+                            )}
+                            <NavLink to="/emergency" className="btn btn-emergency" onClick={closeMenu}>🚨 SOS</NavLink>
+                        </div>
                     </nav>
-                    <div className="nav-actions">
+                    <div className="nav-actions desktop-only">
                         {user && (
                             <>
                                 <NavLink to={dashboardPath} className="btn btn-primary" style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}>
