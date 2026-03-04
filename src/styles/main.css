@@ -1621,6 +1621,17 @@ select.form-control {
     background: rgba(255, 255, 255, 0.04);
 }
 
+.navbar-doctor .btn-outline {
+    color: #E2E8F0;
+    border-color: #334155;
+}
+
+.navbar-doctor .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-color: #475569;
+}
+
 .doctor-header {
     background: linear-gradient(135deg, #0F172A, #1E3A5F) !important;
 }
