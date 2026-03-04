@@ -1,7 +1,7 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, User } from 'lucide-react'
 
 export default function MainLayout() {
     const { user, role, signOut, isDoctor } = useAuth()
@@ -58,8 +58,9 @@ export default function MainLayout() {
                                     <NavLink to={dashboardPath} className="btn btn-primary" onClick={closeMenu}>
                                         {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
                                     </NavLink>
-                                    <span className="nav-user">{userName}</span>
-                                    <button className="btn btn-outline" onClick={() => { signOut(); closeMenu(); }}>Sign Out</button>
+                                    <NavLink to="/profile" className="nav-profile-link" onClick={closeMenu}>
+                                        <User size={16} /> {userName}
+                                    </NavLink>
                                 </>
                             )}
                             <NavLink to="/emergency" className="btn btn-emergency" onClick={closeMenu}>🚨 SOS</NavLink>
@@ -71,8 +72,9 @@ export default function MainLayout() {
                                 <NavLink to={dashboardPath} className="btn btn-primary" style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}>
                                     {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
                                 </NavLink>
-                                <span className="nav-user">{userName}</span>
-                                <button className="btn btn-outline" onClick={signOut} style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}>Sign Out</button>
+                                <NavLink to="/profile" className="nav-profile-link">
+                                    <User size={16} /> {userName}
+                                </NavLink>
                             </>
                         )}
                         <NavLink to="/emergency" className="btn btn-emergency" style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}>🚨 SOS</NavLink>

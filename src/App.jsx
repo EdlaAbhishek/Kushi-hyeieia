@@ -17,6 +17,8 @@ import Insurance from './pages/Insurance'
 import Emergency from './pages/Emergency'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Profile from './pages/Profile'
+import BloodDonation from './pages/BloodDonation'
 
 export default function App() {
     return (
@@ -35,6 +37,8 @@ export default function App() {
                         <Route path="/hospitals" element={<Hospitals />} />
                         <Route path="/teleconsult/:appointmentId" element={<TeleconsultRoom />} />
                         <Route path="/emergency" element={<Emergency />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/blood-donation" element={<BloodDonation />} />
                     </Route>
                 </Route>
 

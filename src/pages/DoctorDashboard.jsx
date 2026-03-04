@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
+import { MessageCircle, X, Send } from 'lucide-react'
+
 export default function DoctorDashboard() {
     const { user } = useAuth()
     const [appointments, setAppointments] = useState([])
@@ -10,9 +12,19 @@ export default function DoctorDashboard() {
     const [updatingId, setUpdatingId] = useState(null)
 
     // Post-care notes state
-    const [notesModal, setNotesModal] = useState(null) // appointment id
+    const [notesModal, setNotesModal] = useState(null)
     const [notesText, setNotesText] = useState('')
     const [savingNotes, setSavingNotes] = useState(false)
+
+    // ── Chat state ──
+    const [chatOpen, setChatOpen] = useState(false)
+    const [messages, setMessages] = useState([])
+    const [chatInput, setChatInput] = useState('')
+    const [chatLoading, setChatLoading] = useState(true)
+    const [chatError, setChatError] = useState(null)
+    const messagesEndRef = useRef(null)
+
+    const email = user?.email || ''
 
     const fetchAppointments = async () => {
         setLoading(true)
@@ -36,6 +48,64 @@ export default function DoctorDashboard() {
     }
 
     useEffect(() => { fetchAppointments() }, [user])
+
+    // ── Global chat ──
+    useEffect(() => {
+        const loadMessages = async () => {
+            setChatLoading(true)
+            setChatError(null)
+            const { data, error } = await supabase
+                .from('global_messages')
+                .select('*')
+                .order('created_at', { ascending: true })
+                .limit(100)
+            if (error) {
+                console.error("Chat load error:", error)
+                setChatError(error.message)
+            }
+            if (!error && data) setMessages(data)
+            setChatLoading(false)
+        }
+        loadMessages()
+
+        const channel = supabase
+            .channel('global-chat-doctor')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'global_messages' },
+                (payload) => {
+                    setMessages(prev => [...prev, payload.new])
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (chatOpen) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }
+    }, [messages, chatOpen])
+
+    const sendMessage = async (e) => {
+        e.preventDefault()
+        if (!chatInput.trim()) return
+        const msgContent = chatInput.trim()
+        setChatInput('')
+        const { error } = await supabase.from('global_messages').insert({
+            user_id: user.id,
+            user_name: user?.user_metadata?.full_name || email,
+            user_role: 'doctor',
+            content: msgContent,
+        })
+        if (error) {
+            console.error("Chat send error:", error)
+            alert(`Failed to send message: ${error.message}`)
+        }
+    }
 
     const updateStatus = async (appointmentId, newStatus) => {
         setUpdatingId(appointmentId)
@@ -272,6 +342,78 @@ export default function DoctorDashboard() {
                     </div>
                 </div>
             )}
+
+            {/* ── Floating Chat Button ── */}
+            <button
+                className={`floating-chat-btn ${chatOpen ? 'active' : ''}`}
+                onClick={() => setChatOpen(!chatOpen)}
+                title="Community Chat"
+            >
+                {chatOpen ? <X size={26} /> : <MessageCircle size={26} />}
+            </button>
+
+            {/* ── Floating Chat Panel ── */}
+            <div className={`floating-chat-panel ${chatOpen ? 'open' : ''}`}>
+                <div className="floating-chat-header">
+                    <h4>💬 Community Chat</h4>
+                    <button className="floating-chat-close" onClick={() => setChatOpen(false)}>
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="global-chat-messages">
+                    {chatError && (
+                        <div className="global-chat-empty" style={{ color: 'var(--emergency)' }}>
+                            <MessageCircle size={32} />
+                            <p style={{ textAlign: 'center' }}><strong>Database Error:</strong><br />{chatError}</p>
+                            <p style={{ fontSize: '0.8rem', textAlign: 'center' }}>You must run the SQL to create the <code>global_messages</code> table.</p>
+                        </div>
+                    )}
+                    {chatLoading && !chatError && (
+                        <div className="global-chat-loading">
+                            <div className="loading-spinner"></div>
+                            <p>Loading messages...</p>
+                        </div>
+                    )}
+                    {!chatLoading && !chatError && messages.length === 0 && (
+                        <div className="global-chat-empty">
+                            <MessageCircle size={32} />
+                            <p>No messages yet. Start the conversation!</p>
+                        </div>
+                    )}
+                    {messages.map(msg => (
+                        <div
+                            key={msg.id}
+                            className={`global-msg ${msg.user_id === user?.id ? 'global-msg-own' : 'global-msg-other'}`}
+                        >
+                            <div className="global-msg-header">
+                                <span className="global-msg-name">
+                                    {msg.user_role === 'doctor' && <span className="doctor-chat-badge">Dr.</span>}
+                                    {msg.user_name}
+                                </span>
+                                <span className="global-msg-time">
+                                    {new Date(msg.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            </div>
+                            <p className="global-msg-content">{msg.content}</p>
+                        </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                </div>
+
+                <form className="global-chat-input" onSubmit={sendMessage}>
+                    <input
+                        type="text"
+                        value={chatInput}
+                        onChange={e => setChatInput(e.target.value)}
+                        placeholder="Type a message..."
+                        className="form-control"
+                    />
+                    <button type="submit" className="btn btn-primary global-chat-send">
+                        <Send size={18} />
+                    </button>
+                </form>
+            </div>
         </>
     )
 }
