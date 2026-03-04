@@ -88,27 +88,20 @@ export default function Services() {
 
             const base64 = rxPreview.split(',')[1]
             const genAI = new GoogleGenerativeAI(apiKey)
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-
-            const prompt = `You are a prescription analysis assistant. Analyze this prescription image and extract the following for each medicine listed:
-
-1. **Medicine Name**
-2. **Dosage** (e.g. 500mg)
-3. **Frequency** (e.g. twice daily)
-4. **Duration** (e.g. 5 days)
-5. **Purpose / What it treats** (brief, 1 line)
-
-Format each medicine as a numbered list. If you cannot read part of the prescription, say so clearly.
-End with: "*Disclaimer: This is an AI analysis. Always verify with your prescribing doctor or pharmacist.*"`
-
-            const imagePart = {
-                inlineData: { data: base64, mimeType: rxImage.type }
+            let result;
+            try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+                result = await model.generateContent([prompt, { inlineData: { data: base64, mimeType: rxImage.type } }])
+            } catch (err) {
+                console.error("Flash failed, trying Pro...", err)
+                // Fallback to gemini-pro-vision if flash is unavailable
+                const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" })
+                result = await model.generateContent([prompt, { inlineData: { data: base64, mimeType: rxImage.type } }])
             }
 
-            const result = await model.generateContent([prompt, imagePart])
             setRxResult(result.response.text())
         } catch (err) {
-            console.error(err)
+            console.error("Scanner Error:", err)
             setRxError(err.message || 'Failed to analyze prescription.')
         } finally {
             setRxLoading(false)

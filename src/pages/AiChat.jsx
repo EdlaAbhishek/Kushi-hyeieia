@@ -40,22 +40,38 @@ export default function AiChat() {
             if (!apiKey) throw new Error("Gemini API key is missing. Please add VITE_GEMINI_API_KEY to your .env file.")
 
             const genAI = new GoogleGenerativeAI(apiKey)
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
-            // Filter out the initial greeting to avoid confusing the model, or map it to 'model'
-            const history = newMessages.map(m => ({
-                role: m.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: m.content }]
-            })).slice(1, -1) // Exclude the first greeting and the last user message
+            const chat = model.startChat({
+                history: newMessages.slice(1, -1).map(m => ({
+                    role: m.role === 'assistant' ? 'model' : 'user',
+                    parts: [{ text: m.content }]
+                }))
+            })
 
-            const chat = model.startChat({ history })
             const result = await chat.sendMessage(trimmed)
             const responseText = result.response.text()
 
             setMessages(prev => [...prev, { role: 'assistant', content: responseText }])
         } catch (err) {
-            console.error(err)
-            setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message || 'AI service unavailable.'}` }])
+            console.error("AI Error:", err)
+            // If flash fails, try gemini-pro as a fallback
+            try {
+                const apiKey = import.meta.env.VITE_GEMINI_API_KEY
+                const genAI = new GoogleGenerativeAI(apiKey)
+                const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+                const chat = model.startChat({
+                    history: newMessages.slice(1, -1).map(m => ({
+                        role: m.role === 'assistant' ? 'model' : 'user',
+                        parts: [{ text: m.content }]
+                    }))
+                })
+                const result = await chat.sendMessage(trimmed)
+                const responseText = result.response.text()
+                setMessages(prev => [...prev, { role: 'assistant', content: responseText }])
+            } catch (fallbackErr) {
+                setMessages(prev => [...prev, { role: 'assistant', content: `AI Error: ${err.message} (Fallback failed too)` }])
+            }
         } finally {
             setLoading(false)
         }
