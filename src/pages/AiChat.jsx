@@ -40,10 +40,7 @@ export default function AiChat() {
             if (!apiKey) throw new Error("Gemini API key is missing. Please add VITE_GEMINI_API_KEY to your .env file.")
 
             const genAI = new GoogleGenerativeAI(apiKey)
-            const model = genAI.getGenerativeModel({
-                model: 'gemini-1.5-flash',
-                systemInstruction: "You are Khushi Care AI, a helpful, professional, empathy-driven healthcare assistant for an Indian web platform. Provide general health guidance, answer medical platform questions, but always remind users to consult a doctor for serious concerns. Keep answers clear, friendly, and concise."
-            })
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
             // Filter out the initial greeting to avoid confusing the model, or map it to 'model'
             const history = newMessages.map(m => ({
