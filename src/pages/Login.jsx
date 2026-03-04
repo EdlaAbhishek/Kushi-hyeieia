@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function Login() {
     const [email, setEmail] = useState('')
@@ -45,8 +46,8 @@ export default function Login() {
                         <label className="form-label">Password</label>
                         <input className="form-control" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" required />
                     </div>
-                    <button className="btn btn-primary auth-btn" type="submit" disabled={loading}>
-                        {loading ? 'Signing in...' : 'Sign In'}
+                    <button className="btn btn-primary auth-btn" type="submit" disabled={loading} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+                        {loading ? <LoadingSpinner size="small" text="Signing in..." /> : 'Sign In'}
                     </button>
                 </form>
                 <p className="auth-switch">Don't have an account? <Link to="/signup">Create one</Link></p>

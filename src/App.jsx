@@ -10,6 +10,7 @@ import DoctorDashboard from './pages/DoctorDashboard'
 import AiChat from './pages/AiChat'
 import Doctors from './pages/Doctors'
 import Hospitals from './pages/Hospitals'
+import HospitalDetail from './pages/HospitalDetail'
 import TeleconsultRoom from './pages/TeleconsultRoom'
 import Patients from './pages/Patients'
 import Services from './pages/Services'
@@ -19,6 +20,9 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Profile from './pages/Profile'
 import BloodDonation from './pages/BloodDonation'
+import DoctorDetail from './pages/DoctorDetail'
+import AppointmentConfirmation from './components/AppointmentConfirmation'
+import NotFound from './pages/NotFound'
 
 export default function App() {
     return (
@@ -35,6 +39,7 @@ export default function App() {
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
                         <Route path="/hospitals" element={<Hospitals />} />
+                        <Route path="/hospitals/:id" element={<HospitalDetail />} />
                         <Route path="/teleconsult/:appointmentId" element={<TeleconsultRoom />} />
                         <Route path="/emergency" element={<Emergency />} />
                         <Route path="/profile" element={<Profile />} />
@@ -48,6 +53,8 @@ export default function App() {
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/chat" element={<AiChat />} />
                         <Route path="/doctors" element={<Doctors />} />
+                        <Route path="/doctors/:id" element={<DoctorDetail />} />
+                        <Route path="/appointment-confirmation" element={<AppointmentConfirmation />} />
                         <Route path="/patients" element={<Patients />} />
                         <Route path="/services" element={<Services />} />
                         <Route path="/insurance" element={<Insurance />} />
@@ -60,6 +67,8 @@ export default function App() {
                         <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
                     </Route>
                 </Route>
+
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </AuthProvider>
     )

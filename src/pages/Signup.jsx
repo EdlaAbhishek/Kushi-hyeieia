@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function Signup() {
     const [name, setName] = useState('')
@@ -133,8 +134,8 @@ export default function Signup() {
                         </>
                     )}
 
-                    <button className="btn btn-primary auth-btn" type="submit" disabled={loading}>
-                        {loading ? 'Creating account...' : 'Create Account'}
+                    <button className="btn btn-primary auth-btn" type="submit" disabled={loading} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+                        {loading ? <LoadingSpinner size="small" text="Creating account..." /> : 'Create Account'}
                     </button>
                 </form>
                 <p className="auth-switch">Already have an account? <Link to="/login">Sign in</Link></p>

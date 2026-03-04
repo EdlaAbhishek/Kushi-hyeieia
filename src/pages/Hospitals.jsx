@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
+import SkeletonLoader from '../components/SkeletonLoader'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function Hospitals() {
     const { user } = useAuth()
@@ -14,6 +16,13 @@ export default function Hospitals() {
         { name: 'Narayana Health', city: 'Bangalore', beds: '300+', emergency: true, teleconsult: true },
         { name: 'AIIMS Network', city: 'Pan-India', beds: '1000+', emergency: true, teleconsult: false },
     ]
+
+    const [searchQuery, setSearchQuery] = useState('')
+
+    const filteredHospitals = hospitals.filter(h =>
+        h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        h.city.toLowerCase().includes(searchQuery.toLowerCase())
+    )
 
     // Teleconsultation doctors
     const [teleconsultDoctors, setTeleconsultDoctors] = useState([])
@@ -111,6 +120,17 @@ export default function Hospitals() {
                         <h2 className="section-title">Hospital Directory</h2>
                         <p className="section-subtitle">Partner hospitals across India with emergency and teleconsultation availability.</p>
                     </div>
+
+                    <div className="search-bar" style={{ marginBottom: '1.5rem', position: 'relative', maxWidth: '400px' }}>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Search hospitals by name or city..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
                     <table className="data-table">
                         <thead>
                             <tr>
@@ -122,20 +142,30 @@ export default function Hospitals() {
                             </tr>
                         </thead>
                         <tbody>
-                            {hospitals.map(h => (
-                                <tr key={h.name}>
-                                    <td><strong>{h.name}</strong></td>
-                                    <td>{h.city}</td>
-                                    <td>{h.beds}</td>
-                                    <td>{h.emergency ? <span className="status-badge status-confirmed">Available</span> : '—'}</td>
-                                    <td>
-                                        {h.teleconsult
-                                            ? <span className="status-badge teleconsult-badge">📹 Online</span>
-                                            : <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
-                                        }
-                                    </td>
+                            {filteredHospitals.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>No hospitals found.</td>
                                 </tr>
-                            ))}
+                            ) : filteredHospitals.map((h, i) => {
+                                const hospitalId = h.name.toLowerCase().replace(/\s+/g, '-');
+                                return (
+                                    <tr key={h.name} style={{ cursor: 'pointer' }} onClick={() => navigate(`/hospitals/${hospitalId}`)}>
+                                        <td>
+                                            <strong>{h.name}</strong>
+                                            <div style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '0.2rem' }}>View Details <span style={{ fontSize: '0.7rem' }}>→</span></div>
+                                        </td>
+                                        <td>{h.city}</td>
+                                        <td>{h.beds}</td>
+                                        <td>{h.emergency ? <span className="status-badge status-confirmed">Available</span> : '—'}</td>
+                                        <td>
+                                            {h.teleconsult
+                                                ? <span className="status-badge teleconsult-badge">📹 Online</span>
+                                                : <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -158,9 +188,8 @@ export default function Hospitals() {
                     </div>
 
                     {loadingDocs && (
-                        <div className="dashboard-loading">
-                            <div className="loading-spinner"></div>
-                            <p>Loading available doctors...</p>
+                        <div className="dashboard-loading" style={{ width: '100%' }}>
+                            <SkeletonLoader type="card" count={3} />
                         </div>
                     )}
 
@@ -235,8 +264,8 @@ export default function Hospitals() {
                                     <label className="form-label">Preferred Time</label>
                                     <input type="time" className="form-control" value={bookingTime} onChange={e => setBookingTime(e.target.value)} required />
                                 </div>
-                                <button className="btn btn-primary" type="submit" disabled={bookingLoading} style={{ width: '100%', marginTop: '0.5rem' }}>
-                                    {bookingLoading ? 'Booking...' : 'Confirm Teleconsultation'}
+                                <button className="btn btn-primary" type="submit" disabled={bookingLoading} style={{ width: '100%', marginTop: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+                                    {bookingLoading ? <LoadingSpinner size="small" text="Booking..." /> : 'Confirm Teleconsultation'}
                                 </button>
                             </form>
                         )}

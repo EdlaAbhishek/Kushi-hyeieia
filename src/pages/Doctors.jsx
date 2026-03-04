@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight } from 'lucide-react'
+import SkeletonLoader from '../components/SkeletonLoader'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function Doctors() {
     const { user } = useAuth()
     const navigate = useNavigate()
     const [doctors, setDoctors] = useState([])
     const [selectedSpecialty, setSelectedSpecialty] = useState(null)
+    const [searchQuery, setSearchQuery] = useState('')
     const [loading, setLoading] = useState(true)
     const [fetchError, setFetchError] = useState(null)
 
@@ -68,13 +71,21 @@ export default function Doctors() {
     }, [doctors])
 
     const filteredDoctors = useMemo(() => {
-        if (!selectedSpecialty) return doctors
-        const selected = selectedSpecialty.trim().toLowerCase()
-        return doctors.filter(doc => {
-            const docSpecialty = (doc.specialty || '').trim().toLowerCase()
-            return docSpecialty === selected
-        })
-    }, [doctors, selectedSpecialty])
+        let result = doctors
+        if (selectedSpecialty) {
+            const selected = selectedSpecialty.trim().toLowerCase()
+            result = result.filter(doc => (doc.specialty || '').trim().toLowerCase() === selected)
+        }
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase()
+            result = result.filter(doc =>
+                (doc.full_name || '').toLowerCase().includes(query) ||
+                (doc.hospital || '').toLowerCase().includes(query) ||
+                (doc.specialty || '').toLowerCase().includes(query)
+            )
+        }
+        return result
+    }, [doctors, selectedSpecialty, searchQuery])
 
     const handleOpenBooking = (doctor) => {
         if (!user) {
@@ -197,17 +208,39 @@ export default function Doctors() {
                         ))}
                     </div>
 
-                    {selectedSpecialty && (
-                        <div style={{ marginTop: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <div className="search-bar" style={{ flex: 1, minWidth: '250px', position: 'relative' }}>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Search by name, hospital, or specialty..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{ paddingRight: '2.5rem' }}
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    style={{
+                                        position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                        background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)'
+                                    }}
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
+                        {selectedSpecialty && (
                             <button
                                 className="btn btn-outline"
                                 onClick={() => setSelectedSpecialty(null)}
-                                style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}
+                                style={{ fontSize: '0.8rem', padding: '0.55em 1em' }}
                             >
                                 Clear Filter
                             </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </section>
 
@@ -233,8 +266,7 @@ export default function Doctors() {
 
                     {loading && (
                         <div className="dashboard-loading">
-                            <div className="loading-spinner"></div>
-                            <p>Fetching doctors from database...</p>
+                            <SkeletonLoader type="card" count={6} />
                         </div>
                     )}
 
@@ -249,20 +281,13 @@ export default function Doctors() {
                     {!loading && filteredDoctors.length > 0 && (
                         <div className="doctor-grid">
                             {filteredDoctors.map(doc => (
-                                <div key={doc.id} className="doctor-card">
-                                    <div className="doctor-card-top">
-                                        <div className="doctor-avatar">
-                                            <span style={{ fontSize: '1.2rem', fontWeight: '800', fontFamily: 'var(--font-heading)' }}>
-                                                {doc.full_name.charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
-                                        <div style={{ flex: 1 }}>
+                                <div className="doctor-card" key={doc.id}>
+                                    <div className="doctor-card-header">
+                                        <img src={doc.avatar_url || 'https://via.placeholder.com/150'} alt={doc.full_name} className="doctor-avatar" />
+                                        <div>
                                             <h3 className="doctor-name">{doc.full_name}</h3>
-                                            <p className="doctor-specialty-text">{doc.specialty}</p>
+                                            <p className="doctor-specialty">{doc.specialty}</p>
                                         </div>
-                                        <span className={`status-badge ${doc.verified ? 'status-verified' : 'status-pending'}`}>
-                                            {doc.verified ? 'Verified' : 'Pending'}
-                                        </span>
                                     </div>
                                     <div className="doctor-card-details">
                                         <div className="doctor-detail-row">
@@ -274,18 +299,18 @@ export default function Doctors() {
                                             <span>Available for appointments</span>
                                         </div>
                                     </div>
-                                    <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => handleOpenBooking(doc)}>
-                                        Book Appointment <ArrowRight size={15} />
+                                    <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => navigate(`/doctors/${doc.id}`)}>
+                                        View Profile & Book <ArrowRight size={15} />
                                     </button>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
-            </section>
+            </section >
 
             {/* ─── Lab Test Booking ─── */}
-            <section className="section">
+            < section className="section" >
                 <div className="container">
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '3rem', flexWrap: 'wrap' }}>
                         <div style={{ flex: '1 1 340px' }}>
@@ -336,50 +361,52 @@ export default function Doctors() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* BOOKING MODAL */}
-            {showBooking && (
-                <div className="modal-overlay" onClick={handleCloseBooking}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <button className="modal-close" onClick={handleCloseBooking}>&times;</button>
+            {
+                showBooking && (
+                    <div className="modal-overlay" onClick={handleCloseBooking}>
+                        <div className="modal-content" onClick={e => e.stopPropagation()}>
+                            <button className="modal-close" onClick={handleCloseBooking}>&times;</button>
 
-                        <div className="modal-header">
-                            <h2 className="modal-title">Book Appointment</h2>
-                            <p className="modal-subtitle">Consulting with {selectedDoctor?.full_name}</p>
+                            <div className="modal-header">
+                                <h2 className="modal-title">Book Appointment</h2>
+                                <p className="modal-subtitle">Consulting with {selectedDoctor?.full_name}</p>
+                            </div>
+
+                            {bookingError && <div className="auth-error" style={{ marginBottom: '1rem' }}>{bookingError}</div>}
+                            {bookingSuccess && <div className="auth-success">{bookingSuccess}</div>}
+
+                            {!bookingSuccess && (
+                                <form onSubmit={handleConfirmBooking}>
+                                    <div className="form-group">
+                                        <label className="form-label">Doctor Name</label>
+                                        <input className="form-control" type="text" value={selectedDoctor?.full_name} disabled />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Appointment Date</label>
+                                        <input
+                                            className="form-control" type="date"
+                                            value={bookingDate} onChange={e => setBookingDate(e.target.value)} required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Preferred Time</label>
+                                        <input
+                                            className="form-control" type="time"
+                                            value={bookingTime} onChange={e => setBookingTime(e.target.value)} required
+                                        />
+                                    </div>
+                                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={bookingLoading}>
+                                        {bookingLoading ? <LoadingSpinner size="small" text="Confirming..." /> : 'Confirm Appointment'}
+                                    </button>
+                                </form>
+                            )}
                         </div>
-
-                        {bookingError && <div className="auth-error" style={{ marginBottom: '1rem' }}>{bookingError}</div>}
-                        {bookingSuccess && <div className="auth-success">{bookingSuccess}</div>}
-
-                        {!bookingSuccess && (
-                            <form onSubmit={handleConfirmBooking}>
-                                <div className="form-group">
-                                    <label className="form-label">Doctor Name</label>
-                                    <input className="form-control" type="text" value={selectedDoctor?.full_name} disabled />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Appointment Date</label>
-                                    <input
-                                        className="form-control" type="date"
-                                        value={bookingDate} onChange={e => setBookingDate(e.target.value)} required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Preferred Time</label>
-                                    <input
-                                        className="form-control" type="time"
-                                        value={bookingTime} onChange={e => setBookingTime(e.target.value)} required
-                                    />
-                                </div>
-                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={bookingLoading}>
-                                    {bookingLoading ? 'Confirming...' : 'Confirm Appointment'}
-                                </button>
-                            </form>
-                        )}
                     </div>
-                </div>
-            )}
+                )
+            }
         </>
     )
 }

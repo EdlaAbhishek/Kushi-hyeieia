@@ -1,9 +1,10 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { useState } from 'react'
-import { Menu, X, User } from 'lucide-react'
+import { Menu, X, User, LogOut } from 'lucide-react'
 
 export default function MainLayout() {
+    const navigate = useNavigate()
     const { user, role, signOut, isDoctor } = useAuth()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const userName = user?.user_metadata?.full_name || user?.email || ''
@@ -12,6 +13,14 @@ export default function MainLayout() {
 
     const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
     const closeMenu = () => setIsMobileMenuOpen(false)
+
+    const handleSignOut = async () => {
+        if (window.confirm("Are you sure you want to sign out?")) {
+            closeMenu()
+            await signOut()
+            navigate('/login')
+        }
+    }
 
     return (
         <>
@@ -61,6 +70,9 @@ export default function MainLayout() {
                                     <NavLink to="/profile" className="nav-profile-link" onClick={closeMenu}>
                                         <User size={16} /> {userName}
                                     </NavLink>
+                                    <button className="btn btn-outline" onClick={handleSignOut} style={{ justifyContent: 'center', borderColor: '#EF4444', color: '#EF4444' }}>
+                                        <LogOut size={16} /> Sign Out
+                                    </button>
                                 </>
                             )}
                             <NavLink to="/emergency" className="btn btn-emergency" onClick={closeMenu}>🚨 SOS</NavLink>
@@ -75,6 +87,9 @@ export default function MainLayout() {
                                 <NavLink to="/profile" className="nav-profile-link">
                                     <User size={16} /> {userName}
                                 </NavLink>
+                                <button className="btn btn-outline" onClick={handleSignOut} style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', borderColor: '#EF4444', color: '#EF4444' }}>
+                                    <LogOut size={16} /> Sign Out
+                                </button>
                             </>
                         )}
                         <NavLink to="/emergency" className="btn btn-emergency" style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}>🚨 SOS</NavLink>

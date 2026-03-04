@@ -43,7 +43,7 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="hero-img-wrap">
-                        <img src="/assets/hero-family.png" alt="Indian family consulting doctor online" />
+                        <img src="/assets/hero-family.png" alt="Family consulting healthcare provider online using Khushi Hygieia app" />
                     </div>
                 </div>
             </section>

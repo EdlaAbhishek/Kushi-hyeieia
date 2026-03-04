@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CheckCircle, AlertTriangle, ShieldCheck } from 'lucide-react'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function Insurance() {
     const [policyNumber, setPolicyNumber] = useState('')
@@ -86,10 +87,11 @@ export default function Insurance() {
                                         value={policyNumber}
                                         onChange={(e) => setPolicyNumber(e.target.value)}
                                         required
+                                        aria-invalid={result?.status === 'invalid' ? 'true' : 'false'}
                                     />
                                 </div>
-                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
-                                    {loading ? 'Connecting to Provider...' : 'Verify Coverage'}
+                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={loading}>
+                                    {loading ? <LoadingSpinner size="small" text="Connecting..." /> : 'Verify Coverage'}
                                 </button>
                             </form>
                         </div>
