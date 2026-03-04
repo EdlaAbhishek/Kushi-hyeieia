@@ -27,7 +27,7 @@ export default function MainLayout() {
             <header className={`navbar ${isDoctor ? 'navbar-doctor' : ''}`}>
                 <div className="container nav-container">
                     <NavLink to="/" className="logo" onClick={closeMenu}>
-                        <img src="/assets/logo.png" alt="Khushi Hygieia" />
+                        <img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" />
                     </NavLink>
 
                     <button className="hamburger" onClick={toggleMenu}>

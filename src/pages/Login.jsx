@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { toast } from 'react-hot-toast'
 
 export default function Login() {
     const [email, setEmail] = useState('')
@@ -18,6 +19,7 @@ export default function Login() {
 
         try {
             const user = await login(email, password)
+            toast.success('Successfully logged in!')
             const role = user?.user_metadata?.role || 'patient'
             if (role === 'doctor') {
                 navigate('/doctor-dashboard')
@@ -26,6 +28,7 @@ export default function Login() {
             }
         } catch (err) {
             setError(err.message || 'Login failed')
+            toast.error(err.message || 'Login failed')
             setLoading(false)
         }
     }
@@ -33,18 +36,18 @@ export default function Login() {
     return (
         <div className="auth-page">
             <div className="auth-card">
-                <div className="auth-logo"><img src="/assets/logo.png" alt="Khushi Hygieia" /></div>
+                <div className="auth-logo"><img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" /></div>
                 <h1 className="auth-title">Sign In</h1>
                 <p className="auth-sub">Access your healthcare dashboard</p>
-                {error && <div className="auth-error">{error}</div>}
+                {error && <div id="login-error" className="auth-error" role="alert">{error}</div>}
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">
                         <label className="form-label">Email Address</label>
-                        <input className="form-control" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="rahul@example.com" required />
+                        <input className="form-control" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="rahul@example.com" required aria-invalid={!!error} aria-describedby={error ? "login-error" : undefined} />
                     </div>
                     <div className="form-group">
                         <label className="form-label">Password</label>
-                        <input className="form-control" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" required />
+                        <input className="form-control" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" required aria-invalid={!!error} aria-describedby={error ? "login-error" : undefined} />
                     </div>
                     <button className="btn btn-primary auth-btn" type="submit" disabled={loading} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
                         {loading ? <LoadingSpinner size="small" text="Signing in..." /> : 'Sign In'}

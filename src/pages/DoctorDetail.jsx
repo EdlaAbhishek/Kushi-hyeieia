@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { MapPin, Clock, Star, Award, ShieldCheck, ArrowLeft, CalendarDays } from 'lucide-react';
 import BookingModal from '../components/BookingModal';
+import Breadcrumbs from '../components/ui/Breadcrumbs';
 
 export default function DoctorDetail() {
     const { id } = useParams();
@@ -63,13 +64,7 @@ export default function DoctorDetail() {
         <>
             <section className="section" style={{ paddingBottom: '1rem', paddingTop: '2rem' }}>
                 <div className="container">
-                    <button
-                        className="btn btn-outline"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', border: 'none', padding: '0.5rem 0' }}
-                        onClick={() => navigate('/doctors')}
-                    >
-                        <ArrowLeft size={18} /> Back to Doctor Directory
-                    </button>
+                    <Breadcrumbs items={[{ label: 'Doctors', href: '/doctors' }, { label: doctor?.full_name, href: '' }]} />
                 </div>
             </section>
 

@@ -22,11 +22,13 @@ import Profile from './pages/Profile'
 import BloodDonation from './pages/BloodDonation'
 import DoctorDetail from './pages/DoctorDetail'
 import AppointmentConfirmation from './components/AppointmentConfirmation'
+import { Toaster } from 'react-hot-toast'
 import NotFound from './pages/NotFound'
 
 export default function App() {
     return (
         <AuthProvider>
+            <Toaster position="top-right" />
             <Routes>
                 {/* Public auth routes — no layout */}
                 <Route path="/login" element={<Login />} />

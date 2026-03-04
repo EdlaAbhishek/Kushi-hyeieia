@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MessageCircle, X, Send } from 'lucide-react'
+import { MessageCircle, X, Send, AlertTriangle } from 'lucide-react'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { toast } from 'react-hot-toast'
 
 export default function Dashboard() {
     const { user } = useAuth()
@@ -17,6 +19,9 @@ export default function Dashboard() {
     const [chatLoading, setChatLoading] = useState(true)
     const [chatError, setChatError] = useState(null)
     const messagesEndRef = useRef(null)
+
+    // ── Confirm state ──
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, apptId: null })
 
     const email = user?.email || ''
 
@@ -105,7 +110,30 @@ export default function Dashboard() {
         })
         if (error) {
             console.error("Chat send error:", error)
-            alert(`Failed to send message: ${error.message}`)
+            toast.error(`Failed to send message: ${error.message}`)
+        }
+    }
+
+    const handleCancelAppointment = (id) => {
+        setConfirmModal({ isOpen: true, apptId: id })
+    }
+
+    const confirmCancelAppointment = async () => {
+        const { apptId } = confirmModal
+        setConfirmModal({ isOpen: false, apptId: null })
+
+        try {
+            const { error } = await supabase
+                .from('appointments')
+                .update({ status: 'cancelled' })
+                .eq('id', apptId)
+
+            if (error) throw error
+
+            setAppointments(prev => prev.map(a => a.id === apptId ? { ...a, status: 'cancelled' } : a))
+            toast.success('Appointment cancelled successfully.')
+        } catch (err) {
+            toast.error(err.message)
         }
     }
 
@@ -234,16 +262,30 @@ export default function Dashboard() {
                                                 }
                                             </span>
                                         </div>
-                                        {appt.appointment_type === 'teleconsultation' && appt.status === 'confirmed' && (
-                                            <Link to={`/teleconsult/${appt.id}`} className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
-                                                📹 Join Consultation
-                                            </Link>
+                                        {appt.status !== 'cancelled' && appt.status !== 'completed' && (
+                                            <button
+                                                className="btn btn-outline"
+                                                style={{ width: '100%', marginTop: '0.5rem', borderColor: '#EF4444', color: '#EF4444' }}
+                                                onClick={() => handleCancelAppointment(appt.id)}
+                                            >
+                                                Cancel Appointment
+                                            </button>
                                         )}
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
+
+                    <ConfirmDialog
+                        isOpen={confirmModal.isOpen}
+                        title="Cancel Appointment?"
+                        message="Are you sure you want to cancel this appointment? This action cannot be undone."
+                        confirmText="Yes, Cancel"
+                        cancelText="No, Keep it"
+                        onConfirm={confirmCancelAppointment}
+                        onCancel={() => setConfirmModal({ isOpen: false, apptId: null })}
+                    />
 
                     {!loading && appointments.length > 0 && (
                         <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
@@ -320,6 +362,8 @@ export default function Dashboard() {
                         onChange={e => setChatInput(e.target.value)}
                         placeholder="Type a message..."
                         className="form-control"
+                        aria-label="Community chat message"
+                        aria-invalid={chatError ? "true" : "false"}
                     />
                     <button type="submit" className="btn btn-primary global-chat-send">
                         <Send size={18} />

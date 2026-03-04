@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MessageCircle, X, Send } from 'lucide-react'
+import { MessageCircle, X, Send, AlertTriangle } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 
 export default function DoctorDashboard() {
     const { user } = useAuth()
@@ -23,6 +25,9 @@ export default function DoctorDashboard() {
     const [chatLoading, setChatLoading] = useState(true)
     const [chatError, setChatError] = useState(null)
     const messagesEndRef = useRef(null)
+
+    // ── Confirm state ──
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, apptId: null, newStatus: null })
 
     const email = user?.email || ''
 
@@ -103,8 +108,21 @@ export default function DoctorDashboard() {
         })
         if (error) {
             console.error("Chat send error:", error)
-            alert(`Failed to send message: ${error.message}`)
+            toast.error(`Failed to send message: ${error.message}`)
         }
+    }
+
+    const handleUpdateStatus = (apptId, newStatus) => {
+        if (newStatus === 'cancelled') {
+            setConfirmModal({ isOpen: true, apptId, newStatus })
+        } else {
+            updateStatus(apptId, newStatus)
+        }
+    }
+
+    const confirmStatusUpdate = () => {
+        updateStatus(confirmModal.apptId, confirmModal.newStatus)
+        setConfirmModal({ isOpen: false, apptId: null, newStatus: null })
     }
 
     const updateStatus = async (appointmentId, newStatus) => {
@@ -114,12 +132,13 @@ export default function DoctorDashboard() {
                 .from('appointments')
                 .update({ status: newStatus })
                 .eq('id', appointmentId)
-            if (error) throw error
             setAppointments(prev => prev.map(a =>
                 a.id === appointmentId ? { ...a, status: newStatus } : a
             ))
+            toast.success(`Appointment marked as ${newStatus}.`)
         } catch (err) {
             setFetchError(err.message)
+            toast.error(err.message)
         }
         setUpdatingId(null)
     }
@@ -142,8 +161,10 @@ export default function DoctorDashboard() {
             setAppointments(prev => prev.map(a =>
                 a.id === notesModal ? { ...a, notes: notesText } : a
             ))
+            toast.success('Notes saved successfully!')
         } catch (err) {
             setFetchError(err.message)
+            toast.error(err.message)
         }
         setSavingNotes(false)
         setNotesModal(null)
@@ -266,7 +287,7 @@ export default function DoctorDashboard() {
                                                             className="btn btn-primary"
                                                             style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
                                                             disabled={updatingId === appt.id}
-                                                            onClick={() => updateStatus(appt.id, 'confirmed')}
+                                                            onClick={() => handleUpdateStatus(appt.id, 'confirmed')}
                                                         >
                                                             Confirm
                                                         </button>
@@ -277,7 +298,7 @@ export default function DoctorDashboard() {
                                                                 className="btn btn-primary"
                                                                 style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
                                                                 disabled={updatingId === appt.id}
-                                                                onClick={() => updateStatus(appt.id, 'completed')}
+                                                                onClick={() => handleUpdateStatus(appt.id, 'completed')}
                                                             >
                                                                 Complete
                                                             </button>
@@ -293,7 +314,7 @@ export default function DoctorDashboard() {
                                                             className="btn btn-outline"
                                                             style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', borderColor: 'var(--emergency)', color: 'var(--emergency)' }}
                                                             disabled={updatingId === appt.id}
-                                                            onClick={() => updateStatus(appt.id, 'cancelled')}
+                                                            onClick={() => handleUpdateStatus(appt.id, 'cancelled')}
                                                         >
                                                             Cancel
                                                         </button>
@@ -414,6 +435,16 @@ export default function DoctorDashboard() {
                     </button>
                 </form>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmModal.isOpen}
+                title="Cancel Appointment?"
+                message="Are you sure you want to cancel this patient appointment? This will notify the health system."
+                confirmText="Yes, Cancel"
+                cancelText="No, Keep it"
+                onConfirm={confirmStatusUpdate}
+                onCancel={() => setConfirmModal({ isOpen: false, apptId: null, newStatus: null })}
+            />
         </>
     )
 }

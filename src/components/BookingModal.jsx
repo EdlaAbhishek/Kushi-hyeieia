@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { supabase } from '../services/supabase';
+import { toast } from 'react-hot-toast';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function BookingModal({ doctor, onClose }) {
     const { user } = useAuth();
@@ -66,10 +68,12 @@ export default function BookingModal({ doctor, onClose }) {
             }));
 
             // Navigate to confirmation page
+            toast.success('Appointment booked successfully!');
             navigate('/appointment-confirmation');
 
         } catch (err) {
             console.error('Booking Catch:', err);
+            toast.error(err.message || 'An unexpected error occurred.');
             setError(err.message || 'An unexpected error occurred.');
         } finally {
             setLoading(false);
@@ -86,7 +90,7 @@ export default function BookingModal({ doctor, onClose }) {
                     <p className="modal-subtitle">Consulting with {doctor?.full_name}</p>
                 </div>
 
-                {error && <div className="auth-error" style={{ marginBottom: '1rem' }}>{error}</div>}
+                {error && <div id="booking-error" className="auth-error" style={{ marginBottom: '1rem' }} role="alert">{error}</div>}
 
                 <form onSubmit={handleConfirmBooking}>
                     <div className="form-group">
@@ -98,6 +102,8 @@ export default function BookingModal({ doctor, onClose }) {
                         <input
                             className="form-control" type="date"
                             value={bookingDate} onChange={e => setBookingDate(e.target.value)} required
+                            aria-invalid={!!error}
+                            aria-describedby={error ? "booking-error" : undefined}
                         />
                     </div>
                     <div className="form-group">
@@ -105,10 +111,12 @@ export default function BookingModal({ doctor, onClose }) {
                         <input
                             className="form-control" type="time"
                             value={bookingTime} onChange={e => setBookingTime(e.target.value)} required
+                            aria-invalid={!!error}
+                            aria-describedby={error ? "booking-error" : undefined}
                         />
                     </div>
-                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
-                        {loading ? 'Confirming...' : 'Confirm Appointment'}
+                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={loading}>
+                        {loading ? <LoadingSpinner size="small" text="Confirming..." /> : 'Confirm Appointment'}
                     </button>
                 </form>
             </div>

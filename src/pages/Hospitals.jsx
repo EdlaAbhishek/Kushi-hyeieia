@@ -4,6 +4,8 @@ import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import { toast } from 'react-hot-toast'
 
 export default function Hospitals() {
     const { user } = useAuth()
@@ -95,10 +97,11 @@ export default function Hospitals() {
             }])
             if (insertError) throw insertError
 
-            setBookingSuccess(`Teleconsultation booked with ${selectedDoctor.full_name}!`)
-            setTimeout(handleCloseBooking, 2500)
+            toast.success(`Teleconsultation booked with ${selectedDoctor.full_name}!`)
+            setTimeout(handleCloseBooking, 1000)
         } catch (err) {
             setBookingError(err.message || 'Booking failed.')
+            toast.error(err.message || 'Booking failed.')
         } finally {
             setBookingLoading(false)
         }
@@ -116,6 +119,7 @@ export default function Hospitals() {
             {/* ─── Hospital Directory ─── */}
             <section className="section">
                 <div className="container">
+                    <Breadcrumbs items={[{ label: 'Hospitals', href: '/hospitals' }]} />
                     <div className="section-header">
                         <h2 className="section-title">Hospital Directory</h2>
                         <p className="section-subtitle">Partner hospitals across India with emergency and teleconsultation availability.</p>
@@ -144,7 +148,11 @@ export default function Hospitals() {
                         <tbody>
                             {filteredHospitals.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>No hospitals found.</td>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '3rem' }}>
+                                        <div className="dashboard-empty-icon" style={{ margin: '0 auto 1rem' }}>🔍</div>
+                                        <h3 style={{ marginBottom: '0.5rem', color: '#1E293B', fontSize: '1.2rem', fontWeight: 600 }}>No hospitals found</h3>
+                                        <p style={{ color: '#64748B' }}>We couldn't find any hospitals matching your search criteria.</p>
+                                    </td>
                                 </tr>
                             ) : filteredHospitals.map((h, i) => {
                                 const hospitalId = h.name.toLowerCase().replace(/\s+/g, '-');
@@ -252,17 +260,16 @@ export default function Hospitals() {
                             <h2 className="modal-title">📹 Book Teleconsultation</h2>
                             <p className="modal-subtitle">Video call with {selectedDoctor.full_name}</p>
                         </div>
-                        {bookingSuccess && <div className="auth-success">{bookingSuccess}</div>}
-                        {bookingError && <div className="auth-error">{bookingError}</div>}
+                        {bookingError && <div id="hosp-booking-error" className="auth-error" role="alert">{bookingError}</div>}
                         {!bookingSuccess && (
                             <form onSubmit={handleConfirmBooking}>
                                 <div className="form-group">
                                     <label className="form-label">Date</label>
-                                    <input type="date" className="form-control" value={bookingDate} onChange={e => setBookingDate(e.target.value)} required />
+                                    <input type="date" className="form-control" value={bookingDate} onChange={e => setBookingDate(e.target.value)} required aria-invalid={!!bookingError} aria-describedby={bookingError ? "hosp-booking-error" : undefined} />
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Preferred Time</label>
-                                    <input type="time" className="form-control" value={bookingTime} onChange={e => setBookingTime(e.target.value)} required />
+                                    <input type="time" className="form-control" value={bookingTime} onChange={e => setBookingTime(e.target.value)} required aria-invalid={!!bookingError} aria-describedby={bookingError ? "hosp-booking-error" : undefined} />
                                 </div>
                                 <button className="btn btn-primary" type="submit" disabled={bookingLoading} style={{ width: '100%', marginTop: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
                                     {bookingLoading ? <LoadingSpinner size="small" text="Booking..." /> : 'Confirm Teleconsultation'}

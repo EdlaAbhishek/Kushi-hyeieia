@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { toast } from 'react-hot-toast'
 
 export default function Signup() {
     const [name, setName] = useState('')
@@ -69,6 +70,7 @@ export default function Signup() {
 
             setLoading(false)
             setSuccess('Account created! Redirecting to dashboard...')
+            toast.success('Account created! Redirecting...')
             setTimeout(() => {
                 if (role === 'doctor') {
                     navigate('/doctor-dashboard')
@@ -78,6 +80,7 @@ export default function Signup() {
             }, 2000)
         } catch (err) {
             setError(err.message)
+            toast.error(err.message || 'Signup failed')
             setLoading(false)
         }
     }
@@ -85,23 +88,23 @@ export default function Signup() {
     return (
         <div className="auth-page">
             <div className="auth-card">
-                <div className="auth-logo"><img src="/assets/logo.png" alt="Khushi Hygieia" /></div>
+                <div className="auth-logo"><img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" /></div>
                 <h1 className="auth-title">Create Account</h1>
                 <p className="auth-sub">Join India's trusted healthcare network</p>
-                {error && <div className="auth-error">{error}</div>}
-                {success && <div className="auth-success">{success}</div>}
+                {error && <div id="signup-error" className="auth-error" role="alert">{error}</div>}
+                {success && <div id="signup-success" className="auth-success" role="status">{success}</div>}
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">
                         <label className="form-label">Full Name</label>
-                        <input className="form-control" type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Rahul Sharma" required />
+                        <input className="form-control" type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Rahul Sharma" required aria-invalid={!!error} aria-describedby={error ? "signup-error" : undefined} />
                     </div>
                     <div className="form-group">
                         <label className="form-label">Email Address</label>
-                        <input className="form-control" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="rahul@example.com" required />
+                        <input className="form-control" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="rahul@example.com" required aria-invalid={!!error} aria-describedby={error ? "signup-error" : undefined} />
                     </div>
                     <div className="form-group">
                         <label className="form-label">Password</label>
-                        <input className="form-control" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minimum 8 characters" minLength={8} required />
+                        <input className="form-control" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minimum 8 characters" minLength={8} required aria-invalid={!!error} aria-describedby={error ? "signup-error" : undefined} />
                     </div>
                     <div className="form-group">
                         <label className="form-label">I am a</label>

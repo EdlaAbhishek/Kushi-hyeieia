@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Mail, Clock, Activity, Users, ArrowLeft, Star, BedDouble } from 'lucide-react';
 import { supabase } from '../services/supabase';
+import Breadcrumbs from '../components/ui/Breadcrumbs';
+import { toast } from 'react-hot-toast';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 // Mock data to match the array in Hospitals.jsx
 const mockHospitals = [
@@ -54,11 +57,17 @@ export default function HospitalDetail() {
         setRequestLoading(true);
 
         // Mock submission
-        setTimeout(() => {
+        toast.promise(
+            new Promise(resolve => setTimeout(resolve, 1500)),
+            {
+                loading: 'Submitting request...',
+                success: 'Request submitted successfully. Our team will contact you shortly.',
+                error: 'Submission failed.',
+            }
+        ).then(() => {
             setRequestLoading(false);
-            setRequestSuccess(true);
-            setTimeout(() => setRequestSuccess(false), 5000);
-        }, 1500);
+            e.target.reset();
+        });
     };
 
     if (loading) {
@@ -84,13 +93,7 @@ export default function HospitalDetail() {
         <>
             <section className="section" style={{ paddingBottom: '1rem', paddingTop: '2rem' }}>
                 <div className="container">
-                    <button
-                        className="btn btn-outline"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', border: 'none', padding: '0.5rem 0' }}
-                        onClick={() => navigate('/hospitals')}
-                    >
-                        <ArrowLeft size={18} /> Back to Hospital Network
-                    </button>
+                    <Breadcrumbs items={[{ label: 'Hospitals', href: '/hospitals' }, { label: hospital?.name, href: '' }]} />
                 </div>
             </section>
 
@@ -211,20 +214,16 @@ export default function HospitalDetail() {
                             <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#0F172A' }}>Request Appointment</h2>
                             <p style={{ color: '#64748B', fontSize: '0.95rem', marginBottom: '2rem' }}>Fill details and our hospital coordination team will call you back.</p>
 
-                            {requestSuccess && (
-                                <div className="auth-success" style={{ marginBottom: '1.5rem' }}>
-                                    ✓ Request submitted successfully. Our team will contact you shortly.
-                                </div>
-                            )}
+
 
                             <form onSubmit={handleRequestAppointment}>
                                 <div className="form-group">
                                     <label className="form-label">Patient Name</label>
-                                    <input type="text" className="form-control" required placeholder="Full Name" />
+                                    <input type="text" className="form-control" required placeholder="Full Name" aria-label="Patient Full Name" disabled={requestLoading} />
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Contact Number</label>
-                                    <input type="tel" className="form-control" required placeholder="+91 XXXXX XXXXX" />
+                                    <input type="tel" className="form-control" required placeholder="+91 XXXXX XXXXX" aria-label="Contact Number" disabled={requestLoading} />
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Select Department</label>
@@ -239,10 +238,10 @@ export default function HospitalDetail() {
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Preferred Date</label>
-                                    <input type="date" className="form-control" required min={new Date().toISOString().split('T')[0]} />
+                                    <input type="date" className="form-control" required min={new Date().toISOString().split('T')[0]} aria-label="Preferred Appointment Date" disabled={requestLoading} />
                                 </div>
-                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={requestLoading}>
-                                    {requestLoading ? 'Submitting...' : 'Submit Request'}
+                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={requestLoading}>
+                                    {requestLoading ? <LoadingSpinner size="small" text="Submitting..." /> : 'Submit Request'}
                                 </button>
                             </form>
                         </div>

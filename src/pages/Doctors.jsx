@@ -5,6 +5,8 @@ import { supabase } from '../services/supabase'
 import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight } from 'lucide-react'
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
+import { toast } from 'react-hot-toast'
 
 export default function Doctors() {
     const { user } = useAuth()
@@ -133,13 +135,14 @@ export default function Doctors() {
             }])
             if (insertError) throw insertError
 
-            setBookingSuccess(`Appointment booked successfully with ${selectedDoctor.full_name}!`)
+            toast.success(`Appointment booked successfully with ${selectedDoctor.full_name}!`)
             setTimeout(() => {
                 handleCloseBooking()
-            }, 2500)
+            }, 1000)
         } catch (err) {
             console.error('Booking Catch:', err)
             setBookingError(err.message || 'An unexpected error occurred.')
+            toast.error(err.message || 'An unexpected error occurred.')
         } finally {
             setBookingLoading(false)
         }
@@ -155,12 +158,18 @@ export default function Doctors() {
         setLabSuccess('')
 
         // Mock backend request for lab booking
-        setTimeout(() => {
+        toast.promise(
+            new Promise(resolve => setTimeout(resolve, 1200)),
+            {
+                loading: 'Booking home collection...',
+                success: `Successfully booked ${labTest} on ${labDate}.`,
+                error: 'Failed to book.',
+            }
+        ).then(() => {
             setLabLoading(false)
-            setLabSuccess(`Successfully booked Home Collection for ${labTest} on ${labDate}. Our phlebotomist will contact you shortly.`)
             setLabTest('')
             setLabDate('')
-        }, 1200)
+        })
     }
 
     return (
@@ -175,6 +184,7 @@ export default function Doctors() {
             {/* ─── Specialty Filter ─── */}
             <section className="section">
                 <div className="container">
+                    <Breadcrumbs items={[{ label: 'Doctors', href: '/doctors' }]} />
                     <div className="section-header">
                         <h2 className="section-title">Browse by Specialty</h2>
                         <p className="section-subtitle">Select a specialty to filter doctors.</p>
@@ -283,7 +293,7 @@ export default function Doctors() {
                             {filteredDoctors.map(doc => (
                                 <div className="doctor-card" key={doc.id}>
                                     <div className="doctor-card-header">
-                                        <img src={doc.avatar_url || 'https://via.placeholder.com/150'} alt={doc.full_name} className="doctor-avatar" />
+                                        <img src={doc.avatar_url || 'https://via.placeholder.com/150'} alt={doc.full_name} className="doctor-avatar" loading="lazy" />
                                         <div>
                                             <h3 className="doctor-name">{doc.full_name}</h3>
                                             <p className="doctor-specialty">{doc.specialty}</p>
@@ -331,11 +341,6 @@ export default function Doctors() {
                         </div>
                         <div style={{ flex: '1 1 340px', maxWidth: 480 }}>
                             <div className="form-card">
-                                {labSuccess && (
-                                    <div className="auth-success" style={{ marginBottom: '1.25rem' }}>
-                                        ✓ {labSuccess}
-                                    </div>
-                                )}
                                 <form onSubmit={handleLabBooking}>
                                     <div className="form-group">
                                         <label className="form-label">Select Lab Test / Package</label>
@@ -376,7 +381,6 @@ export default function Doctors() {
                             </div>
 
                             {bookingError && <div className="auth-error" style={{ marginBottom: '1rem' }}>{bookingError}</div>}
-                            {bookingSuccess && <div className="auth-success">{bookingSuccess}</div>}
 
                             {!bookingSuccess && (
                                 <form onSubmit={handleConfirmBooking}>

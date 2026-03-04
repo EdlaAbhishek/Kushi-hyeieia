@@ -335,6 +335,7 @@ export default function Services() {
                                             src={rxPreview}
                                             alt="Prescription preview"
                                             style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', borderRadius: '8px', border: '1px solid var(--border)' }}
+                                            loading="lazy"
                                         />
                                         <button
                                             onClick={clearImage}

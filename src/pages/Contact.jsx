@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Phone, Mail, MessageSquare } from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { toast } from 'react-hot-toast'
 
 export default function Contact() {
     const [sent, setSent] = useState(false)
@@ -18,12 +19,14 @@ export default function Contact() {
             await new Promise(resolve => setTimeout(resolve, 1500))
 
             setSent(true)
+            toast.success('Your message has been sent successfully!')
             if (formRef.current) formRef.current.reset()
 
             // Auto reset success message after 5 seconds
             setTimeout(() => setSent(false), 5000)
         } catch (err) {
             setError('Failed to send message. Please try again later.')
+            toast.error('Failed to send message. Please try again later.')
         } finally {
             setLoading(false)
         }
@@ -44,29 +47,22 @@ export default function Contact() {
                         </ul>
                     </div>
                     <div className="form-card">
-                        {sent && (
-                            <div className="auth-success" style={{ marginBottom: '1.5rem' }}>
-                                ✓ Your message has been sent successfully. We will respond within 24 hours.
-                            </div>
-                        )}
-                        {error && <div className="auth-error" style={{ marginBottom: '1rem' }}>{error}</div>}
-
                         <form ref={formRef} onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label className="form-label">Name</label>
-                                <input className="form-control" type="text" required placeholder="John Doe" disabled={loading} aria-invalid="false" />
+                                <input className="form-control" type="text" required placeholder="John Doe" disabled={loading} aria-invalid={!!error} aria-label="Full Name" />
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Email</label>
-                                <input className="form-control" type="email" required placeholder="john@example.com" disabled={loading} aria-invalid="false" />
+                                <input className="form-control" type="email" required placeholder="john@example.com" disabled={loading} aria-invalid={!!error} aria-label="Email Address" />
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Subject</label>
-                                <input className="form-control" type="text" required placeholder="How can we help?" disabled={loading} aria-invalid="false" />
+                                <input className="form-control" type="text" required placeholder="How can we help?" disabled={loading} aria-invalid={!!error} aria-label="Subject" />
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Message</label>
-                                <textarea className="form-control" required rows="4" placeholder="Describe your issue..." disabled={loading} aria-invalid="false"></textarea>
+                                <textarea className="form-control" required rows="4" placeholder="Describe your issue..." disabled={loading} aria-invalid={!!error} aria-label="Message content"></textarea>
                             </div>
                             <button className="btn btn-primary" type="submit" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={loading}>
                                 {loading ? <LoadingSpinner size="small" text="Sending..." /> : 'Send Message'}
