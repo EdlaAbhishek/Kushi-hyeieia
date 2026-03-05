@@ -294,7 +294,7 @@ export default function Doctors() {
                             {filteredDoctors.map((doc, i) => (
                                 <motion.div className="doctor-card" key={doc.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
                                     <div className="doctor-card-header">
-                                        <img src={doc.profile_photo || doc.avatar_url || 'https://via.placeholder.com/150'} alt={doc.full_name} className="doctor-avatar" loading="lazy" />
+                                        <img src={doc.profile_photo || doc.avatar_url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'} alt={doc.full_name} className="doctor-avatar" loading="lazy" />
                                         <div>
                                             <h3 className="doctor-name">{doc.full_name}</h3>
                                             <p className="doctor-specialty">{doc.specialty}</p>

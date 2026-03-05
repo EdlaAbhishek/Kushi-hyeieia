@@ -170,15 +170,11 @@ export default function Profile() {
                     {/* ── User Info Card ── */}
                     <div className="profile-card profile-info-card">
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
-                            {profilePhotoUrl ? (
-                                <img
-                                    src={profilePhotoUrl}
-                                    alt="Profile"
-                                    style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary-light)' }}
-                                />
-                            ) : (
-                                <div className="profile-avatar" style={{ width: '96px', height: '96px', fontSize: '2.5rem' }}>{initials}</div>
-                            )}
+                            <img
+                                src={profilePhotoUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                alt="Profile"
+                                style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary-light)' }}
+                            />
                             <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" style={{ display: 'none' }} />
                             <button type="button" className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }} onClick={() => fileInputRef.current?.click()}>
                                 <Upload size={14} style={{ marginRight: '0.4rem' }} /> Upload Photo
