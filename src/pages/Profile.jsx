@@ -169,19 +169,19 @@ export default function Profile() {
                 <div className="container profile-page">
                     {/* ── User Info Card ── */}
                     <div className="profile-card profile-info-card">
-                        <div className="flex flex-col items-center gap-2">
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
                             {profilePhotoUrl ? (
                                 <img
                                     src={profilePhotoUrl}
                                     alt="Profile"
-                                    style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary-light)' }}
+                                    style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary-light)' }}
                                 />
                             ) : (
-                                <div className="profile-avatar">{initials}</div>
+                                <div className="profile-avatar" style={{ width: '96px', height: '96px', fontSize: '2.5rem' }}>{initials}</div>
                             )}
                             <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" style={{ display: 'none' }} />
-                            <button type="button" className="btn btn-outline text-xs py-1 px-3" onClick={() => fileInputRef.current?.click()}>
-                                <Upload size={14} className="mr-1 inline" /> Upload Photo
+                            <button type="button" className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center' }} onClick={() => fileInputRef.current?.click()}>
+                                <Upload size={14} style={{ marginRight: '0.4rem' }} /> Upload Photo
                             </button>
                         </div>
                         <div className="profile-info-grid">

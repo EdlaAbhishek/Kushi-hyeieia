@@ -29,7 +29,16 @@ import UpdatePassword from './pages/UpdatePassword'
 export default function App() {
     return (
         <AuthProvider>
-            <Toaster position="top-right" />
+            <Toaster
+                position="top-right"
+                toastOptions={{
+                    style: {
+                        fontSize: '1.1rem',
+                        padding: '16px 24px',
+                        maxWidth: '500px'
+                    }
+                }}
+            />
             <Routes>
                 {/* Public auth routes — no layout */}
                 <Route path="/login" element={<Login />} />

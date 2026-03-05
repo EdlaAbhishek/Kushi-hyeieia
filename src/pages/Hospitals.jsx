@@ -123,18 +123,10 @@ export default function Hospitals() {
 
     return (
         <>
-            <section className="page-header" style={{ position: 'relative', overflow: 'hidden' }}>
-                <div className="container" style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2rem' }}>
-                    <div style={{ maxWidth: '500px' }}>
-                        <h1 className="page-title">Hospital Network</h1>
-                        <p className="page-subtitle">1,000+ integrated hospital partners nationwide for critical care and teleconsultation.</p>
-                    </div>
-                    <img
-                        src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800"
-                        alt="Modern Hospital Building"
-                        style={{ height: '240px', width: '400px', objectFit: 'cover', borderRadius: '1rem', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
-                        loading="lazy"
-                    />
+            <section className="page-header">
+                <div className="container">
+                    <h1 className="page-title">Hospital Network</h1>
+                    <p className="page-subtitle">1,000+ integrated hospital partners nationwide.</p>
                 </div>
             </section>
 

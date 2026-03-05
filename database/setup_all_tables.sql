@@ -138,11 +138,32 @@ BEGIN
 END $$;
 
 -- ═══════════════════════════════════════════════
--- SUPABASE STORAGE INSTRUCTIONS
--- 1. Go to Storage in Supabase Dashboard
--- 2. Create a new bucket named 'avatars'
--- 3. Make it 'Public'
--- 4. In Policies for 'avatars' bucket:
---    - Allow SELECT for public (all users)
---    - Allow INSERT and UPDATE for authenticated users
+-- SUPABASE STORAGE INSTRUCTIONS & SETUP
+-- Run this directly in the Supabase SQL Editor to configure the "avatars" bucket:
+
+-- 1. Create the bucket if it doesn't exist
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Allow PUBLIC access to SELECT (View) avatars
+CREATE POLICY "Public Access" 
+    ON storage.objects FOR SELECT 
+    USING (bucket_id = 'avatars');
+
+-- 3. Allow AUTHENTICATED users to INSERT (Upload) avatars
+CREATE POLICY "Auth Insert Access" 
+    ON storage.objects FOR INSERT 
+    WITH CHECK (
+        bucket_id = 'avatars' 
+        AND auth.role() = 'authenticated'
+    );
+
+-- 4. Allow AUTHENTICATED users to UPDATE their own avatars
+CREATE POLICY "Auth Update Access" 
+    ON storage.objects FOR UPDATE 
+    USING (
+        bucket_id = 'avatars' 
+        AND auth.role() = 'authenticated'
+    );
 -- ═══════════════════════════════════════════════
