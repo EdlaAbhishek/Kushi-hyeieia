@@ -75,9 +75,17 @@ export default function DoctorDetail() {
                         {/* Profile Sidebar */}
                         <div style={{ flex: '0 0 350px' }}>
                             <div style={{ background: '#fff', borderRadius: 20, padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', textAlign: 'center' }}>
-                                <div style={{ width: 120, height: 120, borderRadius: '50%', background: 'var(--primary)', color: '#fff', fontSize: '3rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontFamily: 'var(--font-heading)' }}>
-                                    {doctor.full_name.charAt(0).toUpperCase()}
-                                </div>
+                                {doctor.profile_photo || doctor.avatar_url ? (
+                                    <img
+                                        src={doctor.profile_photo || doctor.avatar_url}
+                                        alt={doctor.full_name}
+                                        style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 1.5rem', display: 'block', border: '4px solid #EFF6FF' }}
+                                    />
+                                ) : (
+                                    <div style={{ width: 120, height: 120, borderRadius: '50%', background: 'var(--primary)', color: '#fff', fontSize: '3rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontFamily: 'var(--font-heading)' }}>
+                                        {doctor.full_name.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
                                 <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#0F172A' }}>{doctor.full_name}</h1>
                                 <p style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '1.1rem', marginBottom: '1rem' }}>
                                     {doctor.specialty || 'General Practitioner'}

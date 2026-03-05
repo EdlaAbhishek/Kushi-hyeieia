@@ -17,6 +17,15 @@ export function AuthProvider({ children }) {
       if (session) {
         setUser(session.user)
         setRole(session.user?.user_metadata?.role || 'patient')
+
+        // Ensure user has a profile record if they logged in via OAuth
+        const { error } = await supabase.from('patients').upsert([{
+          id: session.user.id,
+          email: session.user.email,
+          full_name: session.user?.user_metadata?.full_name || session.user?.user_metadata?.name || session.user.email
+        }], { onConflict: 'id', ignoreDuplicates: true });
+
+        if (error) console.error("OAuth profile check error:", error);
       }
 
       setLoading(false)
@@ -69,8 +78,32 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
+  const loginWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      }
+    })
+    if (error) throw error
+    return data
+  }
+
+  const resetPassword = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/update-password`,
+    });
+    if (error) throw error;
+  }
+
+  const updatePassword = async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+    return data;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, role, isDoctor, login, signup, signOut }}>
+    <AuthContext.Provider value={{ user, loading, role, isDoctor, login, loginWithGoogle, resetPassword, updatePassword, signup, signOut }}>
       {children}
     </AuthContext.Provider>
   )

@@ -24,6 +24,7 @@ import DoctorDetail from './pages/DoctorDetail'
 import AppointmentConfirmation from './components/AppointmentConfirmation'
 import { Toaster } from 'react-hot-toast'
 import NotFound from './pages/NotFound'
+import UpdatePassword from './pages/UpdatePassword'
 
 export default function App() {
     return (
@@ -33,6 +34,7 @@ export default function App() {
                 {/* Public auth routes — no layout */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/update-password" element={<UpdatePassword />} />
 
                 {/* All authenticated users */}
                 <Route element={<ProtectedRoute />}>

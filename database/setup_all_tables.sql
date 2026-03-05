@@ -94,3 +94,55 @@ END $$;
 --   Database → Tables → global_messages → Enable Realtime
 -- This is required for the community chat to work.
 -- ═══════════════════════════════════════════════
+
+-- ── 4. Notifications ──
+CREATE TABLE IF NOT EXISTS notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    message TEXT NOT NULL,
+    type TEXT NOT NULL,
+    read_status BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can read own notifications') THEN
+        CREATE POLICY "Users can read own notifications"
+            ON notifications FOR SELECT USING (auth.uid() = user_id);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Authenticated users can insert notifications') THEN
+        CREATE POLICY "Authenticated users can insert notifications"
+            ON notifications FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can update own notifications') THEN
+        CREATE POLICY "Users can update own notifications"
+            ON notifications FOR UPDATE USING (auth.uid() = user_id);
+    END IF;
+END $$;
+
+-- ── 5. Doctors profile_photo column mapping ──
+-- The doctors table already has 'avatar_url', but to stick to the requested spec, we add 'profile_photo'.
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='doctors' AND column_name='profile_photo') THEN
+        ALTER TABLE doctors ADD COLUMN profile_photo TEXT;
+    END IF;
+END $$;
+
+-- ═══════════════════════════════════════════════
+-- SUPABASE STORAGE INSTRUCTIONS
+-- 1. Go to Storage in Supabase Dashboard
+-- 2. Create a new bucket named 'avatars'
+-- 3. Make it 'Public'
+-- 4. In Policies for 'avatars' bucket:
+--    - Allow SELECT for public (all users)
+--    - Allow INSERT and UPDATE for authenticated users
+-- ═══════════════════════════════════════════════

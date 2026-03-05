@@ -17,6 +17,7 @@ export default function Profile() {
     const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '')
     const [nameLoading, setNameLoading] = useState(false)
     const [nameMsg, setNameMsg] = useState('')
+    const [profilePhotoUrl, setProfilePhotoUrl] = useState(user?.user_metadata?.profile_photo || null)
 
     const [newPw, setNewPw] = useState('')
     const [confirmPw, setConfirmPw] = useState('')
@@ -46,17 +47,43 @@ export default function Profile() {
 
     const fileInputRef = useRef(null)
 
-    const handleFileUpload = (e) => {
+    const handleFileUpload = async (e) => {
         const file = e.target.files[0]
         if (!file) return
-        toast.promise(
-            new Promise(resolve => setTimeout(resolve, 1500)),
-            {
-                loading: 'Uploading document...',
-                success: 'Document uploaded successfully!',
-                error: 'Upload failed.',
+
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}-${Math.random()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const uploadPromise = async () => {
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file)
+            if (uploadError) throw uploadError
+
+            const { data } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath)
+            const publicURL = data.publicUrl
+
+            // Update user auth metadata
+            await supabase.auth.updateUser({
+                data: { profile_photo: publicURL }
+            })
+
+            // Update doctors table if the user is a doctor
+            if (isDoctor) {
+                await supabase.from('doctors').update({ profile_photo: publicURL }).eq('id', user.id)
             }
-        )
+
+            setProfilePhotoUrl(publicURL)
+        }
+
+        toast.promise(uploadPromise(), {
+            loading: 'Uploading photo...',
+            success: 'Photo uploaded successfully!',
+            error: 'Upload failed.',
+        })
     }
 
     const handleNameUpdate = async (e) => {
@@ -143,10 +170,18 @@ export default function Profile() {
                     {/* ── User Info Card ── */}
                     <div className="profile-card profile-info-card">
                         <div className="flex flex-col items-center gap-2">
-                            <div className="profile-avatar">{initials}</div>
-                            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*,.pdf" style={{ display: 'none' }} />
+                            {profilePhotoUrl ? (
+                                <img
+                                    src={profilePhotoUrl}
+                                    alt="Profile"
+                                    style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary-light)' }}
+                                />
+                            ) : (
+                                <div className="profile-avatar">{initials}</div>
+                            )}
+                            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" style={{ display: 'none' }} />
                             <button type="button" className="btn btn-outline text-xs py-1 px-3" onClick={() => fileInputRef.current?.click()}>
-                                <Upload size={14} className="mr-1 inline" /> Upload Document
+                                <Upload size={14} className="mr-1 inline" /> Upload Photo
                             </button>
                         </div>
                         <div className="profile-info-grid">

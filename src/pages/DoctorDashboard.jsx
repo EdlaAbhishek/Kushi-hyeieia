@@ -9,6 +9,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 export default function DoctorDashboard() {
     const { user } = useAuth()
     const [appointments, setAppointments] = useState([])
+    const [notifications, setNotifications] = useState([])
     const [loading, setLoading] = useState(true)
     const [fetchError, setFetchError] = useState(null)
     const [updatingId, setUpdatingId] = useState(null)
@@ -45,11 +46,31 @@ export default function DoctorDashboard() {
                 .order('appointment_date', { ascending: false })
             if (error) throw error
             setAppointments(data || [])
+
+            const { data: notifData, error: notifError } = await supabase
+                .from('notifications')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(5)
+            if (!notifError && notifData) {
+                setNotifications(notifData)
+            }
+
         } catch (err) {
             setFetchError(err.message)
             setAppointments([])
         }
         setLoading(false)
+    }
+
+    const markNotificationRead = async (id) => {
+        try {
+            await supabase.from('notifications').update({ read_status: true }).eq('id', id)
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, read_status: true } : n))
+        } catch (err) {
+            console.error(err)
+        }
     }
 
     useEffect(() => { fetchAppointments() }, [user])
@@ -204,6 +225,47 @@ export default function DoctorDashboard() {
 
             <section className="section">
                 <div className="container">
+
+                    {/* Notifications Section */}
+                    {notifications.length > 0 && (
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <div className="section-header" style={{ marginBottom: '1rem' }}>
+                                <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
+                                    <AlertTriangle size={20} color="var(--primary)" /> Recent Notifications
+                                </h2>
+                            </div>
+                            <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                {notifications.map(notif => (
+                                    <div
+                                        key={notif.id}
+                                        onClick={() => markNotificationRead(notif.id)}
+                                        style={{
+                                            background: notif.read_status ? '#F8FAFC' : '#EFF6FF',
+                                            border: `1px solid ${notif.read_status ? '#E2E8F0' : '#BFDBFE'}`,
+                                            padding: '1rem 1.25rem',
+                                            borderRadius: 'var(--radius)',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            cursor: notif.read_status ? 'default' : 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <div>
+                                            <p style={{ margin: 0, color: '#1E293B', fontWeight: notif.read_status ? 400 : 500, fontSize: '0.95rem' }}>
+                                                {notif.message}
+                                            </p>
+                                            <p style={{ margin: 0, color: '#64748B', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                                                {new Date(notif.created_at).toLocaleString('en-IN')}
+                                            </p>
+                                        </div>
+                                        {!notif.read_status && <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0 }}></span>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="section-header">
                         <h2 className="section-title">My Appointments</h2>
                         <p className="section-subtitle">

@@ -47,10 +47,18 @@ export default function Insurance() {
 
     return (
         <>
-            <section className="page-header">
-                <div className="container">
-                    <h1 className="page-title">Insurance Integration</h1>
-                    <p className="page-subtitle">Instantly verify your health insurance policy for cashless treatments.</p>
+            <section className="page-header" style={{ position: 'relative', overflow: 'hidden' }}>
+                <div className="container" style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2rem' }}>
+                    <div style={{ maxWidth: '500px' }}>
+                        <h1 className="page-title">Insurance Integration</h1>
+                        <p className="page-subtitle">Instantly verify your health insurance policy for cashless treatments and secure coverage verification.</p>
+                    </div>
+                    <img
+                        src="https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&q=80&w=800"
+                        alt="Health Insurance Coverage"
+                        style={{ height: '240px', width: '400px', objectFit: 'cover', borderRadius: '1rem', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
+                        loading="lazy"
+                    />
                 </div>
             </section>
 

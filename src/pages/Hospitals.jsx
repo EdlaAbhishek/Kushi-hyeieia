@@ -40,6 +40,13 @@ export default function Hospitals() {
     const [bookingSuccess, setBookingSuccess] = useState('')
     const [bookingError, setBookingError] = useState('')
 
+    const timeSlots = [
+        "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM",
+        "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM",
+        "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
+        "04:00 PM", "04:30 PM", "05:00 PM"
+    ];
+
     useEffect(() => {
         async function fetchTeleconsultDoctors() {
             try {
@@ -88,6 +95,12 @@ export default function Hospitals() {
                 return
             }
 
+            if (!bookingTime) {
+                setBookingError('Please select a time slot.')
+                setBookingLoading(false)
+                return
+            }
+
             const { error: insertError } = await supabase.from('appointments').insert([{
                 doctor_id: selectedDoctor.id,
                 patient_id: user.id,
@@ -110,10 +123,18 @@ export default function Hospitals() {
 
     return (
         <>
-            <section className="page-header">
-                <div className="container">
-                    <h1 className="page-title">Hospital Network</h1>
-                    <p className="page-subtitle">1,000+ integrated hospital partners nationwide.</p>
+            <section className="page-header" style={{ position: 'relative', overflow: 'hidden' }}>
+                <div className="container" style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '2rem' }}>
+                    <div style={{ maxWidth: '500px' }}>
+                        <h1 className="page-title">Hospital Network</h1>
+                        <p className="page-subtitle">1,000+ integrated hospital partners nationwide for critical care and teleconsultation.</p>
+                    </div>
+                    <img
+                        src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800"
+                        alt="Modern Hospital Building"
+                        style={{ height: '240px', width: '400px', objectFit: 'cover', borderRadius: '1rem', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
+                        loading="lazy"
+                    />
                 </div>
             </section>
 
@@ -269,8 +290,39 @@ export default function Hospitals() {
                                     <input type="date" className="form-control" value={bookingDate} onChange={e => setBookingDate(e.target.value)} required aria-invalid={!!bookingError} aria-describedby={bookingError ? "hosp-booking-error" : undefined} />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Preferred Time</label>
-                                    <input type="time" className="form-control" value={bookingTime} onChange={e => setBookingTime(e.target.value)} required aria-invalid={!!bookingError} aria-describedby={bookingError ? "hosp-booking-error" : undefined} />
+                                    <label className="form-label">Available Time Slots</label>
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                                        gap: '0.5rem',
+                                        marginTop: '0.5rem'
+                                    }}>
+                                        {timeSlots.map(slot => (
+                                            <button
+                                                key={slot}
+                                                type="button"
+                                                onClick={() => {
+                                                    setBookingTime(slot);
+                                                    setBookingError('');
+                                                }}
+                                                style={{
+                                                    padding: '0.65rem 0.5rem',
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 600,
+                                                    borderRadius: 'var(--radius-sm)',
+                                                    border: bookingTime === slot ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                                                    background: bookingTime === slot ? '#EFF6FF' : '#fff',
+                                                    color: bookingTime === slot ? 'var(--primary)' : 'var(--text-main)',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s',
+                                                    outline: 'none'
+                                                }}
+                                            >
+                                                {slot}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {bookingError && !bookingTime && <div style={{ color: 'var(--emergency)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Please select a time slot.</div>}
                                 </div>
                                 <button className="btn btn-primary" type="submit" disabled={bookingLoading} style={{ width: '100%', marginTop: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
                                     {bookingLoading ? <LoadingSpinner size="small" text="Booking..." /> : 'Confirm Teleconsultation'}
