@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../services/AuthContext'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 
 export default function AiChat() {
     const { user } = useAuth()
@@ -36,42 +35,40 @@ export default function AiChat() {
         setLoading(true)
 
         try {
-            const apiKey = import.meta.env.VITE_GEMINI_API_KEY
-            if (!apiKey) throw new Error("Gemini API key is missing. Please add VITE_GEMINI_API_KEY to your .env file.")
+            const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
+            const model = import.meta.env.VITE_OPENROUTER_MODEL || "arcee-ai/trinity-large-preview:free"
 
-            const genAI = new GoogleGenerativeAI(apiKey)
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+            if (!apiKey) throw new Error("OpenRouter API key is missing. Please add VITE_OPENROUTER_API_KEY to your .env file.")
 
-            const chat = model.startChat({
-                history: newMessages.slice(1, -1).map(m => ({
-                    role: m.role === 'assistant' ? 'model' : 'user',
-                    parts: [{ text: m.content }]
-                }))
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "HTTP-Referer": window.location.origin,
+                    "X-OpenRouter-Title": "Khushi Hygieia",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "model": model,
+                    "messages": newMessages.map(m => ({
+                        role: m.role,
+                        content: m.content
+                    }))
+                })
             })
 
-            const result = await chat.sendMessage(trimmed)
-            const responseText = result.response.text()
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`)
+            }
+
+            const data = await response.json()
+            const responseText = data.choices[0].message.content
 
             setMessages(prev => [...prev, { role: 'assistant', content: responseText }])
         } catch (err) {
             console.error("AI Error:", err)
-            // If flash fails, try gemini-pro as a fallback
-            try {
-                const apiKey = import.meta.env.VITE_GEMINI_API_KEY
-                const genAI = new GoogleGenerativeAI(apiKey)
-                const model = genAI.getGenerativeModel({ model: "gemini-pro" })
-                const chat = model.startChat({
-                    history: newMessages.slice(1, -1).map(m => ({
-                        role: m.role === 'assistant' ? 'model' : 'user',
-                        parts: [{ text: m.content }]
-                    }))
-                })
-                const result = await chat.sendMessage(trimmed)
-                const responseText = result.response.text()
-                setMessages(prev => [...prev, { role: 'assistant', content: responseText }])
-            } catch (fallbackErr) {
-                setMessages(prev => [...prev, { role: 'assistant', content: `AI Error: ${err.message} (Fallback failed too)` }])
-            }
+            setMessages(prev => [...prev, { role: 'assistant', content: `AI Error: ${err.message}` }])
         } finally {
             setLoading(false)
         }

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Droplet, MapPin, ScanLine, Upload, FileImage, X, Calendar, Phone, Shield, UserPlus, CheckCircle } from 'lucide-react'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { supabase } from '../services/supabase'
 import { useAuth } from '../services/AuthContext'
 
@@ -75,19 +75,73 @@ export default function Services() {
         if (fileInputRef.current) fileInputRef.current.value = ''
     }
 
+    const fileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1]
+                resolve(base64)
+            }
+            reader.onerror = reject
+            reader.readAsDataURL(file)
+        })
+    }
+
     const handleScanPrescription = async () => {
         if (!rxImage) return
 
         setRxLoading(true)
         setRxResult('')
-        setRxError('') // This line was moved from outside the try block
+        setRxError('')
         try {
-            // Since this is a frontend demo, mock the response for the scanner
-            await new Promise((resolve) => setTimeout(resolve, 2500))
-            setRxResult(`## Prescription Analysis\n\n**Patient:** Identified\n**Date:** Recent\n\n### Identified Medications:\n\n1. **Amoxicillin 500mg**\n   - **Dosage:** 1 capsule every 8 hours\n   - **Duration:** 7 days\n   - **Purpose:** Antibiotic for bacterial infection.\n   - **Instructions:** Take after meals. Complete the full course.\n\n2. **Paracetamol 650mg**\n   - **Dosage:** 1 tablet as needed for fever/pain\n   - **Purpose:** Pain reliever and fever reducer.\n\n### Disclaimer:\n*This is an AI-generated analysis based on the uploaded image. Always consult your healthcare provider or pharmacist before starting any medication.*`)
+            const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
+            if (!apiKey) throw new Error('OpenRouter API key is missing.')
+
+            const base64Image = await fileToBase64(rxImage)
+            const mimeType = rxImage.type || 'image/jpeg'
+
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'HTTP-Referer': window.location.origin,
+                    'X-OpenRouter-Title': 'Khushi Hygieia',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'google/gemini-2.0-flash-001',
+                    messages: [
+                        {
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: 'You are a medical prescription analyzer. Analyze this prescription image and provide:\n\n1. Patient name (if visible)\n2. Date (if visible)\n3. For each medication found:\n   - Medicine name and strength\n   - Dosage instructions\n   - Duration\n   - Common purpose/use\n   - Important instructions or warnings\n\nFormat the output clearly with headers and bullet points. End with a disclaimer that this is AI-generated and the patient should consult their healthcare provider.'
+                                },
+                                {
+                                    type: 'image_url',
+                                    image_url: {
+                                        url: `data:${mimeType};base64,${base64Image}`
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                })
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`)
+            }
+
+            const data = await response.json()
+            const resultText = data.choices?.[0]?.message?.content
+            if (!resultText) throw new Error('No analysis returned from AI.')
+            setRxResult(resultText)
         } catch (err) {
-            console.error("Scanner Error:", err)
-            setRxError('Failed to analyze prescription. Please try a clearer image.')
+            console.error('Scanner Error:', err)
+            setRxError(`Failed to analyze prescription: ${err.message}`)
         } finally {
             setRxLoading(false)
         }
@@ -206,7 +260,7 @@ export default function Services() {
                     <div className="grid-2" style={{ alignItems: 'normal' }}>
 
                         {/* --- BLOOD FINDER --- */}
-                        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, ease: 'easeOut' }} style={{ display: 'flex', flexDirection: 'column' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
                                 <div className="card-icon" style={{ margin: 0, background: '#FEF2F2', color: '#DC2626' }}>
                                     <Droplet size={22} />
@@ -280,10 +334,10 @@ export default function Services() {
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* --- PRESCRIPTION SCANNER --- */}
-                        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }} style={{ display: 'flex', flexDirection: 'column' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
                                 <div className="card-icon" style={{ margin: 0, background: '#EFF6FF', color: 'var(--primary)' }}>
                                     <ScanLine size={22} />
@@ -383,7 +437,7 @@ export default function Services() {
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </motion.div>
 
                     </div>
                 </div>

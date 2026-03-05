@@ -1,16 +1,44 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
+import { motion } from 'framer-motion'
 import { Video, Calendar, ShieldCheck, Stethoscope, HeartPulse, Clock, ArrowRight, Star, UserCheck, Building2, Smartphone } from 'lucide-react'
+
+const fadeUp = {
+    initial: { opacity: 0, y: 20 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: '-50px' },
+    transition: { duration: 0.5, ease: 'easeOut' }
+}
+
+const stagger = {
+    initial: { opacity: 0, y: 20 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: '-50px' },
+}
 
 export default function Home() {
     const { user, isDoctor } = useAuth()
+
+    const patientServices = [
+        { icon: Video, title: 'Teleconsultation', desc: 'Connect with certified specialists digitally with full electronic medical record integration.', to: '/hospitals' },
+        { icon: Calendar, title: 'Appointment Booking', desc: 'Schedule in-person visits to partner hospitals and clinics across India.', to: '/doctors' },
+        { icon: ShieldCheck, title: 'Insurance Processing', desc: 'Integrated claim processing and verification directly within the digital platform.', to: '/services' },
+    ]
+
+    const doctorServices = [
+        { icon: Calendar, title: 'My Appointments', desc: 'View and manage your patient appointments. Confirm, complete, or reschedule visits.', to: '/doctor-dashboard' },
+        { icon: Video, title: 'Teleconsult Sessions', desc: 'Join video consultations with patients and manage online appointments.', to: '/hospitals' },
+        { icon: Stethoscope, title: 'Post-Care Notes', desc: 'Add follow-up instructions and care notes for completed patient appointments.', to: '/doctor-dashboard' },
+    ]
+
+    const services = isDoctor ? doctorServices : patientServices
 
     return (
         <>
             {/* ─── HERO ─── */}
             <section className="hero">
                 <div className="container hero-grid">
-                    <div className="hero-content">
+                    <motion.div className="hero-content" {...fadeUp}>
                         <div className="hero-badge">
                             <HeartPulse size={14} />
                             <span>Trusted by 50,000+ patients across India</span>
@@ -41,17 +69,17 @@ export default function Home() {
                             <div className="stat-item"><h4>1K+</h4><p>Partner Hospitals</p></div>
                             <div className="stat-item"><h4>5K+</h4><p>Verified Doctors</p></div>
                         </div>
-                    </div>
-                    <div className="hero-img-wrap">
+                    </motion.div>
+                    <motion.div className="hero-img-wrap" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.15 }}>
                         <img src="/assets/hero-family.png" alt="Family consulting healthcare provider online using Khushi Hygieia app" loading="lazy" />
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* ─── SERVICES GRID ─── */}
+            {/* ─── SERVICES — Feature Rows ─── */}
             <section className="section">
                 <div className="container">
-                    <div className="section-header">
+                    <motion.div className="section-header" {...fadeUp}>
                         <h2 className="section-title">
                             {isDoctor ? 'Clinical Tools' : 'Comprehensive Medical Services'}
                         </h2>
@@ -60,106 +88,61 @@ export default function Home() {
                                 ? 'Quick access to your practice management tools.'
                                 : 'Delivering enterprise-grade healthcare infrastructure directly to patients.'}
                         </p>
-                    </div>
-                    <div className="grid-3">
-                        {isDoctor ? (
-                            <>
-                                <Link to="/doctor-dashboard" className="card" style={{ cursor: 'pointer' }}>
-                                    <div className="card-icon"><Calendar size={22} /></div>
-                                    <h3 className="card-title">My Appointments</h3>
-                                    <p className="card-text">View and manage your patient appointments. Confirm, complete, or reschedule visits.</p>
+                    </motion.div>
+                    <div style={{ maxWidth: '720px' }}>
+                        {services.map((s, i) => (
+                            <motion.div key={s.title} {...stagger} transition={{ duration: 0.45, delay: i * 0.1, ease: 'easeOut' }}>
+                                <Link to={s.to} className="feature-row" style={{ textDecoration: 'none' }}>
+                                    <s.icon size={24} className="feature-icon" />
+                                    <div className="feature-content">
+                                        <h3>{s.title}</h3>
+                                        <p>{s.desc}</p>
+                                    </div>
                                 </Link>
-                                <Link to="/hospitals" className="card" style={{ cursor: 'pointer' }}>
-                                    <div className="card-icon"><Video size={22} /></div>
-                                    <h3 className="card-title">Teleconsult Sessions</h3>
-                                    <p className="card-text">Join video consultations with patients and manage online appointments.</p>
-                                </Link>
-                                <Link to="/doctor-dashboard" className="card" style={{ cursor: 'pointer' }}>
-                                    <div className="card-icon"><Stethoscope size={22} /></div>
-                                    <h3 className="card-title">Post-Care Notes</h3>
-                                    <p className="card-text">Add follow-up instructions and care notes for completed patient appointments.</p>
-                                </Link>
-                            </>
-                        ) : (
-                            <>
-                                <Link to="/hospitals" className="card" style={{ cursor: 'pointer' }}>
-                                    <div className="card-icon"><Video size={22} /></div>
-                                    <h3 className="card-title">Teleconsultation</h3>
-                                    <p className="card-text">Connect with certified specialists digitally with full electronic medical record integration.</p>
-                                </Link>
-                                <Link to="/doctors" className="card" style={{ cursor: 'pointer' }}>
-                                    <div className="card-icon"><Calendar size={22} /></div>
-                                    <h3 className="card-title">Appointment Booking</h3>
-                                    <p className="card-text">Schedule in-person visits to partner hospitals and clinics across India.</p>
-                                </Link>
-                                <Link to="/services" className="card" style={{ cursor: 'pointer' }}>
-                                    <div className="card-icon"><ShieldCheck size={22} /></div>
-                                    <h3 className="card-title">Insurance Processing</h3>
-                                    <p className="card-text">Integrated claim processing and verification directly within the digital platform.</p>
-                                </Link>
-                            </>
-                        )}
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* ─── HOW IT WORKS ─── */}
+            {/* ─── HOW IT WORKS — Timeline ─── */}
             {!isDoctor && (
-                <section className="section section-bg">
+                <section className="section" style={{ background: 'var(--surface)' }}>
                     <div className="container">
-                        <div className="section-header" style={{ textAlign: 'center' }}>
+                        <motion.div className="section-header" {...fadeUp}>
                             <h2 className="section-title">How It Works</h2>
                             <p className="section-subtitle">Get started in three simple steps — no paperwork, no waiting.</p>
-                        </div>
-                        <div className="grid-3">
-                            <div className="step-card">
-                                <div className="step-number">1</div>
-                                <div className="step-icon"><UserCheck size={28} /></div>
-                                <h3 className="step-title">Create Your Account</h3>
-                                <p className="step-text">Sign up in under a minute. Your health profile is securely stored and encrypted.</p>
-                            </div>
-                            <div className="step-card">
-                                <div className="step-number">2</div>
-                                <div className="step-icon"><Stethoscope size={28} /></div>
-                                <h3 className="step-title">Find the Right Doctor</h3>
-                                <p className="step-text">Browse verified specialists, check availability, and book an appointment instantly.</p>
-                            </div>
-                            <div className="step-card">
-                                <div className="step-number">3</div>
-                                <div className="step-icon"><HeartPulse size={28} /></div>
-                                <h3 className="step-title">Get Treated</h3>
-                                <p className="step-text">Visit in-person or join a video consultation. Receive prescriptions and follow-ups digitally.</p>
-                            </div>
+                        </motion.div>
+                        <div className="timeline">
+                            {[
+                                { num: 1, icon: UserCheck, title: 'Create Your Account', desc: 'Sign up in under a minute. Your health profile is securely stored and encrypted.' },
+                                { num: 2, icon: Stethoscope, title: 'Find the Right Doctor', desc: 'Browse verified specialists, check availability, and book an appointment instantly.' },
+                                { num: 3, icon: HeartPulse, title: 'Get Treated', desc: 'Visit in-person or join a video consultation. Receive prescriptions and follow-ups digitally.' },
+                            ].map((step, i) => (
+                                <motion.div className="timeline-step" key={step.num} {...stagger} transition={{ duration: 0.45, delay: i * 0.15, ease: 'easeOut' }}>
+                                    <div className="timeline-number">{step.num}</div>
+                                    <h3>{step.title}</h3>
+                                    <p>{step.desc}</p>
+                                </motion.div>
+                            ))}
                         </div>
                     </div>
                 </section>
             )}
 
-            {/* ─── WHY CHOOSE US ─── */}
+            {/* ─── WHY CHOOSE US — Flat Layout ─── */}
             {!isDoctor && (
                 <section className="section">
                     <div className="container grid-2" style={{ gap: '4rem' }}>
-                        <div className="feature-visual">
+                        <motion.div className="feature-visual" {...fadeUp}>
                             <div className="feature-grid-visual">
-                                <div className="fv-card fv-blue">
-                                    <Building2 size={24} />
-                                    <span>1000+ Hospitals</span>
-                                </div>
-                                <div className="fv-card fv-teal">
-                                    <Stethoscope size={24} />
-                                    <span>5000+ Doctors</span>
-                                </div>
-                                <div className="fv-card fv-amber">
-                                    <Clock size={24} />
-                                    <span>24/7 Support</span>
-                                </div>
-                                <div className="fv-card fv-rose">
-                                    <ShieldCheck size={24} />
-                                    <span>100% Secure</span>
-                                </div>
+                                <div className="fv-card fv-blue"><Building2 size={24} /><span>1000+ Hospitals</span></div>
+                                <div className="fv-card fv-teal"><Stethoscope size={24} /><span>5000+ Doctors</span></div>
+                                <div className="fv-card fv-amber"><Clock size={24} /><span>24/7 Support</span></div>
+                                <div className="fv-card fv-rose"><ShieldCheck size={24} /><span>100% Secure</span></div>
                             </div>
-                        </div>
-                        <div className="split-content">
+                        </motion.div>
+                        <motion.div className="split-content" {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>
                             <h3 style={{ fontSize: '1.65rem', letterSpacing: '-0.03em' }}>Why 50,000+ patients choose Khushi Hygieia</h3>
                             <p>We are not just another healthcare app. We provide a complete healthcare ecosystem — from finding the right doctor to processing your insurance claim, all under one roof.</p>
                             <ul className="split-list">
@@ -168,26 +151,26 @@ export default function Home() {
                                 <li><Clock size={20} /><span><strong>Instant Booking</strong> — No phone calls. Book appointments in under 30 seconds.</span></li>
                             </ul>
                             <Link to="/doctors" className="btn btn-primary">Explore Doctors <ArrowRight size={16} /></Link>
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
             )}
 
-            {/* ─── TESTIMONIALS ─── */}
+            {/* ─── TESTIMONIALS — Flat Quotes ─── */}
             {!isDoctor && (
-                <section className="section section-bg">
+                <section className="section" style={{ background: 'var(--surface)' }}>
                     <div className="container">
-                        <div className="section-header" style={{ textAlign: 'center' }}>
+                        <motion.div className="section-header" {...fadeUp}>
                             <h2 className="section-title">What Our Patients Say</h2>
                             <p className="section-subtitle">Real experiences from real people across India.</p>
-                        </div>
-                        <div className="grid-3">
+                        </motion.div>
+                        <div style={{ maxWidth: '720px' }}>
                             {[
                                 { name: 'Priya Sharma', city: 'Mumbai', text: 'Booked a cardiologist in 2 minutes. The teleconsultation was seamless — felt like sitting in the clinic.', rating: 5 },
                                 { name: 'Rajesh Kumar', city: 'Delhi', text: 'The prescription scanner is incredible. I just took a photo and it explained every medicine clearly.', rating: 5 },
                                 { name: 'Anita Patel', city: 'Ahmedabad', text: 'Insurance verification was instant. No more running around with papers. Everything is digital now.', rating: 4 },
                             ].map((t, i) => (
-                                <div className="testimonial-card" key={i}>
+                                <motion.div className="testimonial-card" key={i} {...stagger} transition={{ duration: 0.45, delay: i * 0.1, ease: 'easeOut' }}>
                                     <div className="testimonial-stars">
                                         {Array.from({ length: t.rating }).map((_, j) => (
                                             <Star key={j} size={14} fill="#F59E0B" color="#F59E0B" />
@@ -201,7 +184,7 @@ export default function Home() {
                                             <span className="testimonial-city">{t.city}</span>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     </div>
@@ -212,16 +195,16 @@ export default function Home() {
             {!user && (
                 <section className="cta-section">
                     <div className="container" style={{ textAlign: 'center' }}>
-                        <h2 className="cta-title">Ready to take control of your health?</h2>
-                        <p className="cta-subtitle">Join thousands of patients who already trust Khushi Hygieia for their healthcare needs.</p>
-                        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <motion.h2 className="cta-title" {...fadeUp}>Ready to take control of your health?</motion.h2>
+                        <motion.p className="cta-subtitle" {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>Join thousands of patients who already trust Khushi Hygieia for their healthcare needs.</motion.p>
+                        <motion.div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }} {...fadeUp} transition={{ duration: 0.5, delay: 0.2, ease: 'easeOut' }}>
                             <Link to="/signup" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
                                 Get Started — It's Free <ArrowRight size={16} />
                             </Link>
                             <Link to="/about" className="btn btn-outline" style={{ padding: '0.75rem 2rem', borderColor: 'rgba(255,255,255,0.3)', color: '#fff' }}>
                                 Learn More
                             </Link>
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
             )}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { CheckCircle, AlertTriangle, ShieldCheck } from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
 
@@ -57,7 +58,7 @@ export default function Insurance() {
                 <div className="container">
                     <div className="grid-2" style={{ alignItems: 'flex-start' }}>
                         {/* LEFT COLUMN: Verification Form */}
-                        <div className="card">
+                        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, ease: 'easeOut' }}>
                             <div className="section-header" style={{ marginBottom: '1.5rem' }}>
                                 <h3 className="section-title" style={{ fontSize: '1.4rem' }}>Verify Policy</h3>
                                 <p className="section-subtitle">Enter your details below to check active coverage.</p>
@@ -94,7 +95,7 @@ export default function Insurance() {
                                     {loading ? <LoadingSpinner size="small" text="Connecting..." /> : 'Verify Coverage'}
                                 </button>
                             </form>
-                        </div>
+                        </motion.div>
 
                         {/* RIGHT COLUMN: Results Display */}
                         <div>

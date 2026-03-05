@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import SkeletonLoader from '../components/SkeletonLoader'
@@ -211,8 +212,8 @@ export default function Hospitals() {
 
                     {!loadingDocs && teleconsultDoctors.length > 0 && (
                         <div className="grid-3">
-                            {teleconsultDoctors.map(doc => (
-                                <div key={doc.id} className="card teleconsult-card">
+                            {teleconsultDoctors.map((doc, i) => (
+                                <motion.div key={doc.id} className="card teleconsult-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.08, 0.3), ease: 'easeOut' }}>
                                     <div className="teleconsult-card-top">
                                         <div className="teleconsult-avatar">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -244,7 +245,7 @@ export default function Hospitals() {
                                         </svg>
                                         Book Video Consultation
                                     </button>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     )}

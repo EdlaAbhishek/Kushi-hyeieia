@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { Calendar, Package, FileText, Check, ArrowRight } from 'lucide-react'
+
+const fadeUp = {
+    initial: { opacity: 0, y: 20 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: '-50px' },
+    transition: { duration: 0.5, ease: 'easeOut' }
+}
 
 export default function Patients() {
     const { user } = useAuth()
@@ -36,6 +44,12 @@ export default function Patients() {
         return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     }
 
+    const services = [
+        { icon: Calendar, title: 'Book Appointment', desc: 'Schedule visits with leading doctors across all medical specialties through our verified network.', to: '/doctors', btnText: 'Search Doctors' },
+        { icon: Package, title: 'Medicine & Blood Locator', desc: 'Real-time inventory checks for essential medicines and nearby blood donor availability.', to: '/services', btnText: 'Locate Resources' },
+        { icon: FileText, title: 'Electronic Health Records', desc: 'Access your consultation history, lab reports, and prescriptions in a secure, encrypted vault.', to: '/dashboard', btnText: 'My Dashboard' },
+    ]
+
     return (
         <>
             <section className="page-header">
@@ -48,46 +62,32 @@ export default function Patients() {
             {/* ─── Quick Actions ─── */}
             <section className="section">
                 <div className="container">
-                    <div className="section-header">
+                    <motion.div className="section-header" {...fadeUp}>
                         <h2 className="section-title">Patient Services</h2>
                         <p className="section-subtitle">Everything you need to manage your health journey.</p>
-                    </div>
-                    <div className="grid-3">
-                        <div className="card">
-                            <div className="card-icon">
-                                <Calendar size={22} />
-                            </div>
-                            <h3 className="card-title">Book Appointment</h3>
-                            <p className="card-text">Schedule visits with leading doctors across all medical specialties through our verified network.</p>
-                            <Link to="/doctors" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>Search Doctors <ArrowRight size={15} /></Link>
-                        </div>
-                        <div className="card">
-                            <div className="card-icon" style={{ background: '#F0FDFA', color: '#0D9488' }}>
-                                <Package size={22} />
-                            </div>
-                            <h3 className="card-title">Medicine & Blood Locator</h3>
-                            <p className="card-text">Real-time inventory checks for essential medicines and nearby blood donor availability.</p>
-                            <Link to="/services" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>Locate Resources <ArrowRight size={15} /></Link>
-                        </div>
-                        <div className="card">
-                            <div className="card-icon" style={{ background: '#FFF7ED', color: '#C2410C' }}>
-                                <FileText size={22} />
-                            </div>
-                            <h3 className="card-title">Electronic Health Records</h3>
-                            <p className="card-text">Access your consultation history, lab reports, and prescriptions in a secure, encrypted vault.</p>
-                            <Link to="/dashboard" className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>My Dashboard <ArrowRight size={15} /></Link>
-                        </div>
+                    </motion.div>
+                    <div style={{ maxWidth: '720px' }}>
+                        {services.map((s, i) => (
+                            <motion.div key={s.title} className="feature-row" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: i * 0.1, ease: 'easeOut' }}>
+                                <s.icon size={24} className="feature-icon" />
+                                <div className="feature-content">
+                                    <h3>{s.title}</h3>
+                                    <p>{s.desc}</p>
+                                    <Link to={s.to} className="btn btn-outline" style={{ marginTop: '0.75rem' }}>{s.btnText} <ArrowRight size={15} /></Link>
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
             </section>
 
             {/* ─── Post Patient Care ─── */}
-            <section className="section" style={{ background: '#F8FAFC' }}>
+            <section className="section" style={{ background: 'var(--surface)' }}>
                 <div className="container">
-                    <div className="section-header">
+                    <motion.div className="section-header" {...fadeUp}>
                         <h2 className="section-title">Post Care & Recovery Support</h2>
                         <p className="section-subtitle">Follow-up care for your completed appointments.</p>
-                    </div>
+                    </motion.div>
 
                     {loadingCare && (
                         <div className="dashboard-loading">
@@ -106,17 +106,13 @@ export default function Patients() {
                     )}
 
                     {!loadingCare && completedAppts.length > 0 && (
-                        <div className="appointment-grid">
-                            {completedAppts.map(appt => (
-                                <div key={appt.id} className="postcare-card">
+                        <div style={{ maxWidth: '720px' }}>
+                            {completedAppts.map((appt, i) => (
+                                <motion.div key={appt.id} className="postcare-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: i * 0.1, ease: 'easeOut' }}>
                                     <div className="postcare-card-header">
                                         <div>
-                                            <h3 className="appointment-doctor-name">
-                                                {appt.doctors?.full_name || 'Doctor'}
-                                            </h3>
-                                            <p className="appointment-doctor-specialty">
-                                                {appt.doctors?.specialty || '—'}
-                                            </p>
+                                            <h3 className="appointment-doctor-name">{appt.doctors?.full_name || 'Doctor'}</h3>
+                                            <p className="appointment-doctor-specialty">{appt.doctors?.specialty || '—'}</p>
                                         </div>
                                         <span className="status-badge status-completed">Completed</span>
                                     </div>
@@ -134,7 +130,7 @@ export default function Patients() {
                                             <p className="postcare-note-text">Follow up in 7 days. Continue prescribed medication. Contact the doctor if symptoms persist.</p>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     )}
@@ -144,7 +140,7 @@ export default function Patients() {
             {/* ─── AI Health Analytics ─── */}
             <section className="section">
                 <div className="container grid-2">
-                    <div className="split-content">
+                    <motion.div className="split-content" {...fadeUp}>
                         <h3>AI-Powered Health Analytics</h3>
                         <p>Khushi Hygieia utilizes advanced analytics to provide diagnostic support and preventive health recommendations based on your historical health data.</p>
                         <ul className="split-list">
@@ -153,17 +149,17 @@ export default function Patients() {
                             <li><Check size={20} /><span>Seamless insurance claim processing</span></li>
                         </ul>
                         <Link to="/chat" className="btn btn-primary">Ask AI Assistant <ArrowRight size={15} /></Link>
-                    </div>
-                    <div className="ai-preview-card">
-                        <div className="ai-preview-header">
-                            <span>🤖</span> Khushi Care AI
+                    </motion.div>
+                    <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>
+                        <div className="ai-preview-card">
+                            <div className="ai-preview-header"><span>🤖</span> Khushi Care AI</div>
+                            <div className="ai-preview-body">
+                                <p className="ai-preview-msg ai-msg-bot">Hello! I can help you understand your health reports, medications, and recovery guidelines.</p>
+                                <p className="ai-preview-msg ai-msg-user">What should I do after my cardiologist visit?</p>
+                                <p className="ai-preview-msg ai-msg-bot">Continue any prescribed medications, monitor your blood pressure daily, and schedule a follow-up in 2 weeks...</p>
+                            </div>
                         </div>
-                        <div className="ai-preview-body">
-                            <p className="ai-preview-msg ai-msg-bot">Hello! I can help you understand your health reports, medications, and recovery guidelines.</p>
-                            <p className="ai-preview-msg ai-msg-user">What should I do after my cardiologist visit?</p>
-                            <p className="ai-preview-msg ai-msg-bot">Continue any prescribed medications, monitor your blood pressure daily, and schedule a follow-up in 2 weeks...</p>
-                        </div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
         </>

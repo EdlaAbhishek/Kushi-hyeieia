@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight } from 'lucide-react'
@@ -290,8 +291,8 @@ export default function Doctors() {
 
                     {!loading && filteredDoctors.length > 0 && (
                         <div className="doctor-grid">
-                            {filteredDoctors.map(doc => (
-                                <div className="doctor-card" key={doc.id}>
+                            {filteredDoctors.map((doc, i) => (
+                                <motion.div className="doctor-card" key={doc.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
                                     <div className="doctor-card-header">
                                         <img src={doc.avatar_url || 'https://via.placeholder.com/150'} alt={doc.full_name} className="doctor-avatar" loading="lazy" />
                                         <div>
@@ -312,7 +313,7 @@ export default function Doctors() {
                                     <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => navigate(`/doctors/${doc.id}`)}>
                                         View Profile & Book <ArrowRight size={15} />
                                     </button>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     )}

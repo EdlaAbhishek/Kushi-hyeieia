@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { MessageCircle, X, Send, AlertTriangle } from 'lucide-react'
@@ -218,8 +219,8 @@ export default function Dashboard() {
 
                     {!loading && appointments.length > 0 && (
                         <div className="appointment-grid">
-                            {appointments.map(appt => (
-                                <div key={appt.id} className="appointment-card">
+                            {appointments.map((appt, i) => (
+                                <motion.div key={appt.id} className="appointment-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
                                     <div className="appointment-card-header">
                                         <div className="appointment-doctor-info">
                                             <h3 className="appointment-doctor-name">
@@ -272,7 +273,7 @@ export default function Dashboard() {
                                             </button>
                                         )}
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     )}
