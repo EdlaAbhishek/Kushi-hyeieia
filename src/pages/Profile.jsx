@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { User, Mail, Shield, Calendar, Lock, LogOut, Stethoscope, Plus, X, Upload } from 'lucide-react'
@@ -14,6 +15,18 @@ const SPECIALIZATION_OPTIONS = [
 
 export default function Profile() {
     const { user, signOut, isDoctor } = useAuth()
+    const navigate = useNavigate()
+
+    const handleSignOut = async () => {
+        try {
+            await signOut()
+        } catch (err) {
+            console.error("Sign out error:", err)
+        } finally {
+            window.location.href = '/login'
+        }
+    }
+
     const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '')
     const [nameLoading, setNameLoading] = useState(false)
     const [nameMsg, setNameMsg] = useState('')
@@ -335,7 +348,7 @@ export default function Profile() {
 
                     {/* ── Sign Out ── */}
                     <div className="profile-signout">
-                        <button className="btn btn-outline profile-signout-btn" onClick={signOut}>
+                        <button className="btn btn-outline profile-signout-btn" onClick={handleSignOut}>
                             <LogOut size={18} /> Sign Out
                         </button>
                     </div>

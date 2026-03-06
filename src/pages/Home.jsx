@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { motion } from 'framer-motion'
-import { Video, Calendar, ShieldCheck, Stethoscope, HeartPulse, Clock, ArrowRight, Star, UserCheck, Building2, Smartphone } from 'lucide-react'
+import { Video, Calendar, ShieldCheck, Stethoscope, HeartPulse, Clock, ArrowRight, Star, UserCheck, Building2, Smartphone, Droplet } from 'lucide-react'
 
 const fadeUp = {
     initial: { opacity: 0, y: 20 },
@@ -20,15 +20,15 @@ export default function Home() {
     const { user, isDoctor } = useAuth()
 
     const patientServices = [
-        { icon: Video, title: 'Teleconsultation', desc: 'Connect with certified specialists digitally with full electronic medical record integration.', to: '/hospitals' },
-        { icon: Calendar, title: 'Appointment Booking', desc: 'Schedule in-person visits to partner hospitals and clinics across India.', to: '/doctors' },
+        { icon: Calendar, title: 'Book a Consultation', desc: 'Book in-person hospital visits or secure video consultations with verified specialists.', to: '/doctors' },
+        { icon: Building2, title: 'Network Hospitals', desc: 'Find 1,000+ partner hospitals with 24/7 emergency and live bed availability.', to: '/hospitals' },
         { icon: ShieldCheck, title: 'Insurance Processing', desc: 'Integrated claim processing and verification directly within the digital platform.', to: '/services' },
     ]
 
     const doctorServices = [
-        { icon: Calendar, title: 'My Appointments', desc: 'View and manage your patient appointments. Confirm, complete, or reschedule visits.', to: '/doctor-dashboard' },
-        { icon: Video, title: 'Teleconsult Sessions', desc: 'Join video consultations with patients and manage online appointments.', to: '/hospitals' },
-        { icon: Stethoscope, title: 'Post-Care Notes', desc: 'Add follow-up instructions and care notes for completed patient appointments.', to: '/doctor-dashboard' },
+        { icon: Calendar, title: 'Appointment Manager', desc: 'Manage your physical and video consultations, confirm bookings, and view patient history.', to: '/doctor-dashboard' },
+        { icon: Stethoscope, title: 'Patient Care Tools', desc: 'Write digital prescriptions, add post-care notes, and manage medical records.', to: '/doctor-dashboard' },
+        { icon: Building2, title: 'Hospital Affiliations', desc: 'Manage your primary and visiting hospital associations and department links.', to: '/doctor-dashboard' },
     ]
 
     const services = isDoctor ? doctorServices : patientServices

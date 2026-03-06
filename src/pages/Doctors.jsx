@@ -7,6 +7,7 @@ import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight } from '
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
+import InfoButton from '../components/ui/InfoButton'
 import { toast } from 'react-hot-toast'
 
 export default function Doctors() {
@@ -90,89 +91,6 @@ export default function Doctors() {
         return result
     }, [doctors, selectedSpecialty, searchQuery])
 
-    const handleOpenBooking = (doctor) => {
-        if (!user) {
-            navigate('/login')
-            return
-        }
-        setSelectedDoctor(doctor)
-        setShowBooking(true)
-        setBookingSuccess('')
-        setBookingError('')
-    }
-
-    const handleCloseBooking = () => {
-        setShowBooking(false)
-        setSelectedDoctor(null)
-        setBookingDate('')
-        setBookingTime('')
-    }
-
-    const handleConfirmBooking = async (e) => {
-        e.preventDefault()
-        setBookingLoading(true)
-        setBookingError('')
-
-        try {
-            if (!user) {
-                setBookingError('Session expired. Please log in again.')
-                setTimeout(() => navigate('/login'), 2000)
-                return
-            }
-
-            const today = new Date().toISOString().split('T')[0]
-            if (bookingDate < today) {
-                setBookingError('Appointment date cannot be in the past.')
-                setBookingLoading(false)
-                return
-            }
-
-            const { error: insertError } = await supabase.from('appointments').insert([{
-                doctor_id: selectedDoctor.id,
-                patient_id: user.id,
-                appointment_date: bookingDate,
-                appointment_time: bookingTime,
-                status: 'pending'
-            }])
-            if (insertError) throw insertError
-
-            toast.success(`Appointment booked successfully with ${selectedDoctor.full_name}!`)
-            setTimeout(() => {
-                handleCloseBooking()
-            }, 1000)
-        } catch (err) {
-            console.error('Booking Catch:', err)
-            setBookingError(err.message || 'An unexpected error occurred.')
-            toast.error(err.message || 'An unexpected error occurred.')
-        } finally {
-            setBookingLoading(false)
-        }
-    }
-
-    const handleLabBooking = (e) => {
-        e.preventDefault()
-        if (!user) {
-            navigate('/login')
-            return
-        }
-        setLabLoading(true)
-        setLabSuccess('')
-
-        // Mock backend request for lab booking
-        toast.promise(
-            new Promise(resolve => setTimeout(resolve, 1200)),
-            {
-                loading: 'Booking home collection...',
-                success: `Successfully booked ${labTest} on ${labDate}.`,
-                error: 'Failed to book.',
-            }
-        ).then(() => {
-            setLabLoading(false)
-            setLabTest('')
-            setLabDate('')
-        })
-    }
-
     return (
         <>
             <section className="page-header">
@@ -186,9 +104,16 @@ export default function Doctors() {
             <section className="section">
                 <div className="container">
                     <Breadcrumbs items={[{ label: 'Doctors', href: '/doctors' }]} />
-                    <div className="section-header">
-                        <h2 className="section-title">Browse by Specialty</h2>
-                        <p className="section-subtitle">Select a specialty to filter doctors.</p>
+                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <h2 className="section-title">Browse by Specialty</h2>
+                            <p className="section-subtitle">Select a specialty to filter doctors.</p>
+                        </div>
+                        <InfoButton content={{
+                            en: { title: 'Doctor Network', helps: 'Find verified specialists for your health needs.', usage: 'Filter specialists by their field or search for specific doctors/hospitals. Each doctor profile shows their expertise and real-time availability.' },
+                            hi: { title: 'डॉक्टर नेटवर्क', helps: 'अपनी स्वास्थ्य आवश्यकताओं के लिए सत्यापित विशेषज्ञों को खोजें।', usage: 'विशेषज्ञों को उनके क्षेत्र के आधार पर फ़िल्टर करें या विशिष्ट डॉक्टरों/अस्पतालों की खोज करें। प्रत्येक डॉक्टर प्रोफ़ైల్ उनकी विशेषज्ञता और रीयल-टाइम उपलब्धता दिखाती है।' },
+                            te: { title: 'డాక్టర్ నెట్‌వర్క్', helps: 'మీ ఆరోగ్య అవసరాల కోసం ధృవీకరించబడిన నిపుణులను కనుగొనండి.', usage: 'నిపుణులను వారి రంగం ఆధారంగా ఫిల్టర్ చేయండి లేదా నిర్దిష్ట వైద్యులు/ఆసుపత్రుల కోసం శోధించండి. ప్రతి డాక్టర్ ప్రొఫైల్ వారి నైపుణ్యం మరియు రియల్ టైమ్ లభ్యతను చూపుతుంది.' }
+                        }} />
                     </div>
 
                     {!loading && availableSpecialties.length === 0 && (
@@ -291,127 +216,66 @@ export default function Doctors() {
 
                     {!loading && filteredDoctors.length > 0 && (
                         <div className="doctor-grid">
-                            {filteredDoctors.map((doc, i) => (
-                                <motion.div className="doctor-card" key={doc.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
-                                    <div className="doctor-card-header">
-                                        <img src={doc.profile_photo || doc.avatar_url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'} alt={doc.full_name} className="doctor-avatar" loading="lazy" />
-                                        <div>
-                                            <h3 className="doctor-name">{doc.full_name}</h3>
-                                            <p className="doctor-specialty">{doc.specialty}</p>
+                            {filteredDoctors.map((doc, i) => {
+                                const statusColors = {
+                                    available: { bg: '#D1FAE5', text: '#059669', label: 'Available' },
+                                    busy: { bg: '#FEF3C7', text: '#D97706', label: 'Busy' },
+                                    offline: { bg: '#F3F4F6', text: '#6B7280', label: 'Offline' }
+                                }
+                                const status = doc.availability_status || 'available'
+                                const s = statusColors[status] || statusColors.available
+
+                                return (
+                                    <motion.div className="doctor-card" key={doc.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
+                                        <div className="doctor-card-header">
+                                            <div style={{ position: 'relative' }}>
+                                                <img src={doc.profile_photo || doc.avatar_url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'} alt={doc.full_name} className="doctor-avatar" loading="lazy" />
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: -5,
+                                                    right: -5,
+                                                    padding: '2px 8px',
+                                                    borderRadius: '100px',
+                                                    fontSize: '0.65rem',
+                                                    fontWeight: 700,
+                                                    background: s.bg,
+                                                    color: s.text,
+                                                    border: '2px solid #fff',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                }}>
+                                                    {s.label}
+                                                </div>
+                                                {doc.teleconsultation_available && (
+                                                    <div title="Video Consultation Available" style={{ position: 'absolute', bottom: 0, right: 0, background: '#10B981', color: '#fff', padding: '2px', borderRadius: '50%', border: '2px solid #fff' }}>
+                                                        <Clock size={10} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <h3 className="doctor-name">{doc.full_name}</h3>
+                                                <p className="doctor-specialty">{doc.specialty}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="doctor-card-details">
-                                        <div className="doctor-detail-row">
-                                            <MapPin size={14} />
-                                            <span>{doc.hospital || 'Hospital not listed'}</span>
+                                        <div className="doctor-card-details">
+                                            <div className="doctor-detail-row">
+                                                <MapPin size={14} />
+                                                <span>{doc.hospital || 'Hospital not listed'}</span>
+                                            </div>
+                                            <div className="doctor-detail-row">
+                                                <BadgeCheck size={14} color="#10B981" />
+                                                <span>Verified Professional</span>
+                                            </div>
                                         </div>
-                                        <div className="doctor-detail-row">
-                                            <Clock size={14} />
-                                            <span>Available for appointments</span>
-                                        </div>
-                                    </div>
-                                    <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => navigate(`/doctors/${doc.id}`)}>
-                                        View Profile & Book <ArrowRight size={15} />
-                                    </button>
-                                </motion.div>
-                            ))}
+                                        <button className="btn btn-primary" style={{ width: '100%', marginTop: 'auto' }} onClick={() => navigate(`/doctors/${doc.id}`)}>
+                                            View Profile & Book <ArrowRight size={15} />
+                                        </button>
+                                    </motion.div>
+                                )
+                            })}
                         </div>
                     )}
                 </div>
             </section >
-
-            {/* ─── Lab Test Booking ─── */}
-            < section className="section" >
-                <div className="container">
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '3rem', flexWrap: 'wrap' }}>
-                        <div style={{ flex: '1 1 340px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
-                                <div style={{ width: 40, height: 40, borderRadius: 10, background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <TestTubes size={20} />
-                                </div>
-                                <h2 className="section-title" style={{ margin: 0, fontSize: '1.35rem', color: '#1E293B' }}>Pathology & Diagnostics</h2>
-                            </div>
-                            <p style={{ color: '#64748B', marginBottom: '1.5rem', lineHeight: 1.7, fontSize: '0.9rem' }}>
-                                Get lab tests done from the comfort of your home. We send a certified phlebotomist to collect samples and deliver digital reports within 24 hours.
-                            </p>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                {labTestsList.map(t => (
-                                    <span key={t} style={{ background: '#F1F5F9', color: '#475569', padding: '0.3rem 0.65rem', borderRadius: 100, fontSize: '0.72rem', fontWeight: 500 }}>{t}</span>
-                                ))}
-                            </div>
-                        </div>
-                        <div style={{ flex: '1 1 340px', maxWidth: 480 }}>
-                            <div className="form-card">
-                                <form onSubmit={handleLabBooking}>
-                                    <div className="form-group">
-                                        <label className="form-label">Select Lab Test / Package</label>
-                                        <select className="form-control" value={labTest} onChange={(e) => setLabTest(e.target.value)} required>
-                                            <option value="" disabled>Choose a test...</option>
-                                            {labTestsList.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Preferred Collection Date</label>
-                                        <input
-                                            type="date" className="form-control"
-                                            value={labDate} onChange={(e) => setLabDate(e.target.value)}
-                                            min={new Date().toISOString().split('T')[0]} required
-                                        />
-                                    </div>
-                                    <button className="btn btn-primary" disabled={labLoading} style={{ width: '100%', marginTop: '0.25rem' }}>
-                                        <CalendarDays size={16} />
-                                        {labLoading ? 'Processing...' : 'Book Home Collection'}
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section >
-
-            {/* BOOKING MODAL */}
-            {
-                showBooking && (
-                    <div className="modal-overlay" onClick={handleCloseBooking}>
-                        <div className="modal-content" onClick={e => e.stopPropagation()}>
-                            <button className="modal-close" onClick={handleCloseBooking}>&times;</button>
-
-                            <div className="modal-header">
-                                <h2 className="modal-title">Book Appointment</h2>
-                                <p className="modal-subtitle">Consulting with {selectedDoctor?.full_name}</p>
-                            </div>
-
-                            {bookingError && <div className="auth-error" style={{ marginBottom: '1rem' }}>{bookingError}</div>}
-
-                            {!bookingSuccess && (
-                                <form onSubmit={handleConfirmBooking}>
-                                    <div className="form-group">
-                                        <label className="form-label">Doctor Name</label>
-                                        <input className="form-control" type="text" value={selectedDoctor?.full_name} disabled />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Appointment Date</label>
-                                        <input
-                                            className="form-control" type="date"
-                                            value={bookingDate} onChange={e => setBookingDate(e.target.value)} required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Preferred Time</label>
-                                        <input
-                                            className="form-control" type="time"
-                                            value={bookingTime} onChange={e => setBookingTime(e.target.value)} required
-                                        />
-                                    </div>
-                                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={bookingLoading}>
-                                        {bookingLoading ? <LoadingSpinner size="small" text="Confirming..." /> : 'Confirm Appointment'}
-                                    </button>
-                                </form>
-                            )}
-                        </div>
-                    </div>
-                )
-            }
         </>
     )
 }

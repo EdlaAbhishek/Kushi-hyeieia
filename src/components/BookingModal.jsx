@@ -11,8 +11,11 @@ export default function BookingModal({ doctor, onClose }) {
 
     const [bookingDate, setBookingDate] = useState('');
     const [bookingTime, setBookingTime] = useState('');
+    const [appointmentType, setAppointmentType] = useState('in-person');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [bookedSlots, setBookedSlots] = useState(['10:00 AM', '02:30 PM']); // Mocked booked slots
+    const status = doctor?.availability_status || 'available';
 
     const timeSlots = [
         "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM",
@@ -52,6 +55,7 @@ export default function BookingModal({ doctor, onClose }) {
                 patient_id: user.id,
                 appointment_date: bookingDate,
                 appointment_time: bookingTime,
+                type: appointmentType, // Unified type
                 status: 'pending'
             };
 
@@ -73,7 +77,7 @@ export default function BookingModal({ doctor, onClose }) {
                 try {
                     await supabase.from('notifications').insert([{
                         user_id: doctor.id,
-                        message: `New appointment booked by ${user.user_metadata?.full_name || user.email || 'a patient'} for ${bookingDate} at ${bookingTime}`,
+                        message: `New ${appointmentType} appointment booked by ${user.user_metadata?.full_name || user.email || 'a patient'} for ${bookingDate} at ${bookingTime}`,
                         type: 'appointment_created',
                         read_status: false
                     }]);
@@ -112,65 +116,167 @@ export default function BookingModal({ doctor, onClose }) {
                 <button className="modal-close" onClick={onClose}>&times;</button>
 
                 <div className="modal-header">
-                    <h2 className="modal-title">Book Appointment</h2>
+                    <h2 className="modal-title">Confirm Consultation</h2>
                     <p className="modal-subtitle">Consulting with {doctor?.full_name}</p>
+                    <div style={{ marginTop: '0.75rem' }}>
+                        {(() => {
+                            const statusColors = {
+                                available: { bg: '#D1FAE5', text: '#059669', label: 'Available' },
+                                busy: { bg: '#FEF3C7', text: '#D97706', label: 'Currently Busy' },
+                                offline: { bg: '#F3F4F6', text: '#6B7280', label: 'Offline' }
+                            }
+                            const s = statusColors[status] || statusColors.available
+                            return (
+                                <span style={{
+                                    padding: '0.35rem 1rem',
+                                    borderRadius: '100px',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 700,
+                                    background: s.bg,
+                                    color: s.text,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem',
+                                    border: '1px solid currentColor'
+                                }}>
+                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'currentColor' }}></span>
+                                    {s.label}
+                                </span>
+                            )
+                        })()}
+                    </div>
                 </div>
 
-                {error && <div id="booking-error" className="auth-error" style={{ marginBottom: '1rem' }} role="alert">{error}</div>}
+                {status !== 'available' && (
+                    <div style={{
+                        marginTop: '1.5rem',
+                        padding: '2rem',
+                        textAlign: 'center',
+                        background: '#FFFBEB',
+                        borderRadius: '12px',
+                        border: '1px solid #FEF3C7'
+                    }}>
+                        <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⏳</div>
+                        <h3 style={{ color: '#92400E', marginBottom: '0.5rem' }}>Doctor is currently {status}</h3>
+                        <p style={{ color: '#B45309', margin: 0, fontSize: '0.95rem' }}>
+                            {status === 'busy'
+                                ? "This doctor is currently busy. Please try later."
+                                : "Doctor is currently unavailable. Please check back later."
+                            }
+                        </p>
+                        <button className="btn btn-outline" style={{ marginTop: '1.5rem', width: '100%' }} onClick={onClose}>
+                            Choose Another Doctor
+                        </button>
+                    </div>
+                )}
 
-                <form onSubmit={handleConfirmBooking}>
-                    <div className="form-group">
-                        <label className="form-label">Doctor Name</label>
-                        <input className="form-control" type="text" value={doctor?.full_name} disabled />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">Appointment Date</label>
-                        <input
-                            className="form-control" type="date"
-                            value={bookingDate} onChange={e => setBookingDate(e.target.value)} required
-                            aria-invalid={!!error}
-                            aria-describedby={error ? "booking-error" : undefined}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">Available Time Slots</label>
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                            gap: '0.5rem',
-                            marginTop: '0.5rem'
-                        }}>
-                            {timeSlots.map(slot => (
-                                <button
-                                    key={slot}
-                                    type="button"
-                                    onClick={() => {
-                                        setBookingTime(slot);
-                                        setError(''); // clear time error if selected
-                                    }}
-                                    style={{
-                                        padding: '0.65rem 0.5rem',
-                                        fontSize: '0.85rem',
-                                        fontWeight: 600,
-                                        borderRadius: 'var(--radius-sm)',
-                                        border: bookingTime === slot ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                                        background: bookingTime === slot ? '#EFF6FF' : '#fff',
-                                        color: bookingTime === slot ? 'var(--primary)' : 'var(--text-main)',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s',
-                                        outline: 'none'
-                                    }}
-                                >
-                                    {slot}
-                                </button>
-                            ))}
-                        </div>
-                        {error && !bookingTime && <div style={{ color: 'var(--emergency)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Please select a time slot.</div>}
-                    </div>
-                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={loading}>
-                        {loading ? <LoadingSpinner size="small" text="Confirming..." /> : 'Confirm Appointment'}
-                    </button>
-                </form>
+                {status === 'available' && (
+                    <>
+                        {error && <div id="booking-error" className="auth-error" style={{ marginBottom: '1rem' }} role="alert">{error}</div>}
+
+                        <form onSubmit={handleConfirmBooking}>
+                            <div className="form-group">
+                                <label className="form-label">Consultation Type</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.5rem' }}>
+                                    <button
+                                        type="button"
+                                        className={`btn ${appointmentType === 'in-person' ? 'btn-primary' : 'btn-outline'}`}
+                                        onClick={() => setAppointmentType('in-person')}
+                                        style={{ fontSize: '0.85rem', padding: '0.75rem 0.5rem' }}
+                                    >
+                                        🏥 Physical Visit
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`btn ${appointmentType === 'telehealth' ? 'btn-primary' : 'btn-outline'}`}
+                                        onClick={() => setAppointmentType('telehealth')}
+                                        style={{ fontSize: '0.85rem', padding: '0.75rem 0.5rem' }}
+                                        disabled={doctor?.teleconsultation_available === false}
+                                    >
+                                        📹 Video Call
+                                        {doctor?.teleconsultation_available === false && <span style={{ display: 'block', fontSize: '0.65rem', opacity: 0.7 }}>(Unavailable)</span>}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Doctor Name</label>
+                                <input className="form-control" type="text" value={doctor?.full_name} disabled />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Appointment Date</label>
+                                <input
+                                    className="form-control" type="date"
+                                    value={bookingDate} onChange={e => setBookingDate(e.target.value)} required
+                                    aria-invalid={!!error}
+                                    aria-describedby={error ? "booking-error" : undefined}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Available Time Slots</label>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                                    gap: '0.5rem',
+                                    marginTop: '0.5rem'
+                                }}>
+                                    {timeSlots.map(slot => {
+                                        const isBooked = bookedSlots.includes(slot);
+                                        const isSelected = bookingTime === slot;
+
+                                        return (
+                                            <button
+                                                key={slot}
+                                                type="button"
+                                                disabled={isBooked}
+                                                onClick={() => {
+                                                    setBookingTime(slot);
+                                                    setError(''); // clear time error if selected
+                                                }}
+                                                style={{
+                                                    padding: '0.65rem 0.5rem',
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 600,
+                                                    borderRadius: 'var(--radius-sm)',
+                                                    border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                                                    background: isSelected ? '#EFF6FF' : (isBooked ? '#F1F5F9' : '#fff'),
+                                                    color: isSelected ? 'var(--primary)' : (isBooked ? '#94A3B8' : 'var(--text-main)'),
+                                                    cursor: isBooked ? 'not-allowed' : 'pointer',
+                                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    outline: 'none',
+                                                    opacity: isBooked ? 0.7 : 1,
+                                                    transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                                                    boxShadow: isSelected ? '0 4px 6px -1px rgba(59, 130, 246, 0.2)' : 'none'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    if (!isBooked && !isSelected) {
+                                                        e.currentTarget.style.borderColor = 'var(--primary-light)';
+                                                        e.currentTarget.style.background = '#F8FAFC';
+                                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                                    }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    if (!isBooked && !isSelected) {
+                                                        e.currentTarget.style.borderColor = 'var(--border-light)';
+                                                        e.currentTarget.style.background = '#fff';
+                                                        e.currentTarget.style.transform = 'translateY(0)';
+                                                    }
+                                                }}
+                                            >
+                                                {slot}
+                                                {isBooked && <div style={{ fontSize: '0.6rem', marginTop: '0.2rem' }}>Booked</div>}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {error && !bookingTime && <div style={{ color: 'var(--emergency)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Please select a time slot.</div>}
+                            </div>
+                            <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={loading}>
+                                {loading ? <LoadingSpinner size="small" text="Confirming..." /> : `Confirm ${appointmentType === 'in-person' ? 'Physical' : 'Video'} Appointment`}
+                            </button>
+                        </form>
+                    </>
+                )}
             </div>
         </div>
     );

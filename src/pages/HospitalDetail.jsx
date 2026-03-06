@@ -218,6 +218,29 @@ export default function HospitalDetail() {
 
                             <form onSubmit={handleRequestAppointment}>
                                 <div className="form-group">
+                                    <label className="form-label">Consultation Type</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.25rem' }}>
+                                        <button
+                                            type="button"
+                                            className={`btn btn-sm ${!hospital.isTeleconsult ? 'btn-primary' : 'btn-outline'}`}
+                                            onClick={() => setHospital({ ...hospital, isTeleconsult: false })}
+                                            style={{ fontSize: '0.75rem' }}
+                                        >
+                                            🏥 Physical
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`btn btn-sm ${hospital.isTeleconsult ? 'btn-primary' : 'btn-outline'}`}
+                                            onClick={() => setHospital({ ...hospital, isTeleconsult: true })}
+                                            style={{ fontSize: '0.75rem' }}
+                                            disabled={!hospital.teleconsult}
+                                        >
+                                            📹 Video
+                                            {!hospital.teleconsult && <span style={{ display: 'block', fontSize: '10px' }}> (N/A)</span>}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="form-group">
                                     <label className="form-label">Patient Name</label>
                                     <input type="text" className="form-control" required placeholder="Full Name" aria-label="Patient Full Name" disabled={requestLoading} />
                                 </div>
@@ -241,7 +264,7 @@ export default function HospitalDetail() {
                                     <input type="date" className="form-control" required min={new Date().toISOString().split('T')[0]} aria-label="Preferred Appointment Date" disabled={requestLoading} />
                                 </div>
                                 <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={requestLoading}>
-                                    {requestLoading ? <LoadingSpinner size="small" text="Submitting..." /> : 'Submit Request'}
+                                    {requestLoading ? <LoadingSpinner size="small" text="Submitting..." /> : `Request ${hospital.isTeleconsult ? 'Video' : 'Physical'} Appointment`}
                                 </button>
                             </form>
                         </div>

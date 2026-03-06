@@ -1,29 +1,37 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { useState } from 'react'
 import { Menu, X, User, LogOut } from 'lucide-react'
+import ScrollToTop from '../components/ScrollToTop'
 
 export default function MainLayout() {
     const navigate = useNavigate()
+    const location = useLocation()
     const { user, role, signOut, isDoctor } = useAuth()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const userName = user?.user_metadata?.full_name || user?.email || ''
 
     const dashboardPath = isDoctor ? '/doctor-dashboard' : '/dashboard'
+    const isDoctorDashboardRelated = isDoctor && ['/patients', '/services'].includes(location.pathname)
 
     const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
     const closeMenu = () => setIsMobileMenuOpen(false)
 
     const handleSignOut = async () => {
-        if (window.confirm("Are you sure you want to sign out?")) {
+        try {
             closeMenu()
             await signOut()
+        } catch (err) {
+            console.error("Sign out error:", err)
+        } finally {
+            // Always navigate to login, even if sign out fails
             navigate('/login')
         }
     }
 
     return (
         <>
+            <ScrollToTop />
             <header className={`navbar ${isDoctor ? 'navbar-doctor' : ''}`}>
                 <div className="container nav-container">
                     <NavLink to="/" className="logo" onClick={closeMenu}>
@@ -37,36 +45,35 @@ export default function MainLayout() {
                     <nav className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
                         <NavLink to="/" end onClick={closeMenu}>Home</NavLink>
 
-                        {/* Patient nav */}
+                        {/* Patient nav — clean 6 items */}
                         {!isDoctor && (
                             <>
-                                <NavLink to="/patients" onClick={closeMenu}>Patients</NavLink>
                                 <NavLink to="/doctors" onClick={closeMenu}>Doctors</NavLink>
                                 <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
-                                <NavLink to="/insurance" onClick={closeMenu}>Insurance</NavLink>
                                 <NavLink to="/services" onClick={closeMenu}>Services</NavLink>
-                                <NavLink to="/chat" onClick={closeMenu}>AI Chat</NavLink>
+                                <NavLink to="/chat" onClick={closeMenu}>AI Assistant</NavLink>
                             </>
                         )}
 
-                        {/* Doctor nav */}
+                        {/* Doctor nav — clean */}
                         {isDoctor && (
                             <>
-                                <NavLink to="/doctor-dashboard" onClick={closeMenu}>My Appointments</NavLink>
+                                <NavLink to="/patients" onClick={closeMenu}>Patients</NavLink>
                                 <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
+                                <NavLink to="/services" onClick={closeMenu}>Services</NavLink>
+                                <NavLink to="/chat" onClick={closeMenu}>AI Assistant</NavLink>
                             </>
                         )}
-
-                        <NavLink to="/about" onClick={closeMenu}>About</NavLink>
-                        <NavLink to="/contact" onClick={closeMenu}>Contact</NavLink>
 
                         {/* Mobile Actions */}
                         <div className="mobile-actions">
                             {user && (
                                 <>
-                                    <NavLink to={dashboardPath} className="btn btn-primary" onClick={closeMenu}>
-                                        {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
-                                    </NavLink>
+                                    {!isDoctorDashboardRelated && (
+                                        <NavLink to={dashboardPath} className="btn btn-primary" onClick={closeMenu}>
+                                            {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
+                                        </NavLink>
+                                    )}
                                     <NavLink to="/profile" className="nav-profile-link" onClick={closeMenu}>
                                         <User size={16} /> {userName}
                                     </NavLink>
@@ -81,9 +88,11 @@ export default function MainLayout() {
                     <div className="nav-actions desktop-only">
                         {user && (
                             <>
-                                <NavLink to={dashboardPath} className="btn btn-primary" style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}>
-                                    {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
-                                </NavLink>
+                                {!isDoctorDashboardRelated && (
+                                    <NavLink to={dashboardPath} className="btn btn-primary" style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}>
+                                        {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
+                                    </NavLink>
+                                )}
                                 <NavLink to="/profile" className="nav-profile-link">
                                     <User size={16} /> {userName}
                                 </NavLink>
@@ -136,7 +145,7 @@ export default function MainLayout() {
                     <div className="footer-bottom">
                         <p>&copy; 2026 Khushi Hygieia Healthcare Platform. All rights reserved.</p>
                         <div className="footer-bottom-links">
-                            <a href="#">Privacy Policy</a>
+                            <NavLink to="/security">Privacy Policy</NavLink>
                             <a href="#">Terms of Service</a>
                         </div>
                     </div>

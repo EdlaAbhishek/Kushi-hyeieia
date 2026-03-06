@@ -122,6 +122,14 @@ export default function Login() {
                             </button>
                         </div>
                     </div>
+                    <div style={{ marginTop: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#64748B', display: 'flex', gap: '0.5rem', alignItems: 'flex-start', background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                        <div style={{ color: 'var(--primary)', marginTop: '2px' }}>🩺</div>
+                        <div>
+                            <strong>Are you a Doctor?</strong><br />
+                            Sign in here as a standard user. You can apply for or access your Doctor account from your Dashboard.
+                        </div>
+                    </div>
+
                     <button className="btn btn-primary auth-btn" type="submit" disabled={loading} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
                         {loading ? <LoadingSpinner size="small" text="Signing in..." /> : 'Sign In'}
                     </button>

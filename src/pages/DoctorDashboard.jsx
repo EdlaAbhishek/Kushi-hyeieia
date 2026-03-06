@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { MessageCircle, X, Send, AlertTriangle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import InfoButton from '../components/ui/InfoButton'
 
 export default function DoctorDashboard() {
     const { user } = useAuth()
@@ -13,6 +14,8 @@ export default function DoctorDashboard() {
     const [loading, setLoading] = useState(true)
     const [fetchError, setFetchError] = useState(null)
     const [updatingId, setUpdatingId] = useState(null)
+    const [availabilityStatus, setAvailabilityStatus] = useState('available')
+    const [updatingStatus, setUpdatingAvailability] = useState(false)
 
     // Post-care notes state
     const [notesModal, setNotesModal] = useState(null)
@@ -39,13 +42,35 @@ export default function DoctorDashboard() {
         if (!user) { setFetchError('Session expired.'); setLoading(false); return }
 
         try {
+            // Fetch doctor's current availability
+            const { data: docData, error: docError } = await supabase
+                .from('doctors')
+                .select('availability_status')
+                .eq('id', user.id)
+                .single()
+            if (!docError && docData) {
+                setAvailabilityStatus(docData.availability_status || 'available')
+            }
+
             const { data, error } = await supabase
                 .from('appointments')
                 .select('*')
                 .eq('doctor_id', user.id)
                 .order('appointment_date', { ascending: false })
             if (error) throw error
-            setAppointments(data || [])
+
+            // Sort by urgency first (Emergency -> Urgent -> Routine), then date 
+            const urgencyWeight = { 'Emergency': 3, 'Urgent': 2, 'Routine': 1 }
+            const sortedAppointments = (data || []).sort((a, b) => {
+                const weightA = urgencyWeight[a.urgency] || 1
+                const weightB = urgencyWeight[b.urgency] || 1
+                if (weightA !== weightB) {
+                    return weightB - weightA
+                }
+                return new Date(a.appointment_date) - new Date(b.appointment_date)
+            })
+
+            setAppointments(sortedAppointments)
 
             const { data: notifData, error: notifError } = await supabase
                 .from('notifications')
@@ -164,6 +189,55 @@ export default function DoctorDashboard() {
         setUpdatingId(null)
     }
 
+    const joinVideoCall = async (appt) => {
+        try {
+            // Check if session exists
+            const { data, error } = await supabase
+                .from('video_sessions')
+                .select('id')
+                .eq('appointment_id', appt.id)
+                .maybeSingle()
+
+            if (data) {
+                navigate(`/video-call/${data.id}`)
+            } else {
+                // Create session
+                const { data: newSession, error: createError } = await supabase
+                    .from('video_sessions')
+                    .insert({
+                        appointment_id: appt.id,
+                        doctor_id: appt.doctor_id,
+                        patient_id: appt.patient_id,
+                        status: 'waiting'
+                    })
+                    .select()
+                    .single()
+
+                if (createError) throw createError
+                navigate(`/video-call/${newSession.id}`)
+            }
+        } catch (err) {
+            toast.error("Could not start video session.")
+            console.error(err)
+        }
+    }
+
+    const handleAvailabilityUpdate = async (newStatus) => {
+        setUpdatingAvailability(true)
+        try {
+            const { error } = await supabase
+                .from('doctors')
+                .update({ availability_status: newStatus })
+                .eq('id', user.id)
+            if (error) throw error
+            setAvailabilityStatus(newStatus)
+            toast.success(`Availability updated to ${newStatus}`)
+        } catch (err) {
+            toast.error(`Failed to update availability: ${err.message}`)
+        }
+        setUpdatingAvailability(false)
+    }
+
     const openNotes = (appt) => {
         setNotesModal(appt.id)
         setNotesText(appt.notes || '')
@@ -212,14 +286,66 @@ export default function DoctorDashboard() {
         }
     }
 
+    const getUrgencyColor = (urgency) => {
+        switch (urgency?.toLowerCase()) {
+            case 'emergency': return { bg: '#FEE2E2', text: '#B91C1C' } // Red
+            case 'urgent': return { bg: '#FEF3C7', text: '#D97706' } // Yellow
+            case 'routine': return { bg: '#D1FAE5', text: '#059669' } // Green
+            default: return { bg: '#F3F4F6', text: '#4B5563' }
+        }
+    }
+
     const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Doctor'
 
     return (
         <>
             <section className="page-header doctor-header">
+                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h1 className="page-title">Doctor Dashboard</h1>
+                        <p className="page-subtitle">Welcome back, Dr. {userName}</p>
+                    </div>
+                </div>
+            </section>
+
+            <section className="section" style={{ paddingBottom: 0 }}>
                 <div className="container">
-                    <h1 className="page-title">Doctor Dashboard</h1>
-                    <p className="page-subtitle">Welcome back, Dr. {userName}</p>
+                    <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem', background: '#fff', border: '1px solid var(--border-color)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Availability Status</h3>
+                                <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'var(--text-light)' }}>
+                                    Control when patients can book new appointments with you.
+                                </p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {[
+                                    { id: 'available', label: 'Available', color: '#10B981', bg: '#D1FAE5' },
+                                    { id: 'busy', label: 'Busy', color: '#F59E0B', bg: '#FEF3C7' },
+                                    { id: 'offline', label: 'Offline', color: '#6B7280', bg: '#F3F4F6' }
+                                ].map(status => (
+                                    <button
+                                        key={status.id}
+                                        disabled={updatingStatus}
+                                        onClick={() => handleAvailabilityUpdate(status.id)}
+                                        style={{
+                                            padding: '0.5rem 1rem',
+                                            borderRadius: 'var(--radius-sm)',
+                                            fontSize: '0.85rem',
+                                            fontWeight: 600,
+                                            border: availabilityStatus === status.id ? `2px solid ${status.color}` : '1px solid var(--border-color)',
+                                            background: availabilityStatus === status.id ? status.bg : '#fff',
+                                            color: availabilityStatus === status.id ? status.color : 'var(--text-main)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {status.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -229,10 +355,15 @@ export default function DoctorDashboard() {
                     {/* Notifications Section */}
                     {notifications.length > 0 && (
                         <div style={{ marginBottom: '2.5rem' }}>
-                            <div className="section-header" style={{ marginBottom: '1rem' }}>
+                            <div className="section-header" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
                                     <AlertTriangle size={20} color="var(--primary)" /> Recent Notifications
                                 </h2>
+                                <InfoButton content={{
+                                    en: { title: 'Doctor Privacy', helps: 'Manage your workload and patient appointments.', usage: 'Toggle your status between Available, Busy, or Offline. When Busy or Offline, new patients cannot book appointments, but existing ones are preserved.' },
+                                    hi: { title: 'डॉक्टर की गोपनीयता', helps: 'अपने कार्यभार और रोगी नियुक्तियों का प्रबंधन करें।', usage: 'उपलब्ध, व्यस्त या ऑफ़लाइन के बीच अपनी स्थिति टॉगल करें। व्यस्त या ऑफ़लाइन होने पर, नए रोगी अपॉइंटमेंट बुक नहीं कर सकते।' },
+                                    te: { title: 'డాక్టర్ గోప్యత', helps: 'మీ పని భారాన్ని మరియు రోగి అపాయింట్‌మెంట్‌లను నిర్వహించండి.', usage: 'మీ స్థితిని అందుబాటులో ఉంది, బిజీగా లేదా ఆఫ్‌లైన్ మధ్య టోగుల్ చేయండి. బిజీగా లేదా ఆఫ్‌లైన్లో ఉన్నప్పుడు, కొత్త రోగులు అపాయింట్‌మెంట్‌లను బుక్ చేయలేరు.' }
+                                }} />
                             </div>
                             <div style={{ display: 'grid', gap: '0.75rem' }}>
                                 {notifications.map(notif => (
@@ -265,6 +396,38 @@ export default function DoctorDashboard() {
                             </div>
                         </div>
                     )}
+
+                    {/* Hospital Resources Panel */}
+                    <div style={{ marginBottom: '2.5rem' }}>
+                        <div className="section-header" style={{ marginBottom: '1rem' }}>
+                            <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
+                                🏥 Hospital Resources
+                            </h2>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                            <div className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Beds Available</span>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                                    <span style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary)' }}>42</span>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>/ 150</span>
+                                </div>
+                            </div>
+                            <div className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>On-Duty Doctors</span>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                                    <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#059669' }}>12</span>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>Specialists</span>
+                                </div>
+                            </div>
+                            <div className="stat-card" style={{ background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <span style={{ color: '#991B1B', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Emergencies Today</span>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                                    <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#B91C1C' }}>5</span>
+                                    <span style={{ fontSize: '0.85rem', color: '#991B1B' }}>critical</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="section-header">
                         <h2 className="section-title">My Appointments</h2>
@@ -302,7 +465,7 @@ export default function DoctorDashboard() {
                                         <th>Patient</th>
                                         <th>Date</th>
                                         <th>Time</th>
-                                        <th>Type</th>
+                                        <th>Urgency / Type</th>
                                         <th>Status</th>
                                         <th>Notes</th>
                                         <th>Actions</th>
@@ -317,10 +480,25 @@ export default function DoctorDashboard() {
                                             <td>{formatDate(appt.appointment_date)}</td>
                                             <td>{formatTime(appt.appointment_time)}</td>
                                             <td>
-                                                {appt.appointment_type === 'teleconsultation'
-                                                    ? <span className="teleconsult-badge status-badge">📹 Video</span>
-                                                    : <span style={{ fontSize: '0.85rem' }}>In-Person</span>
-                                                }
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                                    {appt.urgency && (
+                                                        <span style={{
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: 600,
+                                                            padding: '0.1rem 0.4rem',
+                                                            borderRadius: '0.25rem',
+                                                            backgroundColor: getUrgencyColor(appt.urgency).bg,
+                                                            color: getUrgencyColor(appt.urgency).text,
+                                                            alignSelf: 'flex-start'
+                                                        }}>
+                                                            {appt.urgency.toUpperCase()}
+                                                        </span>
+                                                    )}
+                                                    {appt.appointment_type === 'teleconsultation'
+                                                        ? <span className="teleconsult-badge status-badge" style={{ marginTop: '0.1rem' }}>📹 Video</span>
+                                                        : <span style={{ fontSize: '0.85rem' }}>In-Person</span>
+                                                    }
+                                                </div>
                                             </td>
                                             <td>
                                                 <span className={`status-badge ${getStatusClass(appt.status)}`}>
@@ -345,14 +523,23 @@ export default function DoctorDashboard() {
                                             <td>
                                                 <div className="doctor-actions">
                                                     {appt.status === 'pending' && (
-                                                        <button
-                                                            className="btn btn-primary"
-                                                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
-                                                            disabled={updatingId === appt.id}
-                                                            onClick={() => handleUpdateStatus(appt.id, 'confirmed')}
-                                                        >
-                                                            Confirm
-                                                        </button>
+                                                        <>
+                                                            <button
+                                                                className="btn btn-primary"
+                                                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
+                                                                disabled={updatingId === appt.id}
+                                                                onClick={() => handleUpdateStatus(appt.id, 'confirmed')}
+                                                            >
+                                                                Confirm
+                                                            </button>
+                                                            <button
+                                                                className="btn btn-outline"
+                                                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', color: 'var(--primary)', borderColor: 'var(--primary)' }}
+                                                                onClick={() => toast.success(`AI suggests slot: Today at ${appt.urgency === 'Emergency' ? 'Immediately' : '2:30 PM'} based on urgency.`)}
+                                                            >
+                                                                Suggest Slot
+                                                            </button>
+                                                        </>
                                                     )}
                                                     {appt.status === 'confirmed' && (
                                                         <>
@@ -365,9 +552,13 @@ export default function DoctorDashboard() {
                                                                 Complete
                                                             </button>
                                                             {appt.appointment_type === 'teleconsultation' && (
-                                                                <Link to={`/teleconsult/${appt.id}`} className="btn btn-outline" style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}>
-                                                                    Join
-                                                                </Link>
+                                                                <button
+                                                                    onClick={() => joinVideoCall(appt)}
+                                                                    className="btn btn-outline"
+                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', background: '#EFF6FF', borderColor: 'var(--primary)' }}
+                                                                >
+                                                                    📹 Join Call
+                                                                </button>
                                                             )}
                                                         </>
                                                     )}

@@ -3,12 +3,24 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MessageCircle, X, Send, AlertTriangle } from 'lucide-react'
+import { MessageCircle, X, Send, AlertTriangle, Activity } from 'lucide-react'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import InfoButton from '../components/ui/InfoButton'
 import { toast } from 'react-hot-toast'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-export default function Dashboard() {
+const mockHealthData = [
+    { month: 'Oct', score: 72 },
+    { month: 'Nov', score: 75 },
+    { month: 'Dec', score: 70 },
+    { month: 'Jan', score: 85 },
+    { month: 'Feb', score: 88 },
+    { month: 'Mar', score: 92 },
+]
+
+export default function Dashboard({ activeTab = 'overview' }) {
     const { user } = useAuth()
+    const navigate = useNavigate()
     const [appointments, setAppointments] = useState([])
     const [loading, setLoading] = useState(true)
     const [fetchError, setFetchError] = useState(null)
@@ -138,6 +150,39 @@ export default function Dashboard() {
         }
     }
 
+    const startVideoCall = async (appt) => {
+        try {
+            // Check if session exists
+            const { data, error } = await supabase
+                .from('video_sessions')
+                .select('id')
+                .eq('appointment_id', appt.id)
+                .maybeSingle()
+
+            if (data) {
+                navigate(`/video-call/${data.id}`)
+            } else {
+                // Create session
+                const { data: newSession, error: createError } = await supabase
+                    .from('video_sessions')
+                    .insert({
+                        appointment_id: appt.id,
+                        doctor_id: appt.doctor_id,
+                        patient_id: appt.patient_id,
+                        status: 'waiting'
+                    })
+                    .select()
+                    .single()
+
+                if (createError) throw createError
+                navigate(`/video-call/${newSession.id}`)
+            }
+        } catch (err) {
+            toast.error("Could not start video session.")
+            console.error(err)
+        }
+    }
+
     const getStatusClass = (status) => {
         switch (status) {
             case 'confirmed': return 'status-confirmed'
@@ -175,23 +220,51 @@ export default function Dashboard() {
 
     return (
         <>
-            <section className="page-header">
+            <section className="section" style={{ paddingTop: 0 }}>
                 <div className="container">
-                    <h1 className="page-title">My Dashboard</h1>
-                    <p className="page-subtitle">Welcome back, {userName}.</p>
-                </div>
-            </section>
+                    {/* Personal Health Trends Panel (Only on Overview) */}
+                    {activeTab === 'overview' && (
+                        <div style={{ marginBottom: '3rem' }}>
+                            <div className="section-header" style={{ marginBottom: '1.5rem' }}>
+                                <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
+                                    <Activity size={24} color="var(--primary)" /> Personal Health Trends
+                                </h2>
+                                <p className="section-subtitle">Your overall wellness score over time.</p>
+                            </div>
+                            <div className="card" style={{ padding: '1.5rem', height: 300 }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={mockHealthData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                        <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} dy={10} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} domain={['dataMin - 10', 'dataMax + 10']} />
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                            cursor={{ stroke: 'var(--primary)', strokeWidth: 1, strokeDasharray: '5 5' }}
+                                        />
+                                        <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6, stroke: 'var(--primary)', strokeWidth: 2, fill: '#fff' }} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    )}
 
-            <section className="section">
-                <div className="container">
-                    <div className="section-header">
-                        <h2 className="section-title">Your Appointments</h2>
-                        <p className="section-subtitle">
-                            {loading
-                                ? 'Loading your appointments...'
-                                : `${appointments.length} appointment${appointments.length !== 1 ? 's' : ''} found`}
-                        </p>
-                    </div>
+                    {(activeTab === 'overview' || activeTab === 'appointments') && (
+                        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <div>
+                                <h2 className="section-title" style={{ margin: 0 }}>Your Appointments</h2>
+                                <p className="section-subtitle" style={{ margin: 0 }}>
+                                    {loading
+                                        ? 'Loading your appointments...'
+                                        : `${appointments.length} appointment${appointments.length !== 1 ? 's' : ''} found`}
+                                </p>
+                            </div>
+                            <InfoButton content={{
+                                en: { title: 'Your Appointments', helps: 'This section organizes your upcoming and past medical visits so you can manage your healthcare schedule.', usage: 'View your scheduled doctors here. You can cancel an appointment if needed or click "Join Chat" to message the doctor if the feature is enabled.' },
+                                hi: { title: 'आपकी नियुक्तियां', helps: 'यह अनुभाग आपकी आगामी और पिछली चिकित्सा यात्राओं को व्यवस्थित करता है ताकि आप अपनी स्वास्थ्य देखभाल अनुसूची का प्रबंधन कर सकें।', usage: 'यहाँ अपने निर्धारित डॉक्टरों को देखें। आप आवश्यक होने पर अपॉइंटमेंट रद्द कर सकते हैं या सुविधा सक्षम होने पर डॉक्टर को संदेश भेजने के लिए "चैट में शामिल हों" पर क्लिक कर सकते हैं।' },
+                                te: { title: 'మీ అపాయింట్‌మెంట్‌లు', helps: 'ఈ విభాగం మీ రాబోయే మరియు గత వైద్య సందర్శనలను నిర్వహిస్తుంది, తద్వారా మీరు మీ ఆరోగ్య సంరక్షణ షెడ్యూల్‌ను నిర్వహించవచ్చు.', usage: 'ఇక్కడ షెడ్యూల్ చేయబడిన మీ వైద్యులను చూడండి. అవసరమైతే మీరు అపాయింట్‌మెంట్‌ను రద్దు చేయవచ్చు లేదా ఫీచర్ ప్రారంభించబడి ఉంటే డాక్టర్‌కు మెసేజ్ చేయడానికి "చాట్‌లో చేరండి" క్లిక్ చేయవచ్చు.' }
+                            }} />
+                        </div>
+                    )}
 
                     {fetchError && (
                         <div className="auth-error" style={{ maxWidth: 600, margin: '0 auto 1.5rem' }}>
@@ -258,7 +331,18 @@ export default function Dashboard() {
                                             <span className="appointment-label">Type</span>
                                             <span className="appointment-value">
                                                 {appt.appointment_type === 'teleconsultation'
-                                                    ? <span className="teleconsult-badge status-badge">📹 Video</span>
+                                                    ? <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <span className="teleconsult-badge status-badge">📹 Video</span>
+                                                        {appt.status === 'confirmed' && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); startVideoCall(appt); }}
+                                                                className="btn btn-primary"
+                                                                style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}
+                                                            >
+                                                                Start Call
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     : 'In-Person'
                                                 }
                                             </span>

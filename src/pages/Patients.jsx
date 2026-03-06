@@ -13,7 +13,7 @@ const fadeUp = {
 }
 
 export default function Patients() {
-    const { user } = useAuth()
+    const { user, isDoctor } = useAuth()
     const [completedAppts, setCompletedAppts] = useState([])
     const [loadingCare, setLoadingCare] = useState(true)
 
@@ -47,7 +47,8 @@ export default function Patients() {
     const services = [
         { icon: Calendar, title: 'Book Appointment', desc: 'Schedule visits with leading doctors across all medical specialties through our verified network.', to: '/doctors', btnText: 'Search Doctors' },
         { icon: Package, title: 'Medicine & Blood Locator', desc: 'Real-time inventory checks for essential medicines and nearby blood donor availability.', to: '/services', btnText: 'Locate Resources' },
-        { icon: FileText, title: 'Electronic Health Records', desc: 'Access your consultation history, lab reports, and prescriptions in a secure, encrypted vault.', to: '/dashboard', btnText: 'My Dashboard' },
+        // Only show dashboard link to patients
+        ...(!isDoctor ? [{ icon: FileText, title: 'Electronic Health Records', desc: 'Access your consultation history, lab reports, and prescriptions in a secure, encrypted vault.', to: '/dashboard', btnText: 'My Dashboard' }] : []),
     ]
 
     return (

@@ -81,9 +81,33 @@ export default function DoctorDetail() {
                                     style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 1.5rem', display: 'block', border: '4px solid #EFF6FF' }}
                                 />
                                 <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#0F172A' }}>{doctor.full_name}</h1>
-                                <p style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '1.1rem', marginBottom: '1rem' }}>
+                                <p style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.25rem' }}>
                                     {doctor.specialty || 'General Practitioner'}
                                 </p>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    {(() => {
+                                        const statusColors = {
+                                            available: { bg: '#D1FAE5', text: '#059669', label: 'Available' },
+                                            busy: { bg: '#FEF3C7', text: '#D97706', label: 'Busy' },
+                                            offline: { bg: '#F3F4F6', text: '#6B7280', label: 'Offline' }
+                                        }
+                                        const status = doctor.availability_status || 'available'
+                                        const s = statusColors[status] || statusColors.available
+                                        return (
+                                            <span style={{
+                                                padding: '0.25rem 0.75rem',
+                                                borderRadius: '100px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 700,
+                                                background: s.bg,
+                                                color: s.text,
+                                                display: 'inline-block'
+                                            }}>
+                                                ● {s.label}
+                                            </span>
+                                        )
+                                    })()}
+                                </div>
 
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem', color: '#64748B' }}>
                                     <MapPin size={16} />

@@ -11,21 +11,11 @@ export default function Signup() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
-    const [role, setRole] = useState('patient')
-    const [specialty, setSpecialty] = useState('')
-    const [hospitalName, setHospitalName] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
     const navigate = useNavigate()
     const { signup, loginWithGoogle } = useAuth()
-
-    const specialtyOptions = [
-        'Anesthesiology', 'Cardiology', 'Dentistry', 'Dermatology', 'Endocrinology',
-        'ENT (Ear, Nose, Throat)', 'Eye Specialist', 'Gastroenterology', 'General Medicine', 'Nephrology', 'Neurology',
-        'Obstetrics and Gynecology', 'Oncology', 'Ophthalmology', 'Orthopedics',
-        'Pathology', 'Pediatrics', 'Plastic Surgery', 'Psychiatry', 'Pulmonology', 'Radiology', 'Rheumatology', 'Surgery', 'Urology', 'Vascular Surgery'
-    ]
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -33,40 +23,19 @@ export default function Signup() {
         setError('')
         setSuccess('')
 
-        if (role === 'doctor') {
-            if (!specialty) { setError('Please select a specialty.'); setLoading(false); return }
-            if (!hospitalName.trim()) { setError('Please enter your hospital name.'); setLoading(false); return }
-        }
-
         try {
+            const role = 'patient'
             const user = await signup({ full_name: name, email, password, role })
 
             if (user) {
-                if (role === 'doctor') {
-                    const { error: insertError } = await supabase.from('doctors').insert([{
-                        id: user.id,
-                        user_id: user.id,
-                        full_name: name,
-                        email: email,
-                        specialty,
-                        hospital: hospitalName.trim(),
-                        hospital_name: hospitalName.trim(),
-                        verified: false
-                    }])
-                    if (insertError) {
-                        console.error('Doctor Insert Error:', insertError)
-                        throw insertError
-                    }
-                } else if (role === 'patient') {
-                    const { error: insertError } = await supabase.from('patients').insert([{
-                        id: user.id,
-                        full_name: name,
-                        email: email
-                    }])
-                    if (insertError) {
-                        console.error('Patient Insert Error:', insertError)
-                        throw insertError
-                    }
+                const { error: insertError } = await supabase.from('patients').insert([{
+                    id: user.id,
+                    full_name: name,
+                    email: email
+                }])
+                if (insertError) {
+                    console.error('Patient Insert Error:', insertError)
+                    throw insertError
                 }
             }
 
@@ -74,11 +43,7 @@ export default function Signup() {
             setSuccess('Account created! Redirecting to dashboard...')
             toast.success('Account created! Redirecting...')
             setTimeout(() => {
-                if (role === 'doctor') {
-                    navigate('/doctor-dashboard')
-                } else {
-                    navigate('/dashboard')
-                }
+                navigate('/dashboard')
             }, 2000)
         } catch (err) {
             setError(err.message)
@@ -150,36 +115,13 @@ export default function Signup() {
                             </button>
                         </div>
                     </div>
-                    <div className="form-group">
-                        <label className="form-label">I am a</label>
-                        <div className="role-picker">
-                            <button type="button" className={`role-option ${role === 'patient' ? 'role-active' : ''}`} onClick={() => setRole('patient')}>
-                                🏥 Patient
-                            </button>
-                            <button type="button" className={`role-option ${role === 'doctor' ? 'role-active' : ''}`} onClick={() => setRole('doctor')}>
-                                🩺 Doctor
-                            </button>
+                    <div style={{ marginTop: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#64748B', display: 'flex', gap: '0.5rem', alignItems: 'flex-start', background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                        <div style={{ color: 'var(--primary)', marginTop: '2px' }}>🩺</div>
+                        <div>
+                            <strong>Are you a Doctor?</strong><br />
+                            Sign up here as a standard user. Once logged in, you can apply for a Doctor account from your Dashboard.
                         </div>
                     </div>
-
-                    {/* Doctor-specific fields */}
-                    {role === 'doctor' && (
-                        <>
-                            <div className="form-group">
-                                <label className="form-label">Specialty</label>
-                                <select className="form-control" value={specialty} onChange={e => setSpecialty(e.target.value)} required>
-                                    <option value="">Select your specialty</option>
-                                    {specialtyOptions.map(s => (
-                                        <option key={s} value={s}>{s}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Hospital / Clinic Name</label>
-                                <input className="form-control" type="text" value={hospitalName} onChange={e => setHospitalName(e.target.value)} placeholder="Apollo Hospital, Delhi" required />
-                            </div>
-                        </>
-                    )}
 
                     <button className="btn btn-primary auth-btn" type="submit" disabled={loading} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
                         {loading ? <LoadingSpinner size="small" text="Creating account..." /> : 'Create Account'}
