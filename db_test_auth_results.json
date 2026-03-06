@@ -1,8 +1,0 @@
-{
-  "signup_error": {
-    "__isAuthError": true,
-    "name": "AuthApiError",
-    "status": 429,
-    "code": "over_email_send_rate_limit"
-  }
-}
