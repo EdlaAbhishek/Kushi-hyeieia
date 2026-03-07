@@ -130,7 +130,7 @@ h6 {
     margin: 0 auto;
 }
 
-.nav-links a {
+.nav-links>a:not(.btn):not(.nav-user) {
     font-size: 0.82rem;
     font-weight: 500;
     color: var(--text-muted);
@@ -142,12 +142,12 @@ h6 {
     letter-spacing: -0.01em;
 }
 
-.nav-links a:hover {
+.nav-links>a:not(.btn):not(.nav-user):hover {
     color: var(--text-dark);
     background: var(--surface);
 }
 
-.nav-links a.active {
+.nav-links>a:not(.btn):not(.nav-user).active {
     color: var(--primary);
     font-weight: 600;
     background: var(--primary-light);
@@ -716,6 +716,20 @@ h6 {
     margin-top: 2px;
 }
 
+.doctor-info-box {
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: #64748B;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    background: #F8FAFC;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+}
+
 /* ------------ Tables ------------ */
 .data-table {
     width: 100%;
@@ -819,6 +833,52 @@ select.form-control {
 .emergency-card {
     text-align: center;
     border: 2px solid var(--emergency);
+    padding: 2rem;
+}
+
+.emergency-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #FEF2F2;
+    color: #DC2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem auto;
+    /* Centered visually */
+}
+
+.emergency-icon-wrapper-green {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #ECFDF5;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem auto;
+}
+
+.emergency-icon-wrapper-blue {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #EFF6FF;
+    color: #2563EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem auto;
+}
+
+.emergency-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
 }
 
 .emergency-icon {
@@ -2297,7 +2357,7 @@ select.form-control {
         display: flex;
     }
 
-    .nav-links a {
+    .nav-links>a:not(.btn):not(.nav-user) {
         width: 100%;
         padding: 0.6rem 0.75rem;
     }
@@ -2460,6 +2520,24 @@ select.form-control {
 
     .global-chat-container {
         height: 350px;
+    }
+
+    .auth-card {
+        padding: 2rem 1.25rem;
+    }
+
+    .emergency-card {
+        padding: 1.5rem;
+    }
+
+    .emergency-title {
+        font-size: 2rem;
+    }
+
+    .doctor-info-box {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
     }
 }
 

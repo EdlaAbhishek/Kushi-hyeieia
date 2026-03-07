@@ -16,7 +16,7 @@ export default function DashboardLayout() {
             title: 'Medical Tools',
             items: [
                 { label: 'Dr. Dashboard', path: '/doctor-dashboard', icon: Activity, end: true },
-                { label: 'Patients', path: '/patients', icon: Users },
+                { label: 'Patients', path: '/doctor-dashboard/patients', icon: Users },
                 { label: 'Health Worker Mode', path: '/doctor-dashboard/health-worker', icon: HeartPulse },
                 { label: 'Smart Hospital REC', path: '/doctor-dashboard/hospital-rec', icon: Hospital },
             ]

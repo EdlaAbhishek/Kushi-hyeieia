@@ -228,18 +228,15 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
     }
 
     return (
-        <section className="section" style={{ paddingTop: 0 }}>
-            <div className="container">
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ background: '#EFF6FF', padding: '0.75rem', borderRadius: '50%', color: 'var(--primary)' }}>
-                            <Hospital size={24} />
-                        </div>
-                        <div>
-                            <h1 style={{ fontSize: '1.5rem', margin: 0, color: '#1E293B' }}>Smart Hospital Finder</h1>
-                            <p style={{ margin: 0, color: '#64748B', fontSize: '0.9rem' }}>Find the best care based on your location and symptoms.</p>
-                        </div>
+        <>
+            <section className="page-header doctor-header">
+                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <Hospital size={28} />
+                            Smart Hospital Finder
+                        </h1>
+                        <p className="page-subtitle">Find the best care based on your location and symptoms.</p>
                     </div>
                     <InfoButton content={{
                         en: {
@@ -259,182 +256,186 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                         }
                     }} />
                 </div>
+            </section>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
+            <section className="section" style={{ paddingTop: '1.5rem' }}>
+                <div className="container">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
 
-                    {fetchError && (
-                        <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                            <AlertCircle size={24} color="#DC2626" style={{ flexShrink: 0 }} />
-                            <div>
-                                <h4 style={{ color: '#991B1B', margin: '0 0 0.25rem 0', fontSize: '1rem' }}>Database Error</h4>
-                                <p style={{ color: '#B91C1C', margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>{fetchError}</p>
-                            </div>
-                        </div>
-                    )}
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-
-                        {/* LEFT COLUMN: Input & Location */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', padding: '1rem', borderRadius: 'var(--radius)', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                                <AlertTriangle size={24} color="#D97706" style={{ flexShrink: 0 }} />
+                        {fetchError && (
+                            <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                <AlertCircle size={24} color="#DC2626" style={{ flexShrink: 0 }} />
                                 <div>
-                                    <h4 style={{ color: '#92400E', margin: '0 0 0.25rem 0', fontSize: '1rem' }}>AI Disclaimer</h4>
-                                    <p style={{ color: '#B45309', margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>This mapping tool uses AI to suggest optimal care centers. This does <strong>not</strong> substitute direct medical judgement. If experiencing a life-threatening event, head directly to the nearest emergency room.</p>
+                                    <h4 style={{ color: '#991B1B', margin: '0 0 0.25rem 0', fontSize: '1rem' }}>Database Error</h4>
+                                    <p style={{ color: '#B91C1C', margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>{fetchError}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+
+                            {/* LEFT COLUMN: Input & Location */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', padding: '1rem', borderRadius: 'var(--radius)', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                    <AlertTriangle size={24} color="#D97706" style={{ flexShrink: 0 }} />
+                                    <div>
+                                        <h4 style={{ color: '#92400E', margin: '0 0 0.25rem 0', fontSize: '1rem' }}>AI Disclaimer</h4>
+                                        <p style={{ color: '#B45309', margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>This mapping tool uses AI to suggest optimal care centers. This does <strong>not</strong> substitute direct medical judgement. If experiencing a life-threatening event, head directly to the nearest emergency room.</p>
+                                    </div>
+                                </div>
+
+                                <div className="card" style={{ padding: '1.5rem' }}>
+                                    <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <MapPin size={20} className="text-primary" /> Location
+                                    </h2>
+
+                                    {userLocation ? (
+                                        <div className="alert alert-success" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <CheckCircle size={18} /> Location detected. Finding hospitals near you.
+                                        </div>
+                                    ) : (
+                                        <button onClick={getLocation} className="btn btn-outline" style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                                            <Navigation size={18} /> Share My Location
+                                        </button>
+                                    )}
+
+                                    {locationError && <p style={{ color: 'var(--danger)', fontSize: '0.85rem', marginTop: '0.5rem' }}>{locationError}</p>}
+
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', marginTop: '1rem' }}>
+                                        Your location helps us calculate accurate distances to medical facilities.
+                                    </p>
+                                </div>
+
+                                <div className="card" style={{ padding: '1.5rem', flex: 1 }}>
+                                    <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <Activity size={20} className="text-primary" /> Symptoms
+                                    </h2>
+                                    <form onSubmit={handleGetRecommendation} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                        <textarea
+                                            className="form-control"
+                                            rows={5}
+                                            placeholder="Describe your symptoms in detail (e.g., severe headache, blurred vision, chest pain...)"
+                                            value={symptoms}
+                                            onChange={(e) => setSymptoms(e.target.value)}
+                                            required
+                                            style={{ marginBottom: '1rem', flex: 1 }}
+                                        ></textarea>
+
+                                        <button
+                                            type="submit"
+                                            className="btn btn-primary"
+                                            disabled={loadingAi || loadingHospitals || !symptoms.trim()}
+                                            style={{ width: '100%' }}
+                                        >
+                                            {loadingAi ? 'AI is analyzing...' : 'Get Recommendation'}
+                                        </button>
+
+                                        {aiError && (
+                                            <div className="alert" style={{ marginTop: '1rem', backgroundColor: '#FEE2E2', color: '#B91C1C', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.9rem' }}>
+                                                {aiError}
+                                            </div>
+                                        )}
+                                    </form>
                                 </div>
                             </div>
 
-                            <div className="card" style={{ padding: '1.5rem' }}>
-                                <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <MapPin size={20} className="text-primary" /> Location
-                                </h2>
+                            {/* RIGHT COLUMN: AI Output & Hospital List */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-                                {userLocation ? (
-                                    <div className="alert alert-success" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <CheckCircle size={18} /> Location detected. Finding hospitals near you.
-                                    </div>
-                                ) : (
-                                    <button onClick={getLocation} className="btn btn-outline" style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
-                                        <Navigation size={18} /> Share My Location
-                                    </button>
-                                )}
-
-                                {locationError && <p style={{ color: 'var(--danger)', fontSize: '0.85rem', marginTop: '0.5rem' }}>{locationError}</p>}
-
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', marginTop: '1rem' }}>
-                                    Your location helps us calculate accurate distances to medical facilities.
-                                </p>
-                            </div>
-
-                            <div className="card" style={{ padding: '1.5rem', flex: 1 }}>
-                                <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <Activity size={20} className="text-primary" /> Symptoms
-                                </h2>
-                                <form onSubmit={handleGetRecommendation} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                    <textarea
-                                        className="form-input"
-                                        rows={5}
-                                        placeholder="Describe your symptoms in detail (e.g., severe headache, blurred vision, chest pain...)"
-                                        value={symptoms}
-                                        onChange={(e) => setSymptoms(e.target.value)}
-                                        required
-                                        style={{ marginBottom: '1rem', flex: 1 }}
-                                    ></textarea>
-
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary"
-                                        disabled={loadingAi || loadingHospitals || !symptoms.trim()}
-                                        style={{ width: '100%' }}
-                                    >
-                                        {loadingAi ? 'AI is analyzing...' : 'Get Recommendation'}
-                                    </button>
-
-                                    {aiError && (
-                                        <div className="alert" style={{ marginTop: '1rem', backgroundColor: '#FEE2E2', color: '#B91C1C', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.9rem' }}>
-                                            {aiError}
-                                        </div>
-                                    )}
-                                </form>
-                            </div>
-                        </div>
-
-                        {/* RIGHT COLUMN: AI Output & Hospital List */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-
-                            {/* AI Recommendation Panel */}
-                            {aiRecommendation && (
-                                <div className="card" style={{ padding: '1.5rem', border: '2px solid var(--primary)', backgroundColor: 'rgba(59, 130, 246, 0.03)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                                        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <Star fill="currentColor" size={20} /> AI Recommended Hospital
-                                        </h2>
-                                        {aiRecommendation.urgency === 'Emergency' && (
-                                            <span style={{ backgroundColor: '#FEE2E2', color: '#DC2626', padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600 }}>Emergency</span>
-                                        )}
-                                    </div>
-
-                                    <div style={{ padding: '1rem', backgroundColor: '#fff', borderRadius: '0.5rem', border: '1px solid var(--border-color)', marginBottom: '1rem' }}>
-                                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>{aiRecommendation.hospital.name}</h3>
-                                        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-light)', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                <MapPin size={14} /> {aiRecommendation.hospital.city}
-                                            </span>
-                                            {aiRecommendation.hospital.distance && (
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600, color: 'var(--text-color)' }}>
-                                                    <Navigation size={14} /> {aiRecommendation.hospital.distance} km away
-                                                </span>
+                                {/* AI Recommendation Panel */}
+                                {aiRecommendation && (
+                                    <div className="card" style={{ padding: '1.5rem', border: '2px solid var(--primary)', backgroundColor: 'rgba(59, 130, 246, 0.03)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Star fill="currentColor" size={20} /> AI Recommended Hospital
+                                            </h2>
+                                            {aiRecommendation.urgency === 'Emergency' && (
+                                                <span style={{ backgroundColor: '#FEE2E2', color: '#DC2626', padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 600 }}>Emergency</span>
                                             )}
                                         </div>
-                                    </div>
 
-                                    <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
-                                        <h4 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Reasoning</h4>
-                                        <p style={{ fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>{aiRecommendation.reasoning}</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Nearby Hospitals List */}
-                            <div className="card" style={{ padding: '1.5rem', flex: 1 }}>
-                                <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <Hospital size={18} className="text-primary" /> Nearby Facilities {hospitals.length > 0 && `(${hospitals.length})`}
-                                </h2>
-
-                                {loadingHospitals ? (
-                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}><LoadingSpinner /></div>
-                                ) : hospitals.length === 0 ? (
-                                    <p style={{ color: 'var(--text-light)', fontSize: '0.9rem', textAlign: 'center', padding: '2rem' }}>No hospitals found in the database.</p>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: aiRecommendation ? '300px' : '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                                        {hospitals.map(hospital => (
-                                            <div key={hospital.id} style={{
-                                                padding: '1rem',
-                                                border: '1px solid var(--border-color)',
-                                                borderRadius: '0.5rem',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '0.5rem',
-                                                backgroundColor: aiRecommendation?.hospital.id === hospital.id ? 'rgba(59, 130, 246, 0.05)' : 'transparent'
-                                            }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                    <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>{hospital.name}</h3>
-                                                    {hospital.distance && (
-                                                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary)', backgroundColor: 'var(--primary-light)', padding: '0.1rem 0.5rem', borderRadius: '1rem' }}>
-                                                            {hospital.distance} km
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', margin: 0 }}>{hospital.address}</p>
-
-                                                {hospital.specialties && hospital.specialties.length > 0 && (
-                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.25rem' }}>
-                                                        {hospital.specialties.slice(0, 3).map((spec, i) => (
-                                                            <span key={i} style={{ fontSize: '0.75rem', backgroundColor: 'var(--bg-secondary)', padding: '0.1rem 0.4rem', borderRadius: '0.25rem', color: 'var(--text-light)' }}>
-                                                                {spec}
-                                                            </span>
-                                                        ))}
-                                                        {hospital.specialties.length > 3 && (
-                                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>+{hospital.specialties.length - 3} more</span>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {hospital.emergency && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#DC2626', fontSize: '0.8rem', fontWeight: 500, marginTop: '0.25rem' }}>
-                                                        <AlertCircle size={14} /> 24/7 Emergency
-                                                    </div>
+                                        <div style={{ padding: '1rem', backgroundColor: '#fff', borderRadius: '0.5rem', border: '1px solid var(--border-color)', marginBottom: '1rem' }}>
+                                            <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>{aiRecommendation.hospital.name}</h3>
+                                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-light)', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                    <MapPin size={14} /> {aiRecommendation.hospital.city}
+                                                </span>
+                                                {aiRecommendation.hospital.distance && (
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600, color: 'var(--text-color)' }}>
+                                                        <Navigation size={14} /> {aiRecommendation.hospital.distance} km away
+                                                    </span>
                                                 )}
                                             </div>
-                                        ))}
+                                        </div>
+
+                                        <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+                                            <h4 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Reasoning</h4>
+                                            <p style={{ fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>{aiRecommendation.reasoning}</p>
+                                        </div>
                                     </div>
                                 )}
-                            </div>
 
+                                {/* Nearby Hospitals List */}
+                                <div className="card" style={{ padding: '1.5rem', flex: 1 }}>
+                                    <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <Hospital size={18} className="text-primary" /> Nearby Facilities {hospitals.length > 0 && `(${hospitals.length})`}
+                                    </h2>
+
+                                    {loadingHospitals ? (
+                                        <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}><LoadingSpinner /></div>
+                                    ) : hospitals.length === 0 ? (
+                                        <p style={{ color: 'var(--text-light)', fontSize: '0.9rem', textAlign: 'center', padding: '2rem' }}>No hospitals found in the database.</p>
+                                    ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: aiRecommendation ? '300px' : '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                                            {hospitals.map(hospital => (
+                                                <div key={hospital.id} style={{
+                                                    padding: '1rem',
+                                                    border: '1px solid var(--border-color)',
+                                                    borderRadius: '0.5rem',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '0.5rem',
+                                                    backgroundColor: aiRecommendation?.hospital.id === hospital.id ? 'rgba(59, 130, 246, 0.05)' : 'transparent'
+                                                }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                        <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>{hospital.name}</h3>
+                                                        {hospital.distance && (
+                                                            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary)', backgroundColor: 'var(--primary-light)', padding: '0.1rem 0.5rem', borderRadius: '1rem' }}>
+                                                                {hospital.distance} km
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', margin: 0 }}>{hospital.address}</p>
+
+                                                    {hospital.specialties && hospital.specialties.length > 0 && (
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                                            {hospital.specialties.slice(0, 3).map((spec, i) => (
+                                                                <span key={i} style={{ fontSize: '0.75rem', backgroundColor: 'var(--bg-secondary)', padding: '0.1rem 0.4rem', borderRadius: '0.25rem', color: 'var(--text-light)' }}>
+                                                                    {spec}
+                                                                </span>
+                                                            ))}
+                                                            {hospital.specialties.length > 3 && (
+                                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>+{hospital.specialties.length - 3} more</span>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {hospital.emergency && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#DC2626', fontSize: '0.8rem', fontWeight: 500, marginTop: '0.25rem' }}>
+                                                            <AlertCircle size={14} /> 24/7 Emergency
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </>
     )
 }

@@ -4,9 +4,14 @@ import { Link } from 'react-router-dom'
 import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes } from 'lucide-react'
 import { useAuth } from '../services/AuthContext'
 import InfoButton from '../components/ui/InfoButton'
+import { toast } from 'react-hot-toast'
+import LabTestModal from '../components/LabTestModal'
 
 export default function Services() {
     const { user, isDoctor } = useAuth()
+
+    // ─── MODAL STATE ──────────────────────────────────────────────────
+    const [isLabModalOpen, setIsLabModalOpen] = useState(false)
 
     // ─── PRESCRIPTION SCANNER STATE ───────────────────────────────────
     const [file, setFile] = useState(null)
@@ -140,12 +145,12 @@ export default function Services() {
                                         te: { title: 'డయాగ్నస్టిక్ సేవలు', helps: 'ఇంటి నుండి రక్త పరీక్షలు మరియు శరీర తనిఖీలను బుక్ చేసుకోండి.', usage: 'పరీక్షను లేదా ప్యాకేజీని ఎంచుకోండి, మా ధృవీకరించబడిన సాంకేతిక నిపుణుడు నమూనా సేకరణ కోసం మీ ఇంటిని సందర్శిస్తారు. నివేదికలు డిజిటల్‌గా అందించబడతాయి.' }
                                     }} />
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
-                                    <div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
+                                    <div style={{ flex: 1 }}>
                                         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
                                             Get NABL-certified lab reports with home sample collection. Verified technicians and state-of-the-art diagnostic equipment.
                                         </p>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
                                             {['Full Body Checkup', 'Thyroid Profile', 'Diabetes Screening', 'Lipid Profile'].map(test => (
                                                 <div key={test} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#475569' }}>
                                                     <CheckCircle size={14} color="#10B981" /> {test}
@@ -153,9 +158,9 @@ export default function Services() {
                                             ))}
                                         </div>
                                     </div>
-                                    <div style={{ background: '#F8FAFC', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                                        <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Easy Booking</h4>
-                                        <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.85rem' }} onClick={() => toast.success("Opening diagnostic selection...")}>
+                                    <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)', width: '280px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                        <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem', fontWeight: 600 }}>Easy Booking</h4>
+                                        <button className="btn btn-primary" style={{ width: '100%', fontSize: '0.9rem', padding: '0.6rem' }} onClick={() => setIsLabModalOpen(true)}>
                                             Select Lab Tests
                                         </button>
                                         <p style={{ fontSize: '0.7rem', textAlign: 'center', marginTop: '0.75rem', color: '#94A3B8' }}>*Sample collection within 2 hours</p>
@@ -211,6 +216,11 @@ export default function Services() {
                     </div>
                 </div>
             </section>
+
+            <LabTestModal
+                isOpen={isLabModalOpen}
+                onClose={() => setIsLabModalOpen(false)}
+            />
         </div>
     )
 }

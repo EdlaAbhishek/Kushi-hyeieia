@@ -22,6 +22,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
     const { user } = useAuth()
     const navigate = useNavigate()
     const [appointments, setAppointments] = useState([])
+    const [labBookings, setLabBookings] = useState([])
     const [loading, setLoading] = useState(true)
     const [fetchError, setFetchError] = useState(null)
 
@@ -67,6 +68,26 @@ export default function Dashboard({ activeTab = 'overview' }) {
         }
 
         fetchAppointments()
+
+        async function fetchLabBookings() {
+            try {
+                if (!user) return;
+
+                const { data, error } = await supabase
+                    .from('lab_test_bookings')
+                    .select('*')
+                    .eq('patient_id', user.id)
+                    .order('created_at', { ascending: false })
+
+                if (error) throw error
+                setLabBookings(data || [])
+            } catch (err) {
+                console.error('Lab bookings fetch error:', err.message)
+            }
+        }
+
+        fetchLabBookings()
+
     }, [user])
 
     // ── Global chat ──
@@ -152,34 +173,59 @@ export default function Dashboard({ activeTab = 'overview' }) {
 
     const startVideoCall = async (appt) => {
         try {
-            // Check if session exists
+            // Check if session already exists for this appointment
             const { data, error } = await supabase
                 .from('video_sessions')
                 .select('id')
                 .eq('appointment_id', appt.id)
                 .maybeSingle()
 
+            if (error) {
+                console.error("Video session lookup error:", error)
+                throw error
+            }
+
             if (data) {
                 navigate(`/video-call/${data.id}`)
-            } else {
-                // Create session
-                const { data: newSession, error: createError } = await supabase
-                    .from('video_sessions')
-                    .insert({
-                        appointment_id: appt.id,
-                        doctor_id: appt.doctor_id,
-                        patient_id: appt.patient_id,
-                        status: 'waiting'
-                    })
-                    .select()
-                    .single()
-
-                if (createError) throw createError
-                navigate(`/video-call/${newSession.id}`)
+                return
             }
+
+            // Resolve doctor's auth user_id from the doctors table
+            // appointments.doctor_id = doctors.id (table PK), but
+            // video_sessions.doctor_id FK references users.id (auth user)
+            let doctorAuthId = null
+            const { data: docData } = await supabase
+                .from('doctors')
+                .select('user_id')
+                .eq('id', appt.doctor_id)
+                .maybeSingle()
+
+            doctorAuthId = docData?.user_id || null
+
+            if (!doctorAuthId) {
+                toast.error("This doctor's account is not set up for video calls yet. Please try a different doctor.")
+                return
+            }
+
+            const { data: newSession, error: createError } = await supabase
+                .from('video_sessions')
+                .insert({
+                    appointment_id: appt.id,
+                    doctor_id: doctorAuthId,
+                    patient_id: appt.patient_id,
+                    status: 'waiting'
+                })
+                .select()
+                .single()
+
+            if (createError) {
+                console.error("Video session create error:", createError)
+                throw createError
+            }
+            navigate(`/video-call/${newSession.id}`)
         } catch (err) {
-            toast.error("Could not start video session.")
-            console.error(err)
+            console.error("Full error:", err)
+            toast.error(`Could not start video session: ${err.message || err.details || 'Unknown error'}`)
         }
     }
 
@@ -188,6 +234,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
             case 'confirmed': return 'status-confirmed'
             case 'completed': return 'status-completed'
             case 'cancelled': return 'status-cancelled'
+            case 'pending': return 'status-pending'
             default: return 'status-pending'
         }
     }
@@ -197,13 +244,24 @@ export default function Dashboard({ activeTab = 'overview' }) {
             case 'confirmed': return 'Confirmed'
             case 'completed': return 'Completed'
             case 'cancelled': return 'Cancelled'
+            case 'pending': return 'Pending'
             default: return 'Pending'
         }
     }
 
     const formatDate = (dateStr) => {
         if (!dateStr) return '—'
-        const d = new Date(dateStr + 'T00:00:00')
+        let isoDateStr = dateStr;
+        if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+            const [d, m, y] = dateStr.split('-');
+            isoDateStr = `${y}-${m}-${d}`;
+        }
+        const d = new Date(isoDateStr + 'T00:00:00')
+        if (isNaN(d.getTime()) || d.getFullYear() > 2100) {
+            const fallbackD = new Date(dateStr);
+            if (!isNaN(fallbackD.getTime()) && fallbackD.getFullYear() <= 2100) return fallbackD.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            return dateStr;
+        }
         return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     }
 
@@ -330,16 +388,16 @@ export default function Dashboard({ activeTab = 'overview' }) {
                                         <div className="appointment-detail">
                                             <span className="appointment-label">Type</span>
                                             <span className="appointment-value">
-                                                {appt.appointment_type === 'teleconsultation'
-                                                    ? <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation'
+                                                    ? <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                                                         <span className="teleconsult-badge status-badge">📹 Video</span>
-                                                        {appt.status === 'confirmed' && (
+                                                        {appt.status !== 'cancelled' && appt.status !== 'completed' && (
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); startVideoCall(appt); }}
                                                                 className="btn btn-primary"
-                                                                style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}
+                                                                style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', fontWeight: 600 }}
                                                             >
-                                                                Start Call
+                                                                📹 Join Call
                                                             </button>
                                                         )}
                                                     </div>
@@ -374,9 +432,86 @@ export default function Dashboard({ activeTab = 'overview' }) {
 
                     {!loading && appointments.length > 0 && (
                         <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-                            <Link to="/doctors" className="btn btn-outline">
-                                Book Another Appointment
+                            <Link to="/hospitals" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                                Find More Hospitals
                             </Link>
+                        </div>
+                    )}
+
+                    {/* ── LAB BOOKINGS SECTION ── */}
+                    {(activeTab === 'overview' || activeTab === 'appointments') && (
+                        <div style={{ marginTop: '4rem' }}>
+                            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <div>
+                                    <h2 className="section-title" style={{ margin: 0 }}>Your Lab Tests</h2>
+                                    <p className="section-subtitle" style={{ margin: 0 }}>
+                                        {labBookings.length === 0
+                                            ? 'No lab tests booked'
+                                            : `${labBookings.length} lab booking${labBookings.length !== 1 ? 's' : ''}`}
+                                    </p>
+                                </div>
+                                <InfoButton content={{
+                                    en: { title: 'Lab Tests', helps: 'This section tracks the diagnostic tests you have scheduled.', usage: 'View your requested home collections here.' },
+                                    hi: { title: 'प्रयोगशाला परीक्षण', helps: 'यह अनुभाग आपके द्वारा निर्धारित नैदानिक परीक्षणों को ट्रैक करता है।', usage: 'अपने अनुरोधित होम संग्रह को यहां देखें।' },
+                                    te: { title: 'ప్రయోగశాల పరీక్షలు', helps: 'ఈ విభాగం మీరు ప్లాన్ చేసిన రోగనిర్ధారణ పరీక్షలను ట్రాక్ చేస్తుంది.', usage: 'మీరు అభ్యర్థించిన హోమ్ కలెక్షన్లను ఇక్కడ వీక్షించండి.' }
+                                }} />
+                            </div>
+
+                            {labBookings.length === 0 ? (
+                                <div className="dashboard-empty" style={{ padding: '2rem' }}>
+                                    <div className="dashboard-empty-icon">🧪</div>
+                                    <h3 style={{ fontSize: '1.1rem' }}>No Diagnostic Tests Booked</h3>
+                                    <p style={{ fontSize: '0.9rem' }}>You haven't requested any home collections for lab tests.</p>
+                                    <Link to="/services" className="btn btn-outline" style={{ marginTop: '1rem' }}>
+                                        Explore Services
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="appointment-grid">
+                                    {labBookings.map((booking, i) => (
+                                        <motion.div key={booking.id || i} className="appointment-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
+                                            <div className="appointment-card-header">
+                                                <div className="appointment-doctor-info">
+                                                    <h3 className="appointment-doctor-name" style={{ fontSize: '1.1rem' }}>
+                                                        Home Collection
+                                                    </h3>
+                                                    <p className="appointment-doctor-specialty">
+                                                        {booking.tests.length} tests requested
+                                                    </p>
+                                                </div>
+                                                <span className={`status-badge ${getStatusClass(booking.status)}`}>
+                                                    {getStatusLabel(booking.status)}
+                                                </span>
+                                            </div>
+
+                                            <div className="appointment-card-body" style={{ padding: '1rem' }}>
+                                                <div className="appointment-detail">
+                                                    <span className="appointment-label">Date</span>
+                                                    <span className="appointment-value">{formatDate(booking.preferred_date)}</span>
+                                                </div>
+                                                <div className="appointment-detail">
+                                                    <span className="appointment-label">Time Slot</span>
+                                                    <span className="appointment-value">{booking.preferred_time_slot}</span>
+                                                </div>
+                                                <div className="appointment-detail" style={{ alignItems: 'flex-start' }}>
+                                                    <span className="appointment-label">Tests</span>
+                                                    <div className="appointment-value" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                        {booking.tests.map(t => (
+                                                            <span key={t} style={{ background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', color: '#475569' }}>
+                                                                {t}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="appointment-detail" style={{ alignItems: 'flex-start', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #E2E8F0' }}>
+                                                    <span className="appointment-label">Address</span>
+                                                    <span className="appointment-value" style={{ fontSize: '0.8rem', color: '#64748B' }}>{booking.address}</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

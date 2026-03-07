@@ -59,7 +59,7 @@ export default function Home() {
                                 </>
                             ) : (
                                 <>
-                                    <Link to="/patients" className="btn btn-primary">Book Appointment <ArrowRight size={16} /></Link>
+                                    <Link to="/doctors" className="btn btn-primary">Book Appointment <ArrowRight size={16} /></Link>
                                     <Link to="/hospitals" className="btn btn-outline">Find Hospital</Link>
                                 </>
                             )}

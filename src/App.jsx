@@ -35,6 +35,7 @@ import { Toaster } from 'react-hot-toast'
 import NotFound from './pages/NotFound'
 import UpdatePassword from './pages/UpdatePassword'
 import VideoCall from './pages/VideoCall'
+import DoctorPatients from './pages/DoctorPatients'
 
 export default function App() {
     return (
@@ -107,10 +108,11 @@ export default function App() {
 
                             <Route path="/doctor-dashboard" element={<DashboardLayout />}>
                                 <Route index element={<DoctorDashboard />} />
+                                <Route path="patients" element={<DoctorPatients />} />
                                 <Route path="health-worker" element={<HealthWorkerMode />} />
                                 <Route path="hospital-rec" element={<HospitalRecommendation />} />
-                                <Route path="population-health" element={<AdminDashboard />} />
-                                <Route path="analytics" element={<AdminDashboard />} />
+                                <Route path="population-health" element={<AdminDashboard mode="population" />} />
+                                <Route path="analytics" element={<AdminDashboard mode="analytics" />} />
                             </Route>
 
                             <Route path="/health-worker" element={<Navigate to="/doctor-dashboard/health-worker" replace />} />

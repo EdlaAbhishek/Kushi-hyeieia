@@ -115,7 +115,7 @@ export default function Signup() {
                             </button>
                         </div>
                     </div>
-                    <div style={{ marginTop: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#64748B', display: 'flex', gap: '0.5rem', alignItems: 'flex-start', background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                    <div className="doctor-info-box">
                         <div style={{ color: 'var(--primary)', marginTop: '2px' }}>🩺</div>
                         <div>
                             <strong>Are you a Doctor?</strong><br />

@@ -49,13 +49,13 @@ export default function BookingModal({ doctor, onClose }) {
                 return;
             }
 
-            // Create appointment object
+            // Create appointment object matching existing database schema
             const appointmentData = {
                 doctor_id: doctor.id,
                 patient_id: user.id,
                 appointment_date: bookingDate,
                 appointment_time: bookingTime,
-                type: appointmentType, // Unified type
+                appointment_type: appointmentType === 'telehealth' ? 'teleconsultation' : 'in_person',
                 status: 'pending'
             };
 
@@ -71,13 +71,14 @@ export default function BookingModal({ doctor, onClose }) {
 
             // Also try to save to supabase if it's set up
             try {
-                await supabase.from('appointments').insert([appointmentData]);
+                const { error: dbError } = await supabase.from('appointments').insert([appointmentData]);
+                if (dbError) throw dbError;
 
                 // Add notification for the doctor
                 try {
                     await supabase.from('notifications').insert([{
                         user_id: doctor.id,
-                        message: `New ${appointmentType} appointment booked by ${user.user_metadata?.full_name || user.email || 'a patient'} for ${bookingDate} at ${bookingTime}`,
+                        message: `New ${appointmentData.appointment_type} appointment booked by ${user.user_metadata?.full_name || user.email || 'a patient'} for ${bookingDate} at ${bookingTime}`,
                         type: 'appointment_created',
                         read_status: false
                     }]);
@@ -86,7 +87,10 @@ export default function BookingModal({ doctor, onClose }) {
                 }
 
             } catch (dbErr) {
-                console.warn("Could not save to Supabase, but saved to localStorage", dbErr);
+                console.error("Supabase Save Error:", dbErr);
+                toast.error("Fixed-point database error: " + (dbErr.message || "Failed to sync with cloud."));
+                setBookingLoading(false);
+                return; // Stop here if DB insert fails
             }
 
             // Store current booking details for the confirmation page
@@ -191,10 +195,8 @@ export default function BookingModal({ doctor, onClose }) {
                                         className={`btn ${appointmentType === 'telehealth' ? 'btn-primary' : 'btn-outline'}`}
                                         onClick={() => setAppointmentType('telehealth')}
                                         style={{ fontSize: '0.85rem', padding: '0.75rem 0.5rem' }}
-                                        disabled={doctor?.teleconsultation_available === false}
                                     >
                                         📹 Video Call
-                                        {doctor?.teleconsultation_available === false && <span style={{ display: 'block', fontSize: '0.65rem', opacity: 0.7 }}>(Unavailable)</span>}
                                     </button>
                                 </div>
                             </div>

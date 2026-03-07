@@ -9,6 +9,7 @@ import InfoButton from '../components/ui/InfoButton'
 
 export default function DoctorDashboard() {
     const { user } = useAuth()
+    const navigate = useNavigate()
     const [appointments, setAppointments] = useState([])
     const [notifications, setNotifications] = useState([])
     const [loading, setLoading] = useState(true)
@@ -198,27 +199,34 @@ export default function DoctorDashboard() {
                 .eq('appointment_id', appt.id)
                 .maybeSingle()
 
+            if (error) throw error
+
             if (data) {
                 navigate(`/video-call/${data.id}`)
-            } else {
-                // Create session
-                const { data: newSession, error: createError } = await supabase
-                    .from('video_sessions')
-                    .insert({
-                        appointment_id: appt.id,
-                        doctor_id: appt.doctor_id,
-                        patient_id: appt.patient_id,
-                        status: 'waiting'
-                    })
-                    .select()
-                    .single()
-
-                if (createError) throw createError
-                navigate(`/video-call/${newSession.id}`)
+                return
             }
+
+            // Doctor is calling this, so doctor_id = user.id (current auth user)
+            // Resolve patient's auth user_id from doctors table if needed
+            const { data: newSession, error: createError } = await supabase
+                .from('video_sessions')
+                .insert({
+                    appointment_id: appt.id,
+                    doctor_id: user.id,   // current logged-in doctor's auth ID
+                    patient_id: appt.patient_id,
+                    status: 'waiting'
+                })
+                .select()
+                .single()
+
+            if (createError) {
+                console.error("Video session create error:", createError)
+                throw createError
+            }
+            navigate(`/video-call/${newSession.id}`)
         } catch (err) {
-            toast.error("Could not start video session.")
-            console.error(err)
+            console.error("Full error:", err)
+            toast.error(`Could not start video session: ${err.message || err.details || 'Unknown error'}`)
         }
     }
 
@@ -267,7 +275,9 @@ export default function DoctorDashboard() {
 
     const formatDate = (d) => {
         if (!d) return '—'
-        return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        const date = new Date(d + 'T00:00:00')
+        if (isNaN(date.getTime()) || date.getFullYear() > 2100) return d  // show raw string for corrupted dates
+        return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     }
 
     const formatTime = (t) => {
@@ -387,7 +397,10 @@ export default function DoctorDashboard() {
                                                 {notif.message}
                                             </p>
                                             <p style={{ margin: 0, color: '#64748B', fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                                                {new Date(notif.created_at).toLocaleString('en-IN')}
+                                                {(() => {
+                                                    const d = new Date(notif.created_at);
+                                                    return isNaN(d.getTime()) || d.getFullYear() > 2100 ? 'Recently' : d.toLocaleString('en-IN');
+                                                })()}
                                             </p>
                                         </div>
                                         {!notif.read_status && <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0 }}></span>}
@@ -494,7 +507,7 @@ export default function DoctorDashboard() {
                                                             {appt.urgency.toUpperCase()}
                                                         </span>
                                                     )}
-                                                    {appt.appointment_type === 'teleconsultation'
+                                                    {appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation'
                                                         ? <span className="teleconsult-badge status-badge" style={{ marginTop: '0.1rem' }}>📹 Video</span>
                                                         : <span style={{ fontSize: '0.85rem' }}>In-Person</span>
                                                     }
@@ -551,7 +564,7 @@ export default function DoctorDashboard() {
                                                             >
                                                                 Complete
                                                             </button>
-                                                            {appt.appointment_type === 'teleconsultation' && (
+                                                            {(appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation') && (
                                                                 <button
                                                                     onClick={() => joinVideoCall(appt)}
                                                                     className="btn btn-outline"

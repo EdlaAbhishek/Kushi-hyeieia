@@ -74,7 +74,7 @@ export default function MainLayout() {
                                             {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
                                         </NavLink>
                                     )}
-                                    <NavLink to="/profile" className="nav-profile-link" onClick={closeMenu}>
+                                    <NavLink to="/profile" className="nav-user" onClick={closeMenu}>
                                         <User size={16} /> {userName}
                                     </NavLink>
                                     <button className="btn btn-outline" onClick={handleSignOut} style={{ justifyContent: 'center', borderColor: '#EF4444', color: '#EF4444' }}>
@@ -93,7 +93,7 @@ export default function MainLayout() {
                                         {isDoctor ? 'Dr. Dashboard' : 'Dashboard'}
                                     </NavLink>
                                 )}
-                                <NavLink to="/profile" className="nav-profile-link">
+                                <NavLink to="/profile" className="nav-user">
                                     <User size={16} /> {userName}
                                 </NavLink>
                                 <button className="btn btn-outline" onClick={handleSignOut} style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', borderColor: '#EF4444', color: '#EF4444' }}>
@@ -120,9 +120,9 @@ export default function MainLayout() {
                         <div>
                             <h4 className="footer-heading">For Patients</h4>
                             <ul className="footer-links">
-                                <li><NavLink to="/patients">Book Appointment</NavLink></li>
-                                <li><NavLink to="/hospitals">Teleconsultation</NavLink></li>
-                                <li><NavLink to="/patients">Health Records</NavLink></li>
+                                <li><NavLink to="/doctors">Book Appointment</NavLink></li>
+                                <li><NavLink to="/services">Teleconsultation</NavLink></li>
+                                <li><NavLink to="/dashboard">Health Records</NavLink></li>
                             </ul>
                         </div>
                         <div>
@@ -130,7 +130,7 @@ export default function MainLayout() {
                             <ul className="footer-links">
                                 <li><NavLink to="/doctors">Join Network</NavLink></li>
                                 <li><NavLink to="/hospitals">Hospital Integration</NavLink></li>
-                                <li><NavLink to="/doctors">Provider Portal</NavLink></li>
+                                <li><NavLink to="/doctor-dashboard">Provider Portal</NavLink></li>
                             </ul>
                         </div>
                         <div>

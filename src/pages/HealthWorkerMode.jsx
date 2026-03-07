@@ -144,149 +144,153 @@ export default function HealthWorkerMode() {
     }
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                    <h1 style={{ fontSize: '2rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <Users size={32} />
-                        {t("Health Worker Mode")}
-                    </h1>
-                    <p style={{ color: 'var(--text-light)', marginTop: '0.5rem' }}>
-                        {t("Remote primary care data entry (ASHA/Camp interface)")}
-                    </p>
-                </div>
-
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <div className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Languages size={18} />
-                        <select
-                            value={language}
-                            onChange={(e) => setLanguage(e.target.value)}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                outline: 'none',
-                                fontSize: 'inherit',
-                                color: 'inherit',
-                                cursor: 'pointer',
-                                paddingRight: '0.5rem'
-                            }}
-                        >
-                            <option value="en">English (en)</option>
-                            <option value="hi">हिंदी (hi)</option>
-                            <option value="te">తెలుగు (te)</option>
-                            <option value="bn">বাংলা (bn)</option>
-                            <option value="mr">मराठी (mr)</option>
-                            <option value="ta">தமிழ் (ta)</option>
-                        </select>
+        <>
+            <section className="page-header doctor-header">
+                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <Users size={28} />
+                            {t("Health Worker Mode")}
+                        </h1>
+                        <p className="page-subtitle">{t("Remote primary care data entry (ASHA/Camp interface)")}</p>
                     </div>
 
-                    <button
-                        onClick={() => setIsOfflineMode(!isOfflineMode)}
-                        className={`btn ${isOfflineMode ? 'btn-outline' : 'btn-primary'}`}
-                        style={{
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <div style={{
                             display: 'flex', alignItems: 'center', gap: '0.5rem',
-                            backgroundColor: isOfflineMode ? '#FEF2F2' : '',
-                            borderColor: isOfflineMode ? '#FCA5A5' : '',
-                            color: isOfflineMode ? '#DC2626' : ''
-                        }}
-                        title={isOfflineMode ? "Click to disable offline mode" : "Click to enable offline mode for patchy networks"}
-                    >
-                        {isOfflineMode ? <WifiOff size={18} /> : <Wifi size={18} />}
-                        {t(isOfflineMode ? "Offline" : "Online")}
-                    </button>
-                </div>
-            </div>
-
-            <div className="card" style={{ padding: '2rem' }}>
-                <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Activity size={20} color="var(--primary)" />
-                    {t("Patient Vitals Entry")}
-                </h2>
-
-                <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-
-                        {/* Demographics */}
-                        <div className="form-group">
-                            <label className="form-label">{t("Patient Name")} *</label>
-                            <input type="text" className="form-control" name="patient_name" value={patientData.patient_name} onChange={handleChange} required />
+                            background: 'rgba(255,255,255,0.1)', padding: '0.5rem 1rem',
+                            borderRadius: 'var(--radius)', border: '1px solid rgba(255,255,255,0.2)',
+                            color: '#fff', fontSize: '0.85rem'
+                        }}>
+                            <Languages size={16} />
+                            <select
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                                style={{
+                                    background: 'transparent', border: 'none', outline: 'none',
+                                    fontSize: 'inherit', color: '#fff', cursor: 'pointer',
+                                    paddingRight: '0.5rem'
+                                }}
+                            >
+                                <option value="en" style={{ color: '#000' }}>English</option>
+                                <option value="hi" style={{ color: '#000' }}>हिंदी</option>
+                                <option value="te" style={{ color: '#000' }}>తెలుగు</option>
+                                <option value="bn" style={{ color: '#000' }}>বাংলা</option>
+                                <option value="mr" style={{ color: '#000' }}>मराठी</option>
+                                <option value="ta" style={{ color: '#000' }}>தமிழ்</option>
+                            </select>
                         </div>
 
-                        <div className="form-group">
-                            <label className="form-label">{t("Phone Number")} (Optional)</label>
-                            <input type="tel" className="form-control" name="patient_phone" value={patientData.patient_phone} onChange={handleChange} />
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">{t("Village/Location")} *</label>
-                            <input type="text" className="form-control" name="village_name" value={patientData.village_name} onChange={handleChange} required />
-                        </div>
-
-                        {/* Vitals */}
-                        <div className="form-group">
-                            <label className="form-label">{t("Blood Pressure")} (e.g. 120/80)</label>
-                            <input type="text" className="form-control" name="blood_pressure" value={patientData.blood_pressure} onChange={handleChange} placeholder="SYS/DIA" />
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">{t("Heart Rate")} (bpm)</label>
-                            <input type="number" className="form-control" name="heart_rate" value={patientData.heart_rate} onChange={handleChange} placeholder="60-100" />
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">{t("SpO2")} (%)</label>
-                            <input type="number" className="form-control" name="spo2" value={patientData.spo2} onChange={handleChange} placeholder="95-100" />
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">{t("Temperature")} (°F)</label>
-                            <input type="number" step="0.1" className="form-control" name="temperature" value={patientData.temperature} onChange={handleChange} placeholder="98.6" />
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">{t("Blood Glucose")} (mg/dL)</label>
-                            <input type="number" className="form-control" name="blood_glucose" value={patientData.blood_glucose} onChange={handleChange} placeholder="Fasting/Random" />
-                        </div>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: '2rem' }}>
-                        <label className="form-label">{t("Clinical Notes / Symptoms observed")}</label>
-                        <textarea className="form-control" rows={4} name="notes" value={patientData.notes} onChange={handleChange} placeholder={t("Cough, fever, weakness...")}></textarea>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem' }} disabled={isSubmitting}>
-                            {isSubmitting ? <span className="loading-spinner" style={{ width: 16, height: 16, borderWidth: 2 }}></span> : <Save size={20} />}
-                            {isSubmitting ? t("Saving...") : t("Save Patient Record")}
+                        <button
+                            onClick={() => setIsOfflineMode(!isOfflineMode)}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                background: isOfflineMode ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)',
+                                padding: '0.5rem 1rem', borderRadius: 'var(--radius)',
+                                border: `1px solid ${isOfflineMode ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)'}`,
+                                color: '#fff', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600
+                            }}
+                            title={isOfflineMode ? "Click to go online" : "Click to enable offline mode"}
+                        >
+                            {isOfflineMode ? <WifiOff size={16} /> : <Wifi size={16} />}
+                            {t(isOfflineMode ? "Offline" : "Online")}
                         </button>
                     </div>
-                </form>
-            </div>
-
-            {/* Sync Queue Banner (Mock) */}
-            {JSON.parse(localStorage.getItem('offlineVitals') || '[]').length > 0 && (
-                <div style={{ marginTop: '2rem', padding: '1rem', background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: 'var(--radius)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        <strong>{JSON.parse(localStorage.getItem('offlineVitals') || '[]').length} {t("records waiting to sync")}</strong>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#B45309' }}>Connect to internet to push data to central database.</p>
-                    </div>
-                    <button className="btn btn-primary" style={{ background: '#D97706' }} onClick={() => {
-                        if (!isOfflineMode) {
-                            toast("Simulating Sync Process...")
-                            setTimeout(() => {
-                                localStorage.removeItem('offlineVitals')
-                                toast.success("All records synced successfully!")
-                                window.location.reload()
-                            }, 1500)
-                        } else {
-                            toast.error("Turn off offline mode first to sync")
-                        }
-                    }}>
-                        {t("Sync Now")}
-                    </button>
                 </div>
-            )}
-        </div>
+            </section>
+
+            <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
+
+                <div className="card" style={{ padding: '2rem' }}>
+                    <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Activity size={20} color="var(--primary)" />
+                        {t("Patient Vitals Entry")}
+                    </h2>
+
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+
+                            {/* Demographics */}
+                            <div className="form-group">
+                                <label className="form-label">{t("Patient Name")} *</label>
+                                <input type="text" className="form-control" name="patient_name" value={patientData.patient_name} onChange={handleChange} required />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">{t("Phone Number")} (Optional)</label>
+                                <input type="tel" className="form-control" name="patient_phone" value={patientData.patient_phone} onChange={handleChange} />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">{t("Village/Location")} *</label>
+                                <input type="text" className="form-control" name="village_name" value={patientData.village_name} onChange={handleChange} required />
+                            </div>
+
+                            {/* Vitals */}
+                            <div className="form-group">
+                                <label className="form-label">{t("Blood Pressure")} (e.g. 120/80)</label>
+                                <input type="text" className="form-control" name="blood_pressure" value={patientData.blood_pressure} onChange={handleChange} placeholder="SYS/DIA" />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">{t("Heart Rate")} (bpm)</label>
+                                <input type="number" className="form-control" name="heart_rate" value={patientData.heart_rate} onChange={handleChange} placeholder="60-100" />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">{t("SpO2")} (%)</label>
+                                <input type="number" className="form-control" name="spo2" value={patientData.spo2} onChange={handleChange} placeholder="95-100" />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">{t("Temperature")} (°F)</label>
+                                <input type="number" step="0.1" className="form-control" name="temperature" value={patientData.temperature} onChange={handleChange} placeholder="98.6" />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">{t("Blood Glucose")} (mg/dL)</label>
+                                <input type="number" className="form-control" name="blood_glucose" value={patientData.blood_glucose} onChange={handleChange} placeholder="Fasting/Random" />
+                            </div>
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: '2rem' }}>
+                            <label className="form-label">{t("Clinical Notes / Symptoms observed")}</label>
+                            <textarea className="form-control" rows={4} name="notes" value={patientData.notes} onChange={handleChange} placeholder={t("Cough, fever, weakness...")}></textarea>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem' }} disabled={isSubmitting}>
+                                {isSubmitting ? <span className="loading-spinner" style={{ width: 16, height: 16, borderWidth: 2 }}></span> : <Save size={20} />}
+                                {isSubmitting ? t("Saving...") : t("Save Patient Record")}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {/* Sync Queue Banner (Mock) */}
+                {JSON.parse(localStorage.getItem('offlineVitals') || '[]').length > 0 && (
+                    <div style={{ marginTop: '2rem', padding: '1rem', background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: 'var(--radius)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <strong>{JSON.parse(localStorage.getItem('offlineVitals') || '[]').length} {t("records waiting to sync")}</strong>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#B45309' }}>Connect to internet to push data to central database.</p>
+                        </div>
+                        <button className="btn btn-primary" style={{ background: '#D97706' }} onClick={() => {
+                            if (!isOfflineMode) {
+                                toast("Simulating Sync Process...")
+                                setTimeout(() => {
+                                    localStorage.removeItem('offlineVitals')
+                                    toast.success("All records synced successfully!")
+                                    window.location.reload()
+                                }, 1500)
+                            } else {
+                                toast.error("Turn off offline mode first to sync")
+                            }
+                        }}>
+                            {t("Sync Now")}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </>
     )
 }

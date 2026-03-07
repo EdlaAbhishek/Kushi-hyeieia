@@ -173,7 +173,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other t
                                         <input
                                             type="number"
                                             required
-                                            className="form-input"
+                                            className="form-control"
                                             name="age"
                                             value={formData.age}
                                             onChange={handleChange}
@@ -183,7 +183,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other t
                                     </div>
                                     <div className="form-group">
                                         <label className="form-label">Gender *</label>
-                                        <select required className="form-input" name="gender" value={formData.gender} onChange={handleChange}>
+                                        <select required className="form-control" name="gender" value={formData.gender} onChange={handleChange}>
                                             <option value="">Select...</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
@@ -196,7 +196,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other t
                                     <label className="form-label">Describe Symptoms *</label>
                                     <textarea
                                         required
-                                        className="form-input"
+                                        className="form-control"
                                         name="symptoms"
                                         value={formData.symptoms}
                                         onChange={handleChange}
@@ -210,11 +210,11 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other t
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                                     <div className="form-group">
                                         <label className="form-label">Temp (°F)</label>
-                                        <input type="number" step="0.1" className="form-input" name="temperature" value={formData.temperature} onChange={handleChange} placeholder="98.6" />
+                                        <input type="number" step="0.1" className="form-control" name="temperature" value={formData.temperature} onChange={handleChange} placeholder="98.6" />
                                     </div>
                                     <div className="form-group">
                                         <label className="form-label">Heart Rate (bpm)</label>
-                                        <input type="number" className="form-input" name="heartRate" value={formData.heartRate} onChange={handleChange} placeholder="72" />
+                                        <input type="number" className="form-control" name="heartRate" value={formData.heartRate} onChange={handleChange} placeholder="72" />
                                     </div>
                                 </div>
 
@@ -222,14 +222,14 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other t
                                     <div className="form-group" style={{ marginBottom: 0 }}>
                                         <label className="form-label">BP (Sys/Dia)</label>
                                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                            <input type="number" className="form-input" name="bloodPressureSys" value={formData.bloodPressureSys} onChange={handleChange} placeholder="120" style={{ marginBottom: 0 }} />
+                                            <input type="number" className="form-control" name="bloodPressureSys" value={formData.bloodPressureSys} onChange={handleChange} placeholder="120" style={{ marginBottom: 0 }} />
                                             <span>/</span>
-                                            <input type="number" className="form-input" name="bloodPressureDia" value={formData.bloodPressureDia} onChange={handleChange} placeholder="80" style={{ marginBottom: 0 }} />
+                                            <input type="number" className="form-control" name="bloodPressureDia" value={formData.bloodPressureDia} onChange={handleChange} placeholder="80" style={{ marginBottom: 0 }} />
                                         </div>
                                     </div>
                                     <div className="form-group" style={{ marginBottom: 0 }}>
                                         <label className="form-label">SpO2 (%)</label>
-                                        <input type="number" className="form-input" name="spo2" value={formData.spo2} onChange={handleChange} placeholder="98" style={{ marginBottom: 0 }} />
+                                        <input type="number" className="form-control" name="spo2" value={formData.spo2} onChange={handleChange} placeholder="98" style={{ marginBottom: 0 }} />
                                     </div>
                                 </div>
 

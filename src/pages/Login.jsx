@@ -77,7 +77,7 @@ export default function Login() {
                         <input className="form-control" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="rahul@example.com" required aria-invalid={!!error} aria-describedby={error ? "login-error" : undefined} />
                     </div>
                     <div className="form-group">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                             <label className="form-label" style={{ marginBottom: 0 }}>Password</label>
                             <button
                                 type="button"
@@ -122,7 +122,7 @@ export default function Login() {
                             </button>
                         </div>
                     </div>
-                    <div style={{ marginTop: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#64748B', display: 'flex', gap: '0.5rem', alignItems: 'flex-start', background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                    <div className="doctor-info-box">
                         <div style={{ color: 'var(--primary)', marginTop: '2px' }}>🩺</div>
                         <div>
                             <strong>Are you a Doctor?</strong><br />
