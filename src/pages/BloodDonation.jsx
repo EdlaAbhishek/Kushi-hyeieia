@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { Droplet, MapPin, Calendar, Phone, Mail, User, Shield, CheckCircle, UserPlus, Info, Search, Megaphone, AlertCircle } from 'lucide-react'
+import { Droplet, MapPin, Search, Megaphone, UserPlus, Shield, Phone } from 'lucide-react'
+import PageHeader from '../components/ui/PageHeader'
+import SectionContainer from '../components/ui/SectionContainer'
+import DashboardCard from '../components/ui/DashboardCard'
+import ActionButton from '../components/ui/ActionButton'
 import InfoButton from '../components/ui/InfoButton'
 
 export default function BloodDonation() {
@@ -133,190 +137,312 @@ export default function BloodDonation() {
     })
 
     return (
-        <>
-            <section className="section bg-surface" style={{ paddingTop: 0 }}>
-                <div className="container">
-                    {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                        <h1 style={{ fontSize: '1.5rem', color: '#1E293B', margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <Droplet size={24} color="#EF4444" />
-                            Blood Donation Network
-                        </h1>
-                        <InfoButton content={{
-                            en: { title: 'Blood Donation Network', helps: 'One-stop hub for blood donors, hospital inventory, and urgent public broadcasts.', usage: '1. Find Donors: Search for volunteers nearby.\n2. Hospital Inventory: Check live stock in hospitals.\n3. Broadcasts: Post or view urgent requests for help.' },
-                            hi: { title: 'रक्तदान नेटवर्क', helps: 'रक्त दाताओं, अस्पताल सूची और तत्काल सार्वजनिक प्रसारण के लिए वन-स्टॉप हब।', usage: '1. दाता खोजें: पास के स्वयंसेवकों को खोजें।\n2. अस्पताल सूची: अस्पतालों में लाइव स्टॉक की जांच करें।\n3. प्रसारण: मदद के लिए तत्काल अनुरोध पोस्ट करें या देखें।' },
-                            te: { title: 'రక్త దాన నెట్‌వర్క్', helps: 'రక్తదాతలు, ఆసుపత్రి ఇన్వెంటరీ మరియు అత్యవసర బహిరంగ ప్రసారాల కోసం వన్-స్టాప్ హబ్.', usage: '1. దాతలను కనుగొనండి: సమీపంలోని వాలంటీర్ల కోసం వెతకండి.\n2. హాస్పిటల్ ఇన్వెంటరీ: ఆసుపత్రులలో లైవ్ స్టాక్‌ను తనిఖీ చేయండి.\n3. ప్రసారాలు: సహాయం కోసం అత్యవసర అభ్యర్థనలను పోస్ట్ చేయండి లేదా వీక్షించండి.' }
-                        }} />
-                    </div>
+        <div className="blood-donation-page">
+            <PageHeader
+                title={
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Droplet size={28} color="#EF4444" />
+                        Blood Donation Network
+                    </span>
+                }
+                description="Connect with nearby donors or check hospital blood inventory."
+                className="doctor-header"
+                action={
+                    <InfoButton content={{
+                        en: { title: 'Blood Donation Network', helps: 'One-stop hub for blood donors, hospital inventory, and urgent public broadcasts.', usage: '1. Find Donors: Search for volunteers nearby.\n2. Hospital Inventory: Check live stock in hospitals.\n3. Broadcasts: Post or view urgent requests for help.' },
+                        hi: { title: 'रक्तदान नेटवर्क', helps: 'रक्त दाताओं, अस्पताल सूची और तत्काल सार्वजनिक प्रसारण के लिए वन-स्टॉप हब।', usage: '1. दाता खोजें: पास के स्वयंसेवकों को खोजें।\n2. अस्पताल सूची: अस्पतालों में लाइव स्टॉक की जांच करें।\n3. प्रसारण: मदद के लिए तत्काल अनुरोध पोस्ट करें या देखें।' },
+                        te: { title: 'రక్త దాన నెట్‌వర్క్', helps: 'రక్తదాతలు, ఆసుపత్రి ఇన్వెంటరీ మరియు అత్యవసర బహిరంగ ప్రసారాల కోసం వన్-స్టాప్ హబ్.', usage: '1. దాతలను కనుగొనండి: సమీపంలోని వాలంటీర్ల కోసం వెతకండి.\n2. హాస్పిటల్ ఇన్వెంటరీ: ఆసుపత్రులలో లైవ్ స్టాక్‌ను తనిఖీ చేయండి.\n3. ప్రసారాలు: సహాయం కోసం అత్యవసర అభ్యర్థనలను పోస్ట్ చేయండి లేదా వీక్షించండి.' }
+                    }} />
+                }
+            />
 
-                    {/* Tabs */}
-                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border)' }}>
-                        {[
-                            { id: 'donors', label: 'Find Donors', icon: UserPlus },
-                            { id: 'inventory', label: 'Hospital Inventory', icon: Search },
-                            { id: 'broadcasts', label: 'Public Requests', icon: Megaphone }
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-outline'}`}
-                                onClick={() => setActiveTab(tab.id)}
-                                style={{
-                                    border: activeTab === tab.id ? 'none' : '1px solid transparent',
-                                    background: activeTab === tab.id ? '#DC2626' : 'transparent',
-                                    color: activeTab === tab.id ? '#fff' : 'var(--text-muted)',
-                                    borderRadius: '8px 8px 0 0',
-                                    padding: '0.75rem 1.25rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    fontWeight: 600
-                                }}
-                            >
-                                <tab.icon size={18} /> {tab.label}
-                            </button>
-                        ))}
-                    </div>
+            <SectionContainer>
+                {/* Tabs */}
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', borderBottom: '1px solid var(--border)' }}>
+                    {[
+                        { id: 'donors', label: 'Find Donors', icon: UserPlus },
+                        { id: 'inventory', label: 'Hospital Inventory', icon: Search },
+                        { id: 'broadcasts', label: 'Public Requests', icon: Megaphone }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            style={{
+                                border: 'none',
+                                background: 'transparent',
+                                color: activeTab === tab.id ? '#DC2626' : 'var(--text-muted)',
+                                borderBottom: activeTab === tab.id ? '2px solid #DC2626' : '2px solid transparent',
+                                padding: '1rem 1.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <tab.icon size={18} /> {tab.label}
+                        </button>
+                    ))}
+                </div>
 
-                    {/* ─── TAB CONTENT ───────────────────────────────────── */}
+                {/* 1. DONORS TAB */}
+                {activeTab === 'donors' && (
+                    <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', flex: 1 }}>
+                                <div className="form-group" style={{ marginBottom: 0, minWidth: '150px' }}>
+                                    <label className="form-label">Blood Group</label>
+                                    <select className="form-control" value={filterGroup} onChange={e => setFilterGroup(e.target.value)}>
+                                        <option value="">All Groups</option>
+                                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                                    </select>
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0, minWidth: '200px', flex: 1, maxWidth: '400px' }}>
+                                    <label className="form-label">Location</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <MapPin size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} />
+                                        <input type="text" className="form-control" placeholder="Search city or area..." value={filterLocation} onChange={e => setFilterLocation(e.target.value)} style={{ paddingLeft: '38px' }} />
+                                    </div>
+                                </div>
+                            </div>
+                            {user && (
+                                <ActionButton
+                                    variant="primary"
+                                    onClick={() => setIsRegistering(!isRegistering)}
+                                    style={{ background: '#DC2626', borderColor: '#DC2626' }}
+                                >
+                                    <UserPlus size={18} /> {isRegistering ? 'Cancel Registration' : 'Register as Donor'}
+                                </ActionButton>
+                            )}
+                        </div>
 
-                    {/* 1. DONORS TAB */}
-                    {activeTab === 'donors' && (
-                        <>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', flex: 1 }}>
-                                    <div className="form-group" style={{ marginBottom: 0, minWidth: '150px' }}>
+                        {isRegistering && (
+                            <DashboardCard style={{ marginBottom: '3rem', borderLeft: '5px solid #DC2626' }}>
+                                <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Donor Registration Profile</h3>
+                                <form onSubmit={handleRegister} className="grid-2" style={{ gap: '1.5rem' }}>
+                                    <div>
+                                        <div className="form-group">
+                                            <label className="form-label">Blood Group *</label>
+                                            <select className="form-control" required value={formFields.blood_group} onChange={e => setFormFields({ ...formFields, blood_group: e.target.value })}>
+                                                <option value="" disabled>Select</option>
+                                                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Location *</label>
+                                            <input type="text" className="form-control" required value={formFields.location} onChange={e => setFormFields({ ...formFields, location: e.target.value })} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Phone *</label>
+                                            <input type="tel" className="form-control" required value={formFields.phone} onChange={e => setFormFields({ ...formFields, phone: e.target.value })} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Available Until *</label>
+                                            <input type="date" className="form-control" required min={new Date().toISOString().split('T')[0]} value={formFields.available_until} onChange={e => setFormFields({ ...formFields, available_until: e.target.value })} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '15px', border: '1px solid var(--border)', marginBottom: '1.5rem' }}>
+                                            <h4 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Shield size={18} /> Privacy & Visibility</h4>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', cursor: 'pointer' }}>
+                                                <input type="checkbox" style={{ width: '18px', height: '18px' }} checked={formFields.show_name} onChange={e => setFormFields({ ...formFields, show_name: e.target.checked })} />
+                                                <span style={{ fontSize: '0.95rem' }}>Show my name publicly</span>
+                                            </label>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                                                <input type="checkbox" style={{ width: '18px', height: '18px' }} checked={formFields.contact_visible} onChange={e => setFormFields({ ...formFields, contact_visible: e.target.checked })} />
+                                                <span style={{ fontSize: '0.95rem' }}>Show my phone number</span>
+                                            </label>
+                                        </div>
+                                        <ActionButton type="submit" variant="primary" style={{ width: '100%', background: '#DC2626', borderColor: '#DC2626' }} disabled={formStatus.loading}>
+                                            {formStatus.loading ? 'Saving...' : 'Save Registration'}
+                                        </ActionButton>
+                                        {formStatus.error && <p style={{ color: '#DC2626', fontSize: '0.85rem', marginTop: '0.75rem', textAlign: 'center' }}>{formStatus.error}</p>}
+                                        {formStatus.success && <p style={{ color: '#059669', fontSize: '0.85rem', marginTop: '0.75rem', textAlign: 'center' }}>{formStatus.success}</p>}
+                                    </div>
+                                </form>
+                            </DashboardCard>
+                        )}
+
+                        {donorsLoading ? (
+                            <div className="dashboard-loading"><div className="loading-spinner"></div></div>
+                        ) : filteredDonors.length === 0 ? (
+                            <DashboardCard style={{ padding: '3rem', textAlign: 'center' }}>
+                                <h3 style={{ color: 'var(--text-muted)' }}>No Donors Available</h3>
+                                <p style={{ fontSize: '0.9rem' }}>Try adjusting your filters or location.</p>
+                            </DashboardCard>
+                        ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                                {filteredDonors.map(donor => (
+                                    <DashboardCard key={donor.id} style={{ padding: '1.5rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                                            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#FEF2F2', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>{donor.blood_group}</div>
+                                            <div>
+                                                <h3 style={{ fontSize: '1.05rem', margin: 0 }}>{donor.show_name ? donor.name : 'Anonymous Donor'}</h3>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                    <MapPin size={14} /> {donor.location}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '10px', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                                            {donor.contact_visible ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontWeight: 600 }}>
+                                                    <Phone size={16} /> {donor.phone}
+                                                </div>
+                                            ) : (
+                                                <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <Shield size={16} /> Contact details hidden
+                                                </div>
+                                            )}
+                                        </div>
+                                        <ActionButton
+                                            variant="outline"
+                                            style={{ width: '100%', borderColor: '#DC2626', color: '#DC2626' }}
+                                            onClick={() => setRequestModal(donor)}
+                                        >
+                                            Request Blood
+                                        </ActionButton>
+                                    </DashboardCard>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* 2. INVENTORY TAB */}
+                {activeTab === 'inventory' && (
+                    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                        <DashboardCard style={{ padding: '2rem', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Search size={22} color="#DC2626" /> Hospital Blood Inventory
+                            </h2>
+                            <form onSubmit={handleInventorySearch}>
+                                <div className="grid-2" style={{ gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                    <div className="form-group">
                                         <label className="form-label">Blood Group</label>
-                                        <select className="form-control" value={filterGroup} onChange={e => setFilterGroup(e.target.value)}>
-                                            <option value="">All Groups</option>
+                                        <select className="form-control" required value={invGroup} onChange={e => setInvGroup(e.target.value)}>
+                                            <option value="" disabled>Select</option>
                                             {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
                                         </select>
                                     </div>
-                                    <div className="form-group" style={{ marginBottom: 0, minWidth: '200px', flex: 1, maxWidth: '400px' }}>
-                                        <label className="form-label">Location</label>
-                                        <div style={{ position: 'relative' }}>
-                                            <MapPin size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} />
-                                            <input type="text" className="form-control" placeholder="Search city or area..." value={filterLocation} onChange={e => setFilterLocation(e.target.value)} style={{ paddingLeft: '38px' }} />
-                                        </div>
+                                    <div className="form-group">
+                                        <label className="form-label">City</label>
+                                        <input type="text" className="form-control" required placeholder="e.g. Mumbai" value={invCity} onChange={e => setInvCity(e.target.value)} />
                                     </div>
                                 </div>
-                                {user && (
-                                    <button className="btn btn-primary" onClick={() => setIsRegistering(!isRegistering)} style={{ background: '#DC2626' }}>
-                                        <UserPlus size={18} /> {isRegistering ? 'Cancel Registration' : 'Register as Donor'}
-                                    </button>
-                                )}
-                            </div>
+                                <ActionButton
+                                    variant="primary"
+                                    type="submit"
+                                    style={{ width: '100%', background: '#DC2626', borderColor: '#DC2626' }}
+                                    disabled={invLoading}
+                                >
+                                    {invLoading ? 'Searching...' : 'Check Availability'}
+                                </ActionButton>
+                            </form>
+                        </DashboardCard>
 
-                            {isRegistering && (
-                                <div className="card" style={{ marginBottom: '3rem', borderLeft: '4px solid #DC2626' }}>
-                                    <h3 style={{ marginBottom: '1.25rem' }}>Donor Registration Profile</h3>
-                                    <form onSubmit={handleRegister} className="grid-2" style={{ gap: '1.5rem' }}>
-                                        <div>
-                                            <div className="form-group"><label className="form-label">Blood Group *</label><select className="form-control" required value={formFields.blood_group} onChange={e => setFormFields({ ...formFields, blood_group: e.target.value })}><option value="" disabled>Select</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}</select></div>
-                                            <div className="form-group"><label className="form-label">Location *</label><input type="text" className="form-control" required value={formFields.location} onChange={e => setFormFields({ ...formFields, location: e.target.value })} /></div>
-                                            <div className="form-group"><label className="form-label">Phone *</label><input type="tel" className="form-control" required value={formFields.phone} onChange={e => setFormFields({ ...formFields, phone: e.target.value })} /></div>
-                                            <div className="form-group"><label className="form-label">Available Until *</label><input type="date" className="form-control" required min={new Date().toISOString().split('T')[0]} value={formFields.available_until} onChange={e => setFormFields({ ...formFields, available_until: e.target.value })} /></div>
-                                        </div>
-                                        <div>
-                                            <div style={{ background: '#F8FAFC', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                                                <h4 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Shield size={18} /> Privacy</h4>
-                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', cursor: 'pointer' }}><input type="checkbox" checked={formFields.show_name} onChange={e => setFormFields({ ...formFields, show_name: e.target.checked })} /> Show Name Publicly</label>
-                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}><input type="checkbox" checked={formFields.contact_visible} onChange={e => setFormFields({ ...formFields, contact_visible: e.target.checked })} /> Show Phone Number</label>
-                                            </div>
-                                            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', background: '#DC2626' }}>Save Registration</button>
-                                        </div>
-                                    </form>
+                        {invError && <div className="auth-error">{invError}</div>}
+                        {invResults && (
+                            <DashboardCard>
+                                <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border)' }}>
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Available Units</h3>
                                 </div>
-                            )}
-
-                            {donorsLoading ? <div className="dashboard-loading"><div className="loading-spinner"></div></div> : filteredDonors.length === 0 ? <div className="dashboard-empty"><h3>No Donors Found</h3></div> : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-                                    {filteredDonors.map(donor => (
-                                        <div key={donor.id} className="card" style={{ padding: '1.25rem' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                                                <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#FEF2F2', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{donor.blood_group}</div>
-                                                <div><h3 style={{ fontSize: '1rem', margin: 0 }}>{donor.show_name ? donor.name : 'Anonymous Donor'}</h3><div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}><MapPin size={12} /> {donor.location}</div></div>
-                                            </div>
-                                            <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem' }}>
-                                                {donor.contact_visible ? <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontWeight: 600 }}><Phone size={14} /> {donor.phone}</div> : <div style={{ color: 'var(--text-muted)' }}><Shield size={14} /> Contact details hidden</div>}
-                                            </div>
-                                            <button className="btn btn-outline" style={{ width: '100%', marginTop: '1rem', borderColor: '#DC2626', color: '#DC2626' }} onClick={() => setRequestModal(donor)}>Request Blood</button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {/* 2. INVENTORY TAB */}
-                    {activeTab === 'inventory' && (
-                        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                            <div className="card" style={{ padding: '2rem', marginBottom: '2rem' }}>
-                                <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}><Search size={22} color="#DC2626" /> Hospital Blood Inventory</h2>
-                                <form onSubmit={handleInventorySearch} className="grid-2" style={{ gap: '1rem' }}>
-                                    <div className="form-group"><label className="form-label">Blood Group</label><select className="form-control" required value={invGroup} onChange={e => setInvGroup(e.target.value)}><option value="" disabled>Select</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}</select></div>
-                                    <div className="form-group"><label className="form-label">City</label><input type="text" className="form-control" required placeholder="e.g. Mumbai" value={invCity} onChange={e => setInvCity(e.target.value)} /></div>
-                                    <button className="btn btn-primary" style={{ gridColumn: 'span 2', background: '#DC2626' }} disabled={invLoading}>{invLoading ? 'Searching...' : 'Check Availability'}</button>
-                                </form>
-                            </div>
-
-                            {invError && <div className="auth-error">{invError}</div>}
-                            {invResults && (
-                                <div className="card">
-                                    <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border)' }}><h3 style={{ margin: 0, fontSize: '1rem' }}>Available Units</h3></div>
-                                    {invResults.length === 0 ? <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No units found in this city.</p> : (
-                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            {invResults.map(res => (
-                                                <div key={res.id} style={{ padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)' }}>
-                                                    <div><strong>{res.hospital_name}</strong><br /><span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{res.city} • Updated {new Date(res.updated_at).toLocaleDateString()}</span></div>
-                                                    <div style={{ background: '#FEF2F2', color: '#DC2626', padding: '0.25rem 0.75rem', borderRadius: '20px', fontWeight: 800 }}>{res.units} Units</div>
+                                {invResults.length === 0 ? (
+                                    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                        No units found in this city matching your selection.
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        {invResults.map(res => (
+                                            <div key={res.id} style={{ padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)' }}>
+                                                <div>
+                                                    <strong>{res.hospital_name}</strong>
+                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                                                        {res.city} • Updated {new Date(res.updated_at).toLocaleDateString()}
+                                                    </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* 3. BROADCASTS TAB */}
-                    {activeTab === 'broadcasts' && (
-                        <>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                                <h2 style={{ fontSize: '1.2rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Megaphone size={20} color="#DC2626" /> Active Public Requests</h2>
-                                <button className="btn btn-primary" style={{ background: '#DC2626' }} onClick={() => setBroadcastModal(true)}>Post Broadcast</button>
-                            </div>
-
-                            {broadcastsLoading ? <div className="dashboard-loading"><div className="loading-spinner"></div></div> : broadcasts.length === 0 ? <div className="dashboard-empty"><h3>No Active Broadcasts</h3></div> : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.25rem' }}>
-                                    {broadcasts.map(req => (
-                                        <div key={req.id} className="card" style={{ padding: '1.25rem', borderLeft: '4px solid #DC2626' }}>
-                                            <h4 style={{ marginBottom: '1rem', lineHeight: '1.4' }}>{req.message}</h4>
-                                            <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem' }}>
-                                                <div><strong>Patient:</strong> {req.patient_name}</div>
-                                                <div style={{ color: '#059669', fontWeight: 600, marginTop: '0.25rem' }}><Phone size={14} /> {req.patient_phone}</div>
+                                                <div style={{ background: '#FEF2F2', color: '#DC2626', padding: '0.35rem 1rem', borderRadius: '20px', fontWeight: 800, fontSize: '0.9rem' }}>
+                                                    {res.units} Units
+                                                </div>
                                             </div>
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem' }}>Posted: {new Date(req.created_at).toLocaleString()}</div>
+                                        ))}
+                                    </div>
+                                )}
+                            </DashboardCard>
+                        )}
+                    </div>
+                )}
+
+                {/* 3. BROADCASTS TAB */}
+                {activeTab === 'broadcasts' && (
+                    <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                            <div>
+                                <h2 style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Megaphone size={22} color="#DC2626" /> Active Public Requests
+                                </h2>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>Urgent requirements across the network.</p>
+                            </div>
+                            <ActionButton variant="primary" style={{ background: '#DC2626', borderColor: '#DC2626' }} onClick={() => setBroadcastModal(true)}>
+                                Post Broadcast
+                            </ActionButton>
+                        </div>
+
+                        {broadcastsLoading ? (
+                            <div className="dashboard-loading"><div className="loading-spinner"></div></div>
+                        ) : broadcasts.length === 0 ? (
+                            <DashboardCard style={{ padding: '3rem', textAlign: 'center' }}>
+                                <h3 style={{ color: 'var(--text-muted)' }}>No Active Broadcasts</h3>
+                                <p style={{ fontSize: '0.9rem' }}>There are currently no urgent blood requests.</p>
+                            </DashboardCard>
+                        ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                                {broadcasts.map(req => (
+                                    <DashboardCard key={req.id} style={{ padding: '1.5rem', borderLeft: '5px solid #DC2626' }}>
+                                        <h4 style={{ marginBottom: '1.25rem', lineHeight: '1.5', fontSize: '1.05rem', fontWeight: 600 }}>{req.message}</h4>
+                                        <div style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '12px', fontSize: '0.9rem' }}>
+                                            <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Patient: {req.patient_name}</div>
+                                            <div style={{ color: '#059669', fontWeight: 700, marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Phone size={16} /> {req.patient_phone}
+                                            </div>
                                         </div>
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-            </section>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            <Search size={12} /> Posted: {new Date(req.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                                        </div>
+                                    </DashboardCard>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
+            </SectionContainer>
 
             {/* MODALS */}
             {requestModal && (
                 <div className="modal-overlay" onClick={() => !reqLoading && setRequestModal(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <button className="modal-close" onClick={() => setRequestModal(null)}>&times;</button>
-                        <div className="modal-header"><h2>Request Blood Connection</h2><p>Send a request to {requestModal.name || 'this donor'}</p></div>
-                        {reqSuccess ? <div className="auth-success">{reqSuccess}</div> : (
+                        <div className="modal-header">
+                            <h2 className="modal-title">Request Blood Connection</h2>
+                            <p className="modal-subtitle">Send a request to {requestModal.name || 'this donor'}</p>
+                        </div>
+                        {reqSuccess ? <div className="auth-success" style={{ margin: '1rem 0' }}>{reqSuccess}</div> : (
                             <form onSubmit={handleRequestSubmit}>
-                                <div className="form-group"><label className="form-label">Your Name</label><input type="text" className="form-control" required value={reqFields.patient_name} onChange={e => setReqFields({ ...reqFields, patient_name: e.target.value })} /></div>
-                                <div className="form-group"><label className="form-label">Your Phone</label><input type="tel" className="form-control" required value={reqFields.patient_phone} onChange={e => setReqFields({ ...reqFields, patient_phone: e.target.value })} /></div>
-                                <div className="form-group"><label className="form-label">Message</label><textarea className="form-control" rows={3} required value={reqFields.message} onChange={e => setReqFields({ ...reqFields, message: e.target.value })} /></div>
-                                <button type="submit" className="btn btn-primary" style={{ width: '100%', background: '#DC2626' }} disabled={reqLoading}>{reqLoading ? 'Sending...' : 'Send Request'}</button>
+                                <div className="form-group">
+                                    <label className="form-label">Your Name</label>
+                                    <input type="text" className="form-control" required value={reqFields.patient_name} onChange={e => setReqFields({ ...reqFields, patient_name: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Your Phone</label>
+                                    <input type="tel" className="form-control" required value={reqFields.patient_phone} onChange={e => setReqFields({ ...reqFields, patient_phone: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Message</label>
+                                    <textarea className="form-control" rows={3} required placeholder="Detailed location and urgency..." value={reqFields.message} onChange={e => setReqFields({ ...reqFields, message: e.target.value })} />
+                                </div>
+                                <ActionButton type="submit" variant="primary" style={{ width: '100%', background: '#DC2626', borderColor: '#DC2626' }} disabled={reqLoading}>
+                                    {reqLoading ? 'Sending...' : 'Send Request'}
+                                </ActionButton>
                             </form>
                         )}
                     </div>
@@ -327,22 +453,45 @@ export default function BloodDonation() {
                 <div className="modal-overlay" onClick={() => !reqLoading && setBroadcastModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <button className="modal-close" onClick={() => setBroadcastModal(false)}>&times;</button>
-                        <div className="modal-header"><h2>Broadcast Urgent Request</h2><p>This will be visible to all users.</p></div>
-                        {reqSuccess ? <div className="auth-success">{reqSuccess}</div> : (
+                        <div className="modal-header">
+                            <h2 className="modal-title">Broadcast Urgent Request</h2>
+                            <p className="modal-subtitle">This will be visible to all users in the network.</p>
+                        </div>
+                        {reqSuccess ? <div className="auth-success" style={{ margin: '1rem 0' }}>{reqSuccess}</div> : (
                             <form onSubmit={handleBroadcastSubmit}>
-                                <div className="grid-2" style={{ gap: '1rem' }}>
-                                    <div className="form-group"><label className="form-label">Blood Group *</label><select className="form-control" required value={broadcastFields.blood_group} onChange={e => setBroadcastFields({ ...broadcastFields, blood_group: e.target.value })}><option value="" disabled>Select</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}</select></div>
-                                    <div className="form-group"><label className="form-label">Location *</label><input type="text" className="form-control" required value={broadcastFields.location} onChange={e => setBroadcastFields({ ...broadcastFields, location: e.target.value })} /></div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label">Blood Group *</label>
+                                        <select className="form-control" required value={broadcastFields.blood_group} onChange={e => setBroadcastFields({ ...broadcastFields, blood_group: e.target.value })}>
+                                            <option value="" disabled>Select</option>
+                                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label">Location *</label>
+                                        <input type="text" className="form-control" required placeholder="City/Hospital" value={broadcastFields.location} onChange={e => setBroadcastFields({ ...broadcastFields, location: e.target.value })} />
+                                    </div>
                                 </div>
-                                <div className="form-group"><label className="form-label">Patient Name *</label><input type="text" className="form-control" required value={broadcastFields.patient_name} onChange={e => setBroadcastFields({ ...broadcastFields, patient_name: e.target.value })} /></div>
-                                <div className="form-group"><label className="form-label">Phone *</label><input type="tel" className="form-control" required value={broadcastFields.patient_phone} onChange={e => setBroadcastFields({ ...broadcastFields, patient_phone: e.target.value })} /></div>
-                                <div className="form-group"><label className="form-label">Urgency Message *</label><textarea className="form-control" rows={3} required value={broadcastFields.message} onChange={e => setBroadcastFields({ ...broadcastFields, message: e.target.value })} /></div>
-                                <button type="submit" className="btn btn-primary" style={{ width: '100%', background: '#DC2626' }} disabled={reqLoading}>{reqLoading ? 'Broadcasting...' : 'Broadcast Request'}</button>
+                                <div className="form-group">
+                                    <label className="form-label">Patient Name *</label>
+                                    <input type="text" className="form-control" required value={broadcastFields.patient_name} onChange={e => setBroadcastFields({ ...broadcastFields, patient_name: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Phone *</label>
+                                    <input type="tel" className="form-control" required value={broadcastFields.patient_phone} onChange={e => setBroadcastFields({ ...broadcastFields, patient_phone: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Urgency Message *</label>
+                                    <textarea className="form-control" rows={3} required placeholder="Units required, hospital details, contact person..." value={broadcastFields.message} onChange={e => setBroadcastFields({ ...broadcastFields, message: e.target.value })} />
+                                </div>
+                                <ActionButton type="submit" variant="primary" style={{ width: '100%', background: '#DC2626', borderColor: '#DC2626' }} disabled={reqLoading}>
+                                    {reqLoading ? 'Broadcasting...' : 'Broadcast Request'}
+                                </ActionButton>
                             </form>
                         )}
                     </div>
                 </div>
             )}
-        </>
+        </div>
     )
 }
