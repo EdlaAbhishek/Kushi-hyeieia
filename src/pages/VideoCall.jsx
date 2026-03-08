@@ -203,6 +203,15 @@ export default function VideoCall() {
         })
     };
 
+    // Ensure local video element gets the stream once it mounts (when loading becomes false)
+    useEffect(() => {
+        if (!loading && myVideoRef.current && myStreamRef.current) {
+            if (myVideoRef.current.srcObject !== myStreamRef.current) {
+                myVideoRef.current.srcObject = myStreamRef.current;
+            }
+        }
+    }, [loading]);
+
     // 4. Media Controls
     const toggleMute = () => {
         if (myStreamRef.current) {
