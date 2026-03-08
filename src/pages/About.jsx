@@ -31,9 +31,8 @@ export default function About() {
                     <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>
                         <div className="split-img" style={{ height: 300, background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>Team Photo</div>
                     </motion.div>
-                </motion.div>
-            </div>
-        </SectionContainer >
+                </div>
+            </SectionContainer>
             <SectionContainer className="bg-surface">
                 <div>
                     <motion.div {...fadeUp}>
