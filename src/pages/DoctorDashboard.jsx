@@ -6,6 +6,11 @@ import { MessageCircle, X, Send, AlertTriangle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import InfoButton from '../components/ui/InfoButton'
+import PageHeader from '../components/ui/PageHeader'
+import SectionContainer from '../components/ui/SectionContainer'
+import DashboardCard from '../components/ui/DashboardCard'
+import ActionButton from '../components/ui/ActionButton'
+import DataTable from '../components/ui/DataTable'
 
 export default function DoctorDashboard() {
     const { user } = useAuth()
@@ -179,6 +184,7 @@ export default function DoctorDashboard() {
                 .from('appointments')
                 .update({ status: newStatus })
                 .eq('id', appointmentId)
+            if (error) throw error
             setAppointments(prev => prev.map(a =>
                 a.id === appointmentId ? { ...a, status: newStatus } : a
             ))
@@ -309,18 +315,15 @@ export default function DoctorDashboard() {
 
     return (
         <>
-            <section className="page-header doctor-header">
-                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        <h1 className="page-title">Doctor Dashboard</h1>
-                        <p className="page-subtitle">Welcome back, Dr. {userName}</p>
-                    </div>
-                </div>
-            </section>
+            <PageHeader
+                title={`Doctor Dashboard`}
+                description={`Welcome back, Dr. ${userName}`}
+                className="doctor-header"
+            />
 
-            <section className="section" style={{ paddingBottom: 0 }}>
-                <div className="container">
-                    <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem', background: '#fff', border: '1px solid var(--border-color)' }}>
+            <SectionContainer style={{ paddingBottom: 0 }}>
+                <div>
+                    <DashboardCard style={{ padding: '1.5rem', marginBottom: '2rem', background: '#fff' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Availability Status</h3>
@@ -355,12 +358,12 @@ export default function DoctorDashboard() {
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </DashboardCard>
                 </div>
-            </section>
+            </SectionContainer>
 
-            <section className="section">
-                <div className="container">
+            <SectionContainer>
+                <div>
 
                     {/* Notifications Section */}
                     {notifications.length > 0 && (
@@ -418,27 +421,27 @@ export default function DoctorDashboard() {
                             </h2>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                            <div className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <DashboardCard className="stat-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Beds Available</span>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                                     <span style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary)' }}>42</span>
                                     <span style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>/ 150</span>
                                 </div>
-                            </div>
-                            <div className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            </DashboardCard>
+                            <DashboardCard className="stat-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>On-Duty Doctors</span>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                                     <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#059669' }}>12</span>
                                     <span style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>Specialists</span>
                                 </div>
-                            </div>
-                            <div className="stat-card" style={{ background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: 'var(--radius)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            </DashboardCard>
+                            <DashboardCard className="stat-card" style={{ background: '#FEE2E2', border: '1px solid #FCA5A5', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <span style={{ color: '#991B1B', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Emergencies Today</span>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                                     <span style={{ fontSize: '1.75rem', fontWeight: 700, color: '#B91C1C' }}>5</span>
                                     <span style={{ fontSize: '0.85rem', color: '#991B1B' }}>critical</span>
                                 </div>
-                            </div>
+                            </DashboardCard>
                         </div>
                     </div>
 
@@ -472,7 +475,7 @@ export default function DoctorDashboard() {
 
                     {!loading && appointments.length > 0 && (
                         <div className="doctor-table-wrap">
-                            <table className="data-table">
+                            <DataTable>
                                 <thead>
                                     <tr>
                                         <th>Patient</th>
@@ -537,64 +540,64 @@ export default function DoctorDashboard() {
                                                 <div className="doctor-actions">
                                                     {appt.status === 'pending' && (
                                                         <>
-                                                            <button
-                                                                className="btn btn-primary"
+                                                            <ActionButton
+                                                                variant="primary"
                                                                 style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
                                                                 disabled={updatingId === appt.id}
                                                                 onClick={() => handleUpdateStatus(appt.id, 'confirmed')}
                                                             >
                                                                 Confirm
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-outline"
+                                                            </ActionButton>
+                                                            <ActionButton
+                                                                variant="outline"
                                                                 style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', color: 'var(--primary)', borderColor: 'var(--primary)' }}
                                                                 onClick={() => toast.success(`AI suggests slot: Today at ${appt.urgency === 'Emergency' ? 'Immediately' : '2:30 PM'} based on urgency.`)}
                                                             >
                                                                 Suggest Slot
-                                                            </button>
+                                                            </ActionButton>
                                                         </>
                                                     )}
                                                     {appt.status === 'confirmed' && (
                                                         <>
-                                                            <button
-                                                                className="btn btn-primary"
+                                                            <ActionButton
+                                                                variant="primary"
                                                                 style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
                                                                 disabled={updatingId === appt.id}
                                                                 onClick={() => handleUpdateStatus(appt.id, 'completed')}
                                                             >
                                                                 Complete
-                                                            </button>
+                                                            </ActionButton>
                                                             {(appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation') && (
-                                                                <button
+                                                                <ActionButton
                                                                     onClick={() => joinVideoCall(appt)}
-                                                                    className="btn btn-outline"
+                                                                    variant="outline"
                                                                     style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', background: '#EFF6FF', borderColor: 'var(--primary)' }}
                                                                 >
                                                                     📹 Join Call
-                                                                </button>
+                                                                </ActionButton>
                                                             )}
                                                         </>
                                                     )}
                                                     {(appt.status === 'pending' || appt.status === 'confirmed') && (
-                                                        <button
-                                                            className="btn btn-outline"
+                                                        <ActionButton
+                                                            variant="outline"
                                                             style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', borderColor: 'var(--emergency)', color: 'var(--emergency)' }}
                                                             disabled={updatingId === appt.id}
                                                             onClick={() => handleUpdateStatus(appt.id, 'cancelled')}
                                                         >
                                                             Cancel
-                                                        </button>
+                                                        </ActionButton>
                                                     )}
                                                 </div>
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
-                            </table>
+                            </DataTable>
                         </div>
                     )}
                 </div>
-            </section>
+            </SectionContainer>
 
             {/* Post-Care Notes Modal */}
             {notesModal && (

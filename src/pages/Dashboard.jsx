@@ -8,6 +8,10 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import InfoButton from '../components/ui/InfoButton'
 import { toast } from 'react-hot-toast'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import SectionContainer from '../components/ui/SectionContainer'
+import DashboardCard from '../components/ui/DashboardCard'
+import ActionButton from '../components/ui/ActionButton'
+import PageHeader from '../components/ui/PageHeader'
 
 const mockHealthData = [
     { month: 'Oct', score: 72 },
@@ -278,8 +282,18 @@ export default function Dashboard({ activeTab = 'overview' }) {
 
     return (
         <>
-            <section className="section" style={{ paddingTop: 0 }}>
-                <div className="container">
+            <PageHeader
+                title={`Welcome back, ${userName}`}
+                description="Manage your appointments, health records, and upcoming tests."
+                action={
+                    <ActionButton to="/doctors" variant="primary">
+                        + New Appointment
+                    </ActionButton>
+                }
+            />
+
+            <SectionContainer style={{ paddingTop: '1.5rem' }}>
+                <div>
                     {/* Personal Health Trends Panel (Only on Overview) */}
                     {activeTab === 'overview' && (
                         <div style={{ marginBottom: '3rem' }}>
@@ -289,7 +303,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
                                 </h2>
                                 <p className="section-subtitle">Your overall wellness score over time.</p>
                             </div>
-                            <div className="card" style={{ padding: '1.5rem', height: 300 }}>
+                            <DashboardCard style={{ padding: '1.5rem', height: 300 }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={mockHealthData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -302,7 +316,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
                                         <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6, stroke: 'var(--primary)', strokeWidth: 2, fill: '#fff' }} />
                                     </LineChart>
                                 </ResponsiveContainer>
-                            </div>
+                            </DashboardCard>
                         </div>
                     )}
 
@@ -351,70 +365,72 @@ export default function Dashboard({ activeTab = 'overview' }) {
                     {!loading && appointments.length > 0 && (
                         <div className="appointment-grid">
                             {appointments.map((appt, i) => (
-                                <motion.div key={appt.id} className="appointment-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
-                                    <div className="appointment-card-header">
-                                        <div className="appointment-doctor-info">
-                                            <h3 className="appointment-doctor-name">
-                                                {appt.doctors?.full_name || 'Doctor'}
-                                            </h3>
-                                            <p className="appointment-doctor-specialty">
-                                                {appt.doctors?.specialty || '—'}
-                                            </p>
+                                <motion.div key={appt.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
+                                    <DashboardCard className="appointment-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                        <div className="appointment-card-header">
+                                            <div className="appointment-doctor-info">
+                                                <h3 className="appointment-doctor-name">
+                                                    {appt.doctors?.full_name || 'Doctor'}
+                                                </h3>
+                                                <p className="appointment-doctor-specialty">
+                                                    {appt.doctors?.specialty || '—'}
+                                                </p>
+                                            </div>
+                                            <span className={`status-badge ${getStatusClass(appt.status)}`}>
+                                                {getStatusLabel(appt.status)}
+                                            </span>
                                         </div>
-                                        <span className={`status-badge ${getStatusClass(appt.status)}`}>
-                                            {getStatusLabel(appt.status)}
-                                        </span>
-                                    </div>
 
-                                    <div className="appointment-card-body">
-                                        <div className="appointment-detail">
-                                            <span className="appointment-label">Hospital</span>
-                                            <span className="appointment-value">
-                                                {appt.doctors?.hospital_name || '—'}
-                                            </span>
-                                        </div>
-                                        <div className="appointment-detail">
-                                            <span className="appointment-label">Date</span>
-                                            <span className="appointment-value">
-                                                {formatDate(appt.appointment_date)}
-                                            </span>
-                                        </div>
-                                        <div className="appointment-detail">
-                                            <span className="appointment-label">Time</span>
-                                            <span className="appointment-value">
-                                                {formatTime(appt.appointment_time)}
-                                            </span>
-                                        </div>
-                                        <div className="appointment-detail">
-                                            <span className="appointment-label">Type</span>
-                                            <span className="appointment-value">
-                                                {appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation'
-                                                    ? <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                                        <span className="teleconsult-badge status-badge">📹 Video</span>
-                                                        {appt.status !== 'cancelled' && appt.status !== 'completed' && (
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); startVideoCall(appt); }}
-                                                                className="btn btn-primary"
-                                                                style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', fontWeight: 600 }}
-                                                            >
-                                                                📹 Join Call
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                    : 'In-Person'
-                                                }
-                                            </span>
+                                        <div className="appointment-card-body">
+                                            <div className="appointment-detail">
+                                                <span className="appointment-label">Hospital</span>
+                                                <span className="appointment-value">
+                                                    {appt.doctors?.hospital_name || '—'}
+                                                </span>
+                                            </div>
+                                            <div className="appointment-detail">
+                                                <span className="appointment-label">Date</span>
+                                                <span className="appointment-value">
+                                                    {formatDate(appt.appointment_date)}
+                                                </span>
+                                            </div>
+                                            <div className="appointment-detail">
+                                                <span className="appointment-label">Time</span>
+                                                <span className="appointment-value">
+                                                    {formatTime(appt.appointment_time)}
+                                                </span>
+                                            </div>
+                                            <div className="appointment-detail">
+                                                <span className="appointment-label">Type</span>
+                                                <span className="appointment-value">
+                                                    {appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation'
+                                                        ? <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                            <span className="teleconsult-badge status-badge">📹 Video</span>
+                                                            {appt.status !== 'cancelled' && appt.status !== 'completed' && (
+                                                                <ActionButton
+                                                                    variant="primary"
+                                                                    onClick={(e) => { e.stopPropagation(); startVideoCall(appt); }}
+                                                                    style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', fontWeight: 600 }}
+                                                                >
+                                                                    📹 Join Call
+                                                                </ActionButton>
+                                                            )}
+                                                        </div>
+                                                        : 'In-Person'
+                                                    }
+                                                </span>
+                                            </div>
                                         </div>
                                         {appt.status !== 'cancelled' && appt.status !== 'completed' && (
-                                            <button
-                                                className="btn btn-outline"
-                                                style={{ width: '100%', marginTop: '0.5rem', borderColor: '#EF4444', color: '#EF4444' }}
+                                            <ActionButton
+                                                variant="outline"
+                                                style={{ width: '100%', marginTop: 'auto', borderColor: '#EF4444', color: '#EF4444' }}
                                                 onClick={() => handleCancelAppointment(appt.id)}
                                             >
                                                 Cancel Appointment
-                                            </button>
+                                            </ActionButton>
                                         )}
-                                    </div>
+                                    </DashboardCard>
                                 </motion.div>
                             ))}
                         </div>
@@ -432,9 +448,9 @@ export default function Dashboard({ activeTab = 'overview' }) {
 
                     {!loading && appointments.length > 0 && (
                         <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-                            <Link to="/hospitals" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <ActionButton to="/hospitals" variant="outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                                 Find More Hospitals
-                            </Link>
+                            </ActionButton>
                         </div>
                     )}
 
@@ -469,45 +485,47 @@ export default function Dashboard({ activeTab = 'overview' }) {
                             ) : (
                                 <div className="appointment-grid">
                                     {labBookings.map((booking, i) => (
-                                        <motion.div key={booking.id || i} className="appointment-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
-                                            <div className="appointment-card-header">
-                                                <div className="appointment-doctor-info">
-                                                    <h3 className="appointment-doctor-name" style={{ fontSize: '1.1rem' }}>
-                                                        Home Collection
-                                                    </h3>
-                                                    <p className="appointment-doctor-specialty">
-                                                        {booking.tests.length} tests requested
-                                                    </p>
+                                        <motion.div key={booking.id || i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: 'easeOut' }}>
+                                            <DashboardCard className="appointment-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                                <div className="appointment-card-header">
+                                                    <div className="appointment-doctor-info">
+                                                        <h3 className="appointment-doctor-name" style={{ fontSize: '1.1rem' }}>
+                                                            Home Collection
+                                                        </h3>
+                                                        <p className="appointment-doctor-specialty">
+                                                            {booking.tests.length} tests requested
+                                                        </p>
+                                                    </div>
+                                                    <span className={`status-badge ${getStatusClass(booking.status)}`}>
+                                                        {getStatusLabel(booking.status)}
+                                                    </span>
                                                 </div>
-                                                <span className={`status-badge ${getStatusClass(booking.status)}`}>
-                                                    {getStatusLabel(booking.status)}
-                                                </span>
-                                            </div>
 
-                                            <div className="appointment-card-body" style={{ padding: '1rem' }}>
-                                                <div className="appointment-detail">
-                                                    <span className="appointment-label">Date</span>
-                                                    <span className="appointment-value">{formatDate(booking.preferred_date)}</span>
-                                                </div>
-                                                <div className="appointment-detail">
-                                                    <span className="appointment-label">Time Slot</span>
-                                                    <span className="appointment-value">{booking.preferred_time_slot}</span>
-                                                </div>
-                                                <div className="appointment-detail" style={{ alignItems: 'flex-start' }}>
-                                                    <span className="appointment-label">Tests</span>
-                                                    <div className="appointment-value" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                                        {booking.tests.map(t => (
-                                                            <span key={t} style={{ background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', color: '#475569' }}>
-                                                                {t}
-                                                            </span>
-                                                        ))}
+                                                <div className="appointment-card-body" style={{ padding: '1rem' }}>
+                                                    <div className="appointment-detail">
+                                                        <span className="appointment-label">Date</span>
+                                                        <span className="appointment-value">{formatDate(booking.preferred_date)}</span>
+                                                    </div>
+                                                    <div className="appointment-detail">
+                                                        <span className="appointment-label">Time Slot</span>
+                                                        <span className="appointment-value">{booking.preferred_time_slot}</span>
+                                                    </div>
+                                                    <div className="appointment-detail" style={{ alignItems: 'flex-start' }}>
+                                                        <span className="appointment-label">Tests</span>
+                                                        <div className="appointment-value" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                            {booking.tests.map(t => (
+                                                                <span key={t} style={{ background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', color: '#475569' }}>
+                                                                    {t}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div className="appointment-detail" style={{ alignItems: 'flex-start', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #E2E8F0' }}>
+                                                        <span className="appointment-label">Address</span>
+                                                        <span className="appointment-value" style={{ fontSize: '0.8rem', color: '#64748B' }}>{booking.address}</span>
                                                     </div>
                                                 </div>
-                                                <div className="appointment-detail" style={{ alignItems: 'flex-start', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #E2E8F0' }}>
-                                                    <span className="appointment-label">Address</span>
-                                                    <span className="appointment-value" style={{ fontSize: '0.8rem', color: '#64748B' }}>{booking.address}</span>
-                                                </div>
-                                            </div>
+                                            </DashboardCard>
                                         </motion.div>
                                     ))}
                                 </div>
@@ -515,7 +533,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
                         </div>
                     )}
                 </div>
-            </section>
+            </SectionContainer>
 
             {/* ── Floating Chat Button ── */}
             <button

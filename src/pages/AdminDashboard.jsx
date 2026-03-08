@@ -3,6 +3,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Users, Activity, AlertTriangle, HeartPulse, CalendarCheck, TrendingUp, Clock } from 'lucide-react'
 import { supabase } from '../services/supabase'
 import { motion } from 'framer-motion'
+import PageHeader from '../components/ui/PageHeader'
+import SectionContainer from '../components/ui/SectionContainer'
+import DashboardCard from '../components/ui/DashboardCard'
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#6366F1', '#8B5CF6']
 const TRIAGE_COLORS = ['#34D399', '#FBBF24', '#F87171']
@@ -160,15 +163,16 @@ export default function AdminDashboard({ mode = 'population' }) {
     if (mode === 'analytics') {
         return (
             <>
-                <section className="page-header doctor-header">
-                    <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                        <div>
-                            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <TrendingUp size={28} />
-                                System Analytics
-                            </h1>
-                            <p className="page-subtitle">Appointment metrics, consultation trends, and system usage.</p>
-                        </div>
+                <PageHeader
+                    title={
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <TrendingUp size={28} />
+                            System Analytics
+                        </span>
+                    }
+                    description="Appointment metrics, consultation trends, and system usage."
+                    className="doctor-header"
+                    action={
                         <select
                             className="form-control"
                             style={{ width: 'auto', minWidth: '150px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}
@@ -180,121 +184,128 @@ export default function AdminDashboard({ mode = 'population' }) {
                             <option style={{ color: '#000' }}>This Quarter</option>
                             <option style={{ color: '#000' }}>This Year</option>
                         </select>
-                    </div>
-                </section>
+                    }
+                />
 
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem 0 2rem 0' }}
-                >
-
-                    {/* Analytics KPI Cards */}
+                <SectionContainer>
                     <motion.div
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
-                        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
                     >
-                        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', boxShadow: 'var(--shadow-sm)' }}>
-                            <div style={{ background: '#EFF6FF', padding: '0.75rem', borderRadius: '50%' }}>
-                                <CalendarCheck size={24} color="#3B82F6" />
-                            </div>
-                            <div>
-                                <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Total Appointments</span>
-                                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{analyticsStats.totalAppointments}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#10B981', marginTop: '0.25rem' }}>All time</div>
-                            </div>
+
+                        {/* Analytics KPI Cards */}
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
+                            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}
+                        >
+                            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                                <DashboardCard className="stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                    <div style={{ background: '#EFF6FF', padding: '0.75rem', borderRadius: '50%' }}>
+                                        <CalendarCheck size={24} color="#3B82F6" />
+                                    </div>
+                                    <div>
+                                        <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Total Appointments</span>
+                                        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{analyticsStats.totalAppointments}</div>
+                                        <div style={{ fontSize: '0.8rem', color: '#10B981', marginTop: '0.25rem' }}>All time</div>
+                                    </div>
+                                </DashboardCard>
+                            </motion.div>
+
+                            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                                <DashboardCard className="stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                    <div style={{ background: '#F0FDF4', padding: '0.75rem', borderRadius: '50%' }}>
+                                        <Activity size={24} color="#10B981" />
+                                    </div>
+                                    <div>
+                                        <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Teleconsultations</span>
+                                        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{analyticsStats.teleconsultations}</div>
+                                        <div style={{ fontSize: '0.8rem', color: '#10B981', marginTop: '0.25rem' }}>Video appointments</div>
+                                    </div>
+                                </DashboardCard>
+                            </motion.div>
+
+                            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                                <DashboardCard className="stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                    <div style={{ background: '#F5F3FF', padding: '0.75rem', borderRadius: '50%' }}>
+                                        <Clock size={24} color="#8B5CF6" />
+                                    </div>
+                                    <div>
+                                        <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Video Sessions</span>
+                                        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{analyticsStats.videoSessions || 0}</div>
+                                        <div style={{ fontSize: '0.8rem', color: '#8B5CF6', marginTop: '0.25rem' }}>Completed calls</div>
+                                    </div>
+                                </DashboardCard>
+                            </motion.div>
                         </motion.div>
 
-                        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', boxShadow: 'var(--shadow-sm)' }}>
-                            <div style={{ background: '#F0FDF4', padding: '0.75rem', borderRadius: '50%' }}>
-                                <Activity size={24} color="#10B981" />
-                            </div>
-                            <div>
-                                <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Teleconsultations</span>
-                                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{analyticsStats.teleconsultations}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#10B981', marginTop: '0.25rem' }}>Video appointments</div>
-                            </div>
-                        </motion.div>
+                        {/* Charts */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}
+                        >
+                            {/* Bar Chart: Appointment Status */}
+                            <DashboardCard style={{ padding: '1.5rem' }}>
+                                <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-color)' }}>Appointment Status Breakdown</h3>
+                                <div style={{ height: 300 }}>
+                                    {appointmentTrend.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={appointmentTrend} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} dy={10} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} />
+                                                <Tooltip
+                                                    cursor={{ fill: '#F1F5F9' }}
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                />
+                                                <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]}>
+                                                    {appointmentTrend.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748B' }}>No data available</div>
+                                    )}
+                                </div>
+                            </DashboardCard>
 
-                        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', boxShadow: 'var(--shadow-sm)' }}>
-                            <div style={{ background: '#F5F3FF', padding: '0.75rem', borderRadius: '50%' }}>
-                                <Clock size={24} color="#8B5CF6" />
-                            </div>
-                            <div>
-                                <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Video Sessions</span>
-                                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{analyticsStats.videoSessions || 0}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#8B5CF6', marginTop: '0.25rem' }}>Completed calls</div>
-                            </div>
+                            {/* Pie Chart: Type Distribution */}
+                            <DashboardCard style={{ padding: '1.5rem' }}>
+                                <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-color)' }}>Appointment Type Distribution</h3>
+                                <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {typeDistribution.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={typeDistribution}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={70}
+                                                    outerRadius={100}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                >
+                                                    {typeDistribution.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    formatter={(value) => [`${value} Appointments`, 'Count']}
+                                                />
+                                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748B' }}>No data available</div>
+                                    )}
+                                </div>
+                            </DashboardCard>
                         </motion.div>
                     </motion.div>
-
-                    {/* Charts */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}
-                    >
-                        {/* Bar Chart: Appointment Status */}
-                        <div className="card" style={{ padding: '1.5rem' }}>
-                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-color)' }}>Appointment Status Breakdown</h3>
-                            <div style={{ height: 300 }}>
-                                {appointmentTrend.length > 0 ? (
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={appointmentTrend} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} dy={10} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} />
-                                            <Tooltip
-                                                cursor={{ fill: '#F1F5F9' }}
-                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                            />
-                                            <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]}>
-                                                {appointmentTrend.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                ) : (
-                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748B' }}>No data available</div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Pie Chart: Type Distribution */}
-                        <div className="card" style={{ padding: '1.5rem' }}>
-                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-color)' }}>Appointment Type Distribution</h3>
-                            <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {typeDistribution.length > 0 ? (
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={typeDistribution}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={70}
-                                                outerRadius={100}
-                                                paddingAngle={5}
-                                                dataKey="value"
-                                            >
-                                                {typeDistribution.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip
-                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                                formatter={(value) => [`${value} Appointments`, 'Count']}
-                                            />
-                                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                ) : (
-                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748B' }}>No data available</div>
-                                )}
-                            </div>
-                        </div>
-                    </motion.div>
-                </motion.div>
+                </SectionContainer>
             </>
         )
     }
@@ -302,15 +313,16 @@ export default function AdminDashboard({ mode = 'population' }) {
     // ── Population Health View (default) ──
     return (
         <>
-            <section className="page-header doctor-header">
-                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                    <div>
-                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <Activity size={28} />
-                            Population Health
-                        </h1>
-                        <p className="page-subtitle">Overview of hospital patient demographics and risk factors.</p>
-                    </div>
+            <PageHeader
+                title={
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Activity size={28} />
+                        Population Health
+                    </span>
+                }
+                description="Overview of hospital patient demographics and risk factors."
+                className="doctor-header"
+                action={
                     <select
                         className="form-control"
                         style={{ width: 'auto', minWidth: '150px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}
@@ -322,121 +334,128 @@ export default function AdminDashboard({ mode = 'population' }) {
                         <option style={{ color: '#000' }}>This Quarter</option>
                         <option style={{ color: '#000' }}>This Year</option>
                     </select>
-                </div>
-            </section>
+                }
+            />
 
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem 0 2rem 0' }}
-            >
-
-                {/* KPI Cards */}
+            <SectionContainer>
                 <motion.div
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
-                    style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
                 >
-                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', boxShadow: 'var(--shadow-sm)' }}>
-                        <div style={{ background: '#EFF6FF', padding: '0.75rem', borderRadius: '50%' }}>
-                            <Users size={24} color="#3B82F6" />
-                        </div>
-                        <div>
-                            <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Total Patients</span>
-                            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{stats.totalPatients}</div>
-                            <div style={{ fontSize: '0.8rem', color: '#10B981', marginTop: '0.25rem' }}>Active within network</div>
-                        </div>
+
+                    {/* KPI Cards */}
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
+                        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}
+                    >
+                        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                            <DashboardCard className="stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                <div style={{ background: '#EFF6FF', padding: '0.75rem', borderRadius: '50%' }}>
+                                    <Users size={24} color="#3B82F6" />
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Total Patients</span>
+                                    <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{stats.totalPatients}</div>
+                                    <div style={{ fontSize: '0.8rem', color: '#10B981', marginTop: '0.25rem' }}>Active within network</div>
+                                </div>
+                            </DashboardCard>
+                        </motion.div>
+
+                        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                            <DashboardCard className="stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                <div style={{ background: '#FEF2F2', padding: '0.75rem', borderRadius: '50%' }}>
+                                    <AlertTriangle size={24} color="#EF4444" />
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>High Risk Patients</span>
+                                    <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{stats.highRiskPatients}</div>
+                                    <div style={{ fontSize: '0.8rem', color: '#EF4444', marginTop: '0.25rem' }}>Score &gt; 70</div>
+                                </div>
+                            </DashboardCard>
+                        </motion.div>
+
+                        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                            <DashboardCard className="stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                                <div style={{ background: '#F5F3FF', padding: '0.75rem', borderRadius: '50%' }}>
+                                    <HeartPulse size={24} color="#8B5CF6" />
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Screenings Done</span>
+                                    <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{stats.screeningsDone}</div>
+                                    <div style={{ fontSize: '0.8rem', color: '#10B981', marginTop: '0.25rem' }}>Awaiting review: {Math.floor(stats.screeningsDone * 0.15)}</div>
+                                </div>
+                            </DashboardCard>
+                        </motion.div>
                     </motion.div>
 
-                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', boxShadow: 'var(--shadow-sm)' }}>
-                        <div style={{ background: '#FEF2F2', padding: '0.75rem', borderRadius: '50%' }}>
-                            <AlertTriangle size={24} color="#EF4444" />
-                        </div>
-                        <div>
-                            <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>High Risk Patients</span>
-                            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{stats.highRiskPatients}</div>
-                            <div style={{ fontSize: '0.8rem', color: '#EF4444', marginTop: '0.25rem' }}>Score &gt; 70</div>
-                        </div>
-                    </motion.div>
+                    {/* Charts ROW */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}
+                    >
+                        {/* Bar Chart: Disease Distribution */}
+                        <DashboardCard style={{ padding: '1.5rem' }}>
+                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-color)' }}>Disease Risk Distribution</h3>
+                            <div style={{ height: 300 }}>
+                                {diseaseData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={diseaseData} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} dy={10} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} />
+                                            <Tooltip
+                                                cursor={{ fill: '#F1F5F9' }}
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                            />
+                                            <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]}>
+                                                {diseaseData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748B' }}>No data available</div>
+                                )}
+                            </div>
+                        </DashboardCard>
 
-                    <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="stat-card" style={{ background: '#fff', border: '1px solid var(--border-color)', borderRadius: 'var(--radius)', padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', boxShadow: 'var(--shadow-sm)' }}>
-                        <div style={{ background: '#F5F3FF', padding: '0.75rem', borderRadius: '50%' }}>
-                            <HeartPulse size={24} color="#8B5CF6" />
-                        </div>
-                        <div>
-                            <span style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>Screenings Done</span>
-                            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1E293B', marginTop: '0.25rem' }}>{stats.screeningsDone}</div>
-                            <div style={{ fontSize: '0.8rem', color: '#10B981', marginTop: '0.25rem' }}>Awaiting review: {Math.floor(stats.screeningsDone * 0.15)}</div>
-                        </div>
+                        {/* Pie Chart: Triage Levels */}
+                        <DashboardCard style={{ padding: '1.5rem' }}>
+                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-color)' }}>Current Triage Status</h3>
+                            <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {triageData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={triageData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={70}
+                                                outerRadius={100}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {triageData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={TRIAGE_COLORS[index % TRIAGE_COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                formatter={(value) => [`${value} Patients`, 'Count']}
+                                            />
+                                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748B' }}>No data available</div>
+                                )}
+                            </div>
+                        </DashboardCard>
                     </motion.div>
                 </motion.div>
-
-                {/* Charts ROW */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                    style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}
-                >
-                    {/* Bar Chart: Disease Distribution */}
-                    <div className="card" style={{ padding: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-color)' }}>Disease Risk Distribution</h3>
-                        <div style={{ height: 300 }}>
-                            {diseaseData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={diseaseData} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} dy={10} />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} />
-                                        <Tooltip
-                                            cursor={{ fill: '#F1F5F9' }}
-                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                        />
-                                        <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]}>
-                                            {diseaseData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748B' }}>No data available</div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Pie Chart: Triage Levels */}
-                    <div className="card" style={{ padding: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-color)' }}>Current Triage Status</h3>
-                        <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {triageData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={triageData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={70}
-                                            outerRadius={100}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                        >
-                                            {triageData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={TRIAGE_COLORS[index % TRIAGE_COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                            formatter={(value) => [`${value} Patients`, 'Count']}
-                                        />
-                                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748B' }}>No data available</div>
-                            )}
-                        </div>
-                    </div>
-                </motion.div>
-            </motion.div>
+            </SectionContainer>
         </>
     )
 }

@@ -86,12 +86,99 @@ h6 {
     padding: 0 1.5rem;
 }
 
+.max-w-7xl {
+    max-width: 80rem;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.py-10 {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+}
+
 .section {
     padding: 5rem 0;
 }
 
 .section-bg {
     background: var(--surface);
+}
+
+/* ------------ Global Typography Utilities ------------ */
+.text-3xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+}
+
+.text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.text-muted-foreground {
+    color: var(--text-muted);
+}
+
+/* ------------ Global Status Utilities ------------ */
+.text-success {
+    color: #10B981;
+}
+
+.bg-success {
+    background-color: #10B981;
+}
+
+.bg-success-light {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.text-warning {
+    color: #F59E0B;
+}
+
+.bg-warning {
+    background-color: #F59E0B;
+}
+
+.bg-warning-light {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.text-danger {
+    color: #EF4444;
+}
+
+.bg-danger {
+    background-color: #EF4444;
+}
+
+.bg-danger-light {
+    background-color: #FEE2E2;
+    color: #991B1B;
 }
 
 /* ------------ Navbar ------------ */

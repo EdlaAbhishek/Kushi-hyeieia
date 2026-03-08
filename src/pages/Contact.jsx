@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { Phone, Mail, MessageSquare } from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { toast } from 'react-hot-toast'
+import PageHeader from '../components/ui/PageHeader'
+import SectionContainer from '../components/ui/SectionContainer'
 
 const fadeUp = {
     initial: { opacity: 0, y: 20 },
@@ -38,9 +40,12 @@ export default function Contact() {
 
     return (
         <>
-            <section className="page-header"><div className="container"><h1 className="page-title">Contact Us</h1><p className="page-subtitle">We are here to help. Reach out anytime.</p></div></section>
-            <section className="section">
-                <div className="container grid-2">
+            <PageHeader
+                title="Contact Us"
+                description="We are here to help. Reach out anytime."
+            />
+            <SectionContainer>
+                <div className="grid-2">
                     <motion.div className="split-content" {...fadeUp}>
                         <h3>Get in Touch</h3>
                         <p>For general enquiries, partnership requests, or technical support, use the contact form or reach us directly.</p>
@@ -74,7 +79,7 @@ export default function Contact() {
                         </form>
                     </motion.div>
                 </div>
-            </section>
+            </SectionContainer>
         </>
     )
 }

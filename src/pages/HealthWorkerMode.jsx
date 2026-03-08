@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { supabase } from '../services/supabase'
 import { Save, Wifi, WifiOff, Users, Activity, Languages } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import PageHeader from '../components/ui/PageHeader'
+import DashboardCard from '../components/ui/DashboardCard'
+import ActionButton from '../components/ui/ActionButton'
 
 export default function HealthWorkerMode() {
     const [patientData, setPatientData] = useState({
@@ -145,16 +148,16 @@ export default function HealthWorkerMode() {
 
     return (
         <>
-            <section className="page-header doctor-header">
-                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                    <div>
-                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <Users size={28} />
-                            {t("Health Worker Mode")}
-                        </h1>
-                        <p className="page-subtitle">{t("Remote primary care data entry (ASHA/Camp interface)")}</p>
-                    </div>
-
+            <PageHeader
+                title={
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Users size={28} />
+                        {t("Health Worker Mode")}
+                    </span>
+                }
+                description={t("Remote primary care data entry (ASHA/Camp interface)")}
+                className="doctor-header"
+                action={
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
                         <div style={{
                             display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -196,13 +199,13 @@ export default function HealthWorkerMode() {
                             {t(isOfflineMode ? "Offline" : "Online")}
                         </button>
                     </div>
-                </div>
-            </section>
+                }
+            />
 
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
 
-                <div className="card" style={{ padding: '2rem' }}>
-                    <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <DashboardCard style={{ padding: '2rem' }}>
+                    <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Activity size={20} color="var(--primary)" />
                         {t("Patient Vitals Entry")}
                     </h2>
@@ -259,13 +262,13 @@ export default function HealthWorkerMode() {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button type="submit" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem' }} disabled={isSubmitting}>
+                            <ActionButton variant="primary" type="submit" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem' }} disabled={isSubmitting}>
                                 {isSubmitting ? <span className="loading-spinner" style={{ width: 16, height: 16, borderWidth: 2 }}></span> : <Save size={20} />}
                                 {isSubmitting ? t("Saving...") : t("Save Patient Record")}
-                            </button>
+                            </ActionButton>
                         </div>
                     </form>
-                </div>
+                </DashboardCard>
 
                 {/* Sync Queue Banner (Mock) */}
                 {JSON.parse(localStorage.getItem('offlineVitals') || '[]').length > 0 && (
@@ -274,7 +277,7 @@ export default function HealthWorkerMode() {
                             <strong>{JSON.parse(localStorage.getItem('offlineVitals') || '[]').length} {t("records waiting to sync")}</strong>
                             <p style={{ margin: 0, fontSize: '0.85rem', color: '#B45309' }}>Connect to internet to push data to central database.</p>
                         </div>
-                        <button className="btn btn-primary" style={{ background: '#D97706' }} onClick={() => {
+                        <ActionButton variant="primary" style={{ background: '#D97706', borderColor: '#D97706' }} onClick={() => {
                             if (!isOfflineMode) {
                                 toast("Simulating Sync Process...")
                                 setTimeout(() => {
@@ -287,7 +290,7 @@ export default function HealthWorkerMode() {
                             }
                         }}>
                             {t("Sync Now")}
-                        </button>
+                        </ActionButton>
                     </div>
                 )}
             </div>

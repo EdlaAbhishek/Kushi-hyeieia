@@ -118,8 +118,8 @@ export default function Profile() {
 
     const handlePasswordUpdate = async (e) => {
         e.preventDefault()
-        if (newPw.length < 6) {
-            toast.error('New password must be at least 6 characters.')
+        if (newPw.length < 8) {
+            toast.error('New password must be at least 8 characters.')
             return
         }
         if (newPw !== confirmPw) {

@@ -9,6 +9,10 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import InfoButton from '../components/ui/InfoButton'
 import { toast } from 'react-hot-toast'
+import PageHeader from '../components/ui/PageHeader'
+import SectionContainer from '../components/ui/SectionContainer'
+import DataTable from '../components/ui/DataTable'
+import ActionButton from '../components/ui/ActionButton'
 
 export default function Hospitals() {
     const { user } = useAuth()
@@ -31,16 +35,14 @@ export default function Hospitals() {
 
     return (
         <>
-            <section className="page-header">
-                <div className="container">
-                    <h1 className="page-title">Hospital Network</h1>
-                    <p className="page-subtitle">1,000+ integrated hospital partners nationwide.</p>
-                </div>
-            </section>
+            <PageHeader
+                title="Hospital Network"
+                description="1,000+ integrated hospital partners nationwide."
+            />
 
             {/* ─── Hospital Directory ─── */}
-            <section className="section">
-                <div className="container">
+            <SectionContainer>
+                <div>
                     <Breadcrumbs items={[{ label: 'Hospitals', href: '/hospitals' }]} />
                     <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
@@ -65,7 +67,7 @@ export default function Hospitals() {
                     </div>
 
                     <div className="table-responsive">
-                        <table className="data-table">
+                        <DataTable>
                             <thead>
                                 <tr>
                                     <th>Hospital</th>
@@ -98,22 +100,22 @@ export default function Hospitals() {
                                                 {h.emergency && <span className="status-badge status-confirmed" style={{ fontSize: '0.7rem' }}>24/7 Emergency</span>}
                                             </td>
                                             <td>
-                                                <button
-                                                    className="btn btn-primary btn-sm"
+                                                <ActionButton
+                                                    variant="primary"
+                                                    size="sm"
                                                     onClick={() => navigate(`/hospitals/${hospitalId}`)}
-                                                    style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
                                                 >
                                                     Book Appointment
-                                                </button>
+                                                </ActionButton>
                                             </td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
-                        </table>
+                        </DataTable>
                     </div>
                 </div>
-            </section>
+            </SectionContainer>
         </>
     )
 }

@@ -9,6 +9,9 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import InfoButton from '../components/ui/InfoButton'
 import { toast } from 'react-hot-toast'
+import PageHeader from '../components/ui/PageHeader'
+import SectionContainer from '../components/ui/SectionContainer'
+import ActionButton from '../components/ui/ActionButton'
 
 export default function Doctors() {
     const { user } = useAuth()
@@ -93,16 +96,14 @@ export default function Doctors() {
 
     return (
         <>
-            <section className="page-header">
-                <div className="container">
-                    <h1 className="page-title">Doctor Network</h1>
-                    <p className="page-subtitle">5,000+ verified specialists across India.</p>
-                </div>
-            </section>
+            <PageHeader
+                title="Doctor Network"
+                description="5,000+ verified specialists across India."
+            />
 
             {/* ─── Specialty Filter ─── */}
-            <section className="section">
-                <div className="container">
+            <SectionContainer>
+                <div>
                     <Breadcrumbs items={[{ label: 'Doctors', href: '/doctors' }]} />
                     <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
@@ -168,21 +169,21 @@ export default function Doctors() {
                         </div>
 
                         {selectedSpecialty && (
-                            <button
-                                className="btn btn-outline"
+                            <ActionButton
+                                variant="outline"
                                 onClick={() => setSelectedSpecialty(null)}
                                 style={{ fontSize: '0.8rem', padding: '0.55em 1em' }}
                             >
                                 Clear Filter
-                            </button>
+                            </ActionButton>
                         )}
                     </div>
                 </div>
-            </section>
+            </SectionContainer>
 
             {/* ─── Doctor Cards ─── */}
-            <section className="section" style={{ background: '#F8FAFC', paddingTop: '2.5rem' }}>
-                <div className="container">
+            <SectionContainer className="bg-surface" style={{ paddingTop: '2.5rem' }}>
+                <div>
                     <div className="section-header">
                         <h2 className="section-title" style={{ color: '#1E293B' }}>
                             {selectedSpecialty ? `${selectedSpecialty} Specialists` : 'All Verified Doctors'}
@@ -266,16 +267,16 @@ export default function Doctors() {
                                                 <span>Verified Professional</span>
                                             </div>
                                         </div>
-                                        <button className="btn btn-primary" style={{ width: '100%', marginTop: 'auto' }} onClick={() => navigate(`/doctors/${doc.id}`)}>
+                                        <ActionButton variant="primary" style={{ width: '100%', marginTop: 'auto' }} onClick={() => navigate(`/doctors/${doc.id}`)}>
                                             View Profile & Book <ArrowRight size={15} />
-                                        </button>
+                                        </ActionButton>
                                     </motion.div>
                                 )
                             })}
                         </div>
                     )}
                 </div>
-            </section >
+            </SectionContainer>
         </>
     )
 }

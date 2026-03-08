@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
 import { Check, Users, Brain, Shield } from 'lucide-react'
+import PageHeader from '../components/ui/PageHeader'
+import SectionContainer from '../components/ui/SectionContainer'
 
 const fadeUp = {
     initial: { opacity: 0, y: 20 },
@@ -11,9 +13,12 @@ const fadeUp = {
 export default function About() {
     return (
         <>
-            <section className="page-header"><div className="container"><h1 className="page-title">About Khushi Hygieia</h1><p className="page-subtitle">Building India's most trusted digital healthcare infrastructure.</p></div></section>
-            <section className="section">
-                <div className="container grid-2">
+            <PageHeader
+                title="About Khushi Hygieia"
+                description="Building India's most trusted digital healthcare infrastructure."
+            />
+            <SectionContainer>
+                <div className="grid-2">
                     <motion.div className="split-content" {...fadeUp}>
                         <h3>Our Mission</h3>
                         <p>Khushi Hygieia is committed to making quality healthcare accessible, affordable, and efficient for every Indian citizen through technology-driven solutions.</p>
@@ -26,10 +31,11 @@ export default function About() {
                     <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>
                         <div className="split-img" style={{ height: 300, background: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>Team Photo</div>
                     </motion.div>
-                </div>
-            </section>
-            <section className="section" style={{ background: 'var(--surface)' }}>
-                <div className="container">
+                </motion.div>
+            </div>
+        </SectionContainer >
+            <SectionContainer className="bg-surface">
+                <div>
                     <motion.div {...fadeUp}>
                         <h2 className="section-title">Leadership</h2>
                         <p className="section-subtitle">A team of healthcare professionals, engineers, and public health experts.</p>
@@ -46,7 +52,8 @@ export default function About() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </SectionContainer>
         </>
     )
 }
+

@@ -71,17 +71,18 @@ export default function App() {
                             <Route path="/video-call/:sessionId" element={<VideoCall />} />
                             <Route path="/emergency" element={<Emergency />} />
                             <Route path="/profile" element={<Profile />} />
+                            {/* Shared between patients and doctors */}
+                            <Route path="/chat" element={<AiChat />} />
+                            <Route path="/patients" element={<Patients />} />
                         </Route>
                     </Route>
 
                     {/* Patient-only routes */}
                     <Route element={<ProtectedRoute allowedRoles={['patient']} />}>
                         <Route element={<MainLayout />}>
-                            <Route path="/chat" element={<AiChat />} />
                             <Route path="/doctors" element={<Doctors />} />
                             <Route path="/doctors/:id" element={<DoctorDetail />} />
                             <Route path="/appointment-confirmation" element={<AppointmentConfirmation />} />
-                            <Route path="/patients" element={<Patients />} />
                             <Route path="/services" element={<Services />} />
                             <Route path="/insurance" element={<Insurance />} />
 
@@ -104,8 +105,6 @@ export default function App() {
                     {/* Doctor-only routes */}
                     <Route element={<ProtectedRoute allowedRoles={['doctor']} />}>
                         <Route element={<MainLayout />}>
-                            <Route path="/patients" element={<Patients />} />
-
                             <Route path="/doctor-dashboard" element={<DashboardLayout />}>
                                 <Route index element={<DoctorDashboard />} />
                                 <Route path="patients" element={<DoctorPatients />} />

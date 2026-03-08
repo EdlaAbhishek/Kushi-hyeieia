@@ -3,6 +3,10 @@ import { supabase } from '../services/supabase'
 import { MapPin, Navigation, Activity, Hospital, Star, AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
 import InfoButton from '../components/ui/InfoButton'
+import PageHeader from '../components/ui/PageHeader'
+import SectionContainer from '../components/ui/SectionContainer'
+import DashboardCard from '../components/ui/DashboardCard'
+import ActionButton from '../components/ui/ActionButton'
 
 // Haversine formula to calculate distance between two coordinates
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -229,15 +233,16 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
 
     return (
         <>
-            <section className="page-header doctor-header">
-                <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <Hospital size={28} />
-                            Smart Hospital Finder
-                        </h1>
-                        <p className="page-subtitle">Find the best care based on your location and symptoms.</p>
-                    </div>
+            <PageHeader
+                title={
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Hospital size={28} />
+                        Smart Hospital Finder
+                    </span>
+                }
+                description="Find the best care based on your location and symptoms."
+                className="doctor-header"
+                action={
                     <InfoButton content={{
                         en: {
                             title: 'Smart Hospital Finder',
@@ -255,11 +260,11 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                             usage: '1. సమీపంలోని ఆసుపత్రులను కనుగొనడానికి "నా స్థానాన్ని ఉపయోగించండి" క్లిక్ చేయండి.\n2. మీకు AI ఆధారిత మ్యాచింగ్ కావాలంటే మీ లక్షణాలను వివరించండి.\n3. జాబితా ఆసుపత్రులను దూరం మరియు సంబంధిత ప్రాముఖ్యత ఆధారంగా ర్యాంక్ చేస్తుంది.'
                         }
                     }} />
-                </div>
-            </section>
+                }
+            />
 
-            <section className="section" style={{ paddingTop: '1.5rem' }}>
-                <div className="container">
+            <SectionContainer style={{ paddingTop: '1.5rem' }}>
+                <div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
 
                         {fetchError && (
@@ -284,7 +289,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                                     </div>
                                 </div>
 
-                                <div className="card" style={{ padding: '1.5rem' }}>
+                                <DashboardCard style={{ padding: '1.5rem' }}>
                                     <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <MapPin size={20} className="text-primary" /> Location
                                     </h2>
@@ -294,9 +299,9 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                                             <CheckCircle size={18} /> Location detected. Finding hospitals near you.
                                         </div>
                                     ) : (
-                                        <button onClick={getLocation} className="btn btn-outline" style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                                        <ActionButton onClick={getLocation} variant="outline" style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
                                             <Navigation size={18} /> Share My Location
-                                        </button>
+                                        </ActionButton>
                                     )}
 
                                     {locationError && <p style={{ color: 'var(--danger)', fontSize: '0.85rem', marginTop: '0.5rem' }}>{locationError}</p>}
@@ -304,9 +309,9 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                                     <p style={{ fontSize: '0.85rem', color: 'var(--text-light)', marginTop: '1rem' }}>
                                         Your location helps us calculate accurate distances to medical facilities.
                                     </p>
-                                </div>
+                                </DashboardCard>
 
-                                <div className="card" style={{ padding: '1.5rem', flex: 1 }}>
+                                <DashboardCard style={{ padding: '1.5rem', flex: 1 }}>
                                     <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <Activity size={20} className="text-primary" /> Symptoms
                                     </h2>
@@ -321,14 +326,14 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                                             style={{ marginBottom: '1rem', flex: 1 }}
                                         ></textarea>
 
-                                        <button
+                                        <ActionButton
                                             type="submit"
-                                            className="btn btn-primary"
+                                            variant="primary"
                                             disabled={loadingAi || loadingHospitals || !symptoms.trim()}
                                             style={{ width: '100%' }}
                                         >
                                             {loadingAi ? 'AI is analyzing...' : 'Get Recommendation'}
-                                        </button>
+                                        </ActionButton>
 
                                         {aiError && (
                                             <div className="alert" style={{ marginTop: '1rem', backgroundColor: '#FEE2E2', color: '#B91C1C', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.9rem' }}>
@@ -336,7 +341,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                                             </div>
                                         )}
                                     </form>
-                                </div>
+                                </DashboardCard>
                             </div>
 
                             {/* RIGHT COLUMN: AI Output & Hospital List */}
@@ -344,7 +349,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
 
                                 {/* AI Recommendation Panel */}
                                 {aiRecommendation && (
-                                    <div className="card" style={{ padding: '1.5rem', border: '2px solid var(--primary)', backgroundColor: 'rgba(59, 130, 246, 0.03)' }}>
+                                    <DashboardCard style={{ padding: '1.5rem', border: '2px solid var(--primary)', backgroundColor: 'rgba(59, 130, 246, 0.03)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                                             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <Star fill="currentColor" size={20} /> AI Recommended Hospital
@@ -372,11 +377,11 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                                             <h4 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Reasoning</h4>
                                             <p style={{ fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>{aiRecommendation.reasoning}</p>
                                         </div>
-                                    </div>
+                                    </DashboardCard>
                                 )}
 
                                 {/* Nearby Hospitals List */}
-                                <div className="card" style={{ padding: '1.5rem', flex: 1 }}>
+                                <DashboardCard style={{ padding: '1.5rem', flex: 1 }}>
                                     <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <Hospital size={18} className="text-primary" /> Nearby Facilities {hospitals.length > 0 && `(${hospitals.length})`}
                                     </h2>
@@ -429,13 +434,13 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                                             ))}
                                         </div>
                                     )}
-                                </div>
+                                </DashboardCard>
 
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </SectionContainer>
         </>
     )
 }
