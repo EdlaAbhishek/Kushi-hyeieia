@@ -202,8 +202,10 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Prescription analysis error:', error)
+        console.error('Stack trace:', error.stack)
         return res.status(500).json({
-            error: 'Unable to read the prescription clearly. Please upload a clearer image.'
+            error: 'Backend execution failed: ' + error.message,
+            stack: error.stack
         })
     }
 }
