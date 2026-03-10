@@ -326,10 +326,19 @@ export default function Services() {
                                                 <FileText size={24} color="#64748B" />
                                             </div>
 
-                                            <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
-                                                <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
-                                                <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>{translateNotes(scanResult.summary, scanLang)}</p>
-                                            </div>
+                                            {scanResult.document_type !== 'general' ? (
+                                                <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
+                                                    <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
+                                                    <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>{translateNotes(scanResult.summary, scanLang)}</p>
+                                                </div>
+                                            ) : (
+                                                <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #94A3B8' }}>
+                                                    <strong style={{ fontSize: '0.85rem', color: '#475569', display: 'block', marginBottom: '0.25rem' }}>Note:</strong>
+                                                    <p style={{ fontSize: '0.9rem', color: '#475569', margin: 0 }}>
+                                                        {scanLang === 'en' ? 'The system could not automatically structure this document. Please review the raw extracted text below.' : (scanLang === 'hi' ? 'सिस्टम इस दस्तावेज़ को स्वचालित रूप से स्वरूपित नहीं कर सका। कृपया नीचे दिए गए मूल रूप से निकाले गए पाठ की समीक्षा करें।' : 'సిస్టమ్ ఈ పత్రాన్ని స్వయంచాలకంగా ఫార్మాట్ చేయలేకపోయింది. దయచేసి దిగువన తీసిన ముడి వచనాన్ని సమీక్షించండి.')}
+                                                    </p>
+                                                </div>
+                                            )}
 
                                             {scanResult.extracted_data && scanResult.extracted_data.length > 0 && (
                                                 <div style={{ marginTop: '0.5rem' }}>
