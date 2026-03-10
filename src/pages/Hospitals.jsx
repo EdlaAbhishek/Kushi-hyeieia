@@ -15,7 +15,7 @@ import DataTable from '../components/ui/DataTable'
 import ActionButton from '../components/ui/ActionButton'
 
 export default function Hospitals() {
-    const { user } = useAuth()
+    const { user, isDoctor } = useAuth()
     const navigate = useNavigate()
 
     const hospitals = [
@@ -105,7 +105,7 @@ export default function Hospitals() {
                                                     size="sm"
                                                     onClick={() => navigate(`/hospitals/${hospitalId}`)}
                                                 >
-                                                    Book Appointment
+                                                    {isDoctor ? 'View Details' : 'Book Appointment'}
                                                 </ActionButton>
                                             </td>
                                         </tr>

@@ -14,7 +14,7 @@ import SectionContainer from '../components/ui/SectionContainer'
 import ActionButton from '../components/ui/ActionButton'
 
 export default function Doctors() {
-    const { user } = useAuth()
+    const { user, isDoctor } = useAuth()
     const navigate = useNavigate()
     const [doctors, setDoctors] = useState([])
     const [selectedSpecialty, setSelectedSpecialty] = useState(null)
@@ -285,7 +285,7 @@ export default function Doctors() {
                                             </div>
                                         </div>
                                         <ActionButton variant="primary" style={{ width: '100%', marginTop: 'auto' }} onClick={() => navigate(`/doctors/${doc.id}`)}>
-                                            View Profile & Book <ArrowRight size={15} />
+                                            {isDoctor ? 'View Profile' : 'View Profile & Book'} <ArrowRight size={15} />
                                         </ActionButton>
                                     </motion.div>
                                 )

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
+import { useAuth } from '../services/AuthContext';
 import { MapPin, Clock, Star, Award, ShieldCheck, ArrowLeft, CalendarDays } from 'lucide-react';
 import BookingModal from '../components/BookingModal';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -8,6 +9,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 export default function DoctorDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { isDoctor } = useAuth();
 
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -139,14 +141,15 @@ export default function DoctorDetail() {
                                         <div style={{ fontSize: '0.8rem', color: '#64748B' }}>Experience</div>
                                     </div>
                                 </div>
-
-                                <button
-                                    className="btn btn-primary"
-                                    style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
-                                    onClick={() => setShowBooking(true)}
-                                >
-                                    <CalendarDays size={18} /> Book Appointment
-                                </button>
+                                {!isDoctor && (
+                                    <button
+                                        className="btn btn-primary"
+                                        style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+                                        onClick={() => setShowBooking(true)}
+                                    >
+                                        <CalendarDays size={18} /> Book Appointment
+                                    </button>
+                                )}
                             </div>
                         </div>
 

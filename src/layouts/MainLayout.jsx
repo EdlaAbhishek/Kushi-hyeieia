@@ -117,14 +117,16 @@ export default function MainLayout() {
                             <h2>Khushi Hygieia</h2>
                             <p>Professional healthcare infrastructure providing accessible medical solutions across India.</p>
                         </div>
-                        <div>
-                            <h4 className="footer-heading">For Patients</h4>
-                            <ul className="footer-links">
-                                <li><NavLink to="/doctors">Book Appointment</NavLink></li>
-                                <li><NavLink to="/services">Teleconsultation</NavLink></li>
-                                <li><NavLink to="/dashboard">Health Records</NavLink></li>
-                            </ul>
-                        </div>
+                        {!isDoctor && (
+                            <div>
+                                <h4 className="footer-heading">For Patients</h4>
+                                <ul className="footer-links">
+                                    <li><NavLink to="/doctors">Book Appointment</NavLink></li>
+                                    <li><NavLink to="/services">Teleconsultation</NavLink></li>
+                                    <li><NavLink to="/dashboard">Health Records</NavLink></li>
+                                </ul>
+                            </div>
+                        )}
                         <div>
                             <h4 className="footer-heading">For Providers</h4>
                             <ul className="footer-links">
