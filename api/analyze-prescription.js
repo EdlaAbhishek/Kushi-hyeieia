@@ -108,72 +108,144 @@ export default async function handler(req, res) {
         let currentMedicine = null
         let doctorNotes = []
 
-        // Common patterns
-        const medicineKeywords = ['tab', 'cap', 'syr', 'inj', 'oint', 'drp', 'tablet', 'capsule', 'syrup', 'injection']
-        const frequencyRegex = /(?:\d+-\d+-\d+|\b(?:od|bd|tid|qid|sos|hs|stat)\b)/i
-        const dosageRegex = /\b\d+(?:\.\d+)?(?:mg|ml|g|mcg|iu)\b/i
+        // Expanded keywords that typically indicate a medicine line
+        const medicineKeywords = [
+            'tab', 'cap', 'syr', 'inj', 'oint', 'drp', 'gel', 'cream',
+            'tablet', 'capsule', 'syrup', 'injection', 'ointment', 'drops',
+            'lotion', 'powder', 'suspension', 'spray', 'inhaler', 'patch',
+            'rx', 'r/', 'rp'
+        ]
+
+        // Common Indian drug names (partial matches)
+        const commonDrugNames = [
+            'paracetamol', 'amoxicillin', 'azithromycin', 'ciprofloxacin', 'metformin',
+            'omeprazole', 'pantoprazole', 'ranitidine', 'cetirizine', 'montelukast',
+            'atorvastatin', 'amlodipine', 'losartan', 'telmisartan', 'metoprolol',
+            'aspirin', 'clopidogrel', 'diclofenac', 'ibuprofen', 'aceclofenac',
+            'doxycycline', 'levofloxacin', 'ofloxacin', 'cefixime', 'augmentin',
+            'amoxyclav', 'cephalexin', 'norfloxacin', 'metronidazole', 'fluconazole',
+            'domperidone', 'ondansetron', 'rabeprazole', 'esomeprazole', 'sucralfate',
+            'multivitamin', 'vitamin', 'calcium', 'iron', 'folic', 'zinc',
+            'prednisone', 'prednisolone', 'dexamethasone', 'hydrocortisone',
+            'insulin', 'glimepiride', 'sitagliptin', 'vildagliptin',
+            'salbutamol', 'budesonide', 'levosalbutamol', 'deriphylline',
+            'phenylephrine', 'chlorpheniramine', 'dextromethorphan', 'guaifenesin',
+            'crocin', 'dolo', 'combiflam', 'disprin', 'saridon', 'allegra',
+            'pan', 'shelcal', 'becosules', 'limcee', 'evion', 'zincovit',
+            'eltroxin', 'thyronorm', 'ecosprin'
+        ]
+
+        const frequencyRegex = /(?:\d+-\d+-\d+|\b(?:od|bd|tid|qid|sos|hs|stat|tds|once|twice|thrice)\b)/i
+        const dosageRegex = /\b\d+(?:\.\d+)?\s*(?:mg|ml|g|mcg|iu|%)\b/i
         const durationRegex = /\b(?:for\s+)?(\d+\s+(?:day|week|month)s?)\b/i
+
+        // Check if a line looks like a medicine
+        const isMedicineLine = (line) => {
+            const lower = line.toLowerCase().trim()
+            // Starts with medicine keyword
+            if (medicineKeywords.some(kw => lower.startsWith(kw + ' ') || lower.startsWith(kw + '.') || lower.startsWith(kw + '\t') || lower === kw)) return true
+            // Contains a known drug name
+            if (commonDrugNames.some(drug => lower.includes(drug))) return true
+            // Starts with a number followed by a period/bracket (numbered list: "1.", "1)", "1-")
+            if (/^\d+[\.\)\-\]]\s*.+/i.test(line) && (dosageRegex.test(line) || medicineKeywords.some(kw => lower.includes(kw)))) return true
+            // Contains dosage AND is not just a number/date/phone
+            if (dosageRegex.test(line) && line.length > 5 && line.length < 80 && !frequencyRegex.test(line)) return true
+            return false
+        }
+
+        // Lines to skip (headers, footers, hospital info)
+        const isNoiseLine = (line) => {
+            const lower = line.toLowerCase()
+            const noisePatterns = [
+                'hospital', 'clinic', 'dr.', 'doctor', 'mbbs', 'md', 'ms',
+                'reg no', 'registration', 'mobile:', 'phone:', 'email:',
+                'address', 'consultation', 'opd', 'ipd', 'date:', 'time:',
+                'patient name', 'age:', 'gender:', 'token', 'receipt',
+                'www.', 'http', '.com', '.in', '.org',
+                'corporate', 'identity', 'cin:', 'registered office',
+                'for appointment', 'emergency', 'valid for',
+                'scan here', 'scan to book', 'previous investigation'
+            ]
+            return noisePatterns.some(p => lower.includes(p))
+        }
 
         for (let i = 0; i < textLines.length; i++) {
             const line = textLines[i].trim()
-            if (!line) continue
+            if (!line || line.length < 3) continue
 
             const lowerLine = line.toLowerCase()
 
-            // Check if this line looks like a medicine name (starts with clinical keyword or feels like a noun phrase)
-            const startsWithKeyword = medicineKeywords.some(kw => lowerLine.startsWith(kw))
-            // Only consider it a new medicine if it's the start, or it explicitly has a typical drug name format
-            // Often OCR separates "Tab Paracetamol 500mg" or "Paracetamol 500mg"
-
-            if (startsWithKeyword || (dosageRegex.test(line) && !frequencyRegex.test(line) && line.length > 5)) {
-                // If we were building a medicine, push it
+            if (isMedicineLine(line)) {
+                // Push previous medicine
                 if (currentMedicine) {
                     medicines.push(currentMedicine)
                 }
 
+                // Clean up the name: remove numbering prefix like "1." or "1)"
+                let cleanName = line.replace(/^\d+[\.\)\-\]]\s*/, '').trim()
+                // Remove dosage from name display
+                cleanName = cleanName.replace(dosageRegex, '').trim()
+                // Remove trailing/leading punctuation
+                cleanName = cleanName.replace(/^[\-\.\,\:]+|[\-\.\,\:]+$/g, '').trim()
+
                 currentMedicine = {
-                    name: line.replace(dosageRegex, '').trim(), // Remove dosage from name if present
+                    name: cleanName || line,
                     dosage: '—',
                     frequency: '—',
                     duration: '—',
                     notes: ''
                 }
 
-                // Try to extract dosage from the current line
+                // Extract dosage from same line
                 const dosageMatch = line.match(dosageRegex)
-                if (dosageMatch) {
-                    currentMedicine.dosage = dosageMatch[0]
+                if (dosageMatch) currentMedicine.dosage = dosageMatch[0]
+
+                // Extract frequency from same line
+                const freqMatch = line.match(frequencyRegex)
+                if (freqMatch) currentMedicine.frequency = freqMatch[0]
+
+                // Extract duration from same line
+                const durMatch = line.match(durationRegex)
+                if (durMatch) currentMedicine.duration = durMatch[1]
+
+                // Check for food instructions on same line
+                if (lowerLine.includes('after food') || lowerLine.includes('before food') || lowerLine.includes('with food') || lowerLine.includes('empty stomach')) {
+                    const foodMatch = lowerLine.match(/(after food|before food|with food|empty stomach)/i)
+                    if (foodMatch) currentMedicine.notes = foodMatch[0]
                 }
             }
             else if (currentMedicine) {
-                // Look for frequency/duration in subsequent lines
-                let matchedPattern = false
+                // Continue building current medicine from next lines
+                let matchedAnything = false
 
                 const freqMatch = line.match(frequencyRegex)
-                if (freqMatch) {
+                if (freqMatch && currentMedicine.frequency === '—') {
                     currentMedicine.frequency = freqMatch[0]
-                    matchedPattern = true
+                    matchedAnything = true
                 }
 
                 const durMatch = line.match(durationRegex)
-                if (durMatch) {
+                if (durMatch && currentMedicine.duration === '—') {
                     currentMedicine.duration = durMatch[1]
-                    matchedPattern = true
+                    matchedAnything = true
                 }
 
-                // If it wasn't a frequency/duration but we already have a medicine active, it might be an instruction/note
-                if (!matchedPattern) {
-                    // Check if it's another dosage format or loose text
-                    if (lowerLine.includes('after food') || lowerLine.includes('before food') || lowerLine.includes('bf') || lowerLine.includes('af')) {
-                        currentMedicine.notes += (currentMedicine.notes ? ' ' : '') + line
-                    } else if (line.length > 3) {
-                        // Could be doctor note instead
+                if (lowerLine.includes('after food') || lowerLine.includes('before food') || lowerLine.includes('with food') || lowerLine.includes('empty stomach') || lowerLine.includes('bf') || lowerLine.includes('af')) {
+                    currentMedicine.notes += (currentMedicine.notes ? ', ' : '') + line
+                    matchedAnything = true
+                }
+
+                if (!matchedAnything && !isNoiseLine(line)) {
+                    // Short lines near a medicine are likely instructions
+                    if (line.length < 40) {
+                        currentMedicine.notes += (currentMedicine.notes ? ', ' : '') + line
+                    } else {
                         doctorNotes.push(line)
                     }
                 }
             } else {
-                // Not attached to a medicine, likely doctor notes/patient info
-                if (line.length > 3) {
+                // Not part of any medicine — skip noise lines
+                if (!isNoiseLine(line) && line.length > 3) {
                     doctorNotes.push(line)
                 }
             }
