@@ -53,6 +53,8 @@ export default function BookingModal({ doctor, onClose }) {
             const appointmentData = {
                 doctor_id: doctor.id,
                 patient_id: user.id,
+                patient_name: user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email,
+                patient_email: user?.email,
                 appointment_date: bookingDate,
                 appointment_time: bookingTime,
                 appointment_type: appointmentType === 'telehealth' ? 'teleconsultation' : 'in_person',

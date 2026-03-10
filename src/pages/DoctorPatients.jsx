@@ -48,24 +48,13 @@ export default function DoctorPatients() {
             // Group by unique patients (by patient_id or patient_name)
             const patientMap = new Map()
 
-            // Helper to generate a consistent mock name from an ID
-            const generateMockPatient = (id) => {
-                if (!id) return { name: 'Unknown Patient', email: '—' };
-                const names = ['Arjun Kumar', 'Sneha Reddy', 'Rahul Sharma', 'Priya Desai', 'Vikram Singh', 'Ananya Patel', 'Neha Gupta', 'Karthik Iyer'];
-                const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                const name = names[hash % names.length];
-                const email = name.toLowerCase().replace(' ', '.') + '@gmail.com';
-                return { name, email };
-            };
-
             appointments?.forEach(appt => {
                 const key = appt.patient_id || appt.patient_name || 'Unknown'
                 if (!patientMap.has(key)) {
-                    const mockStr = generateMockPatient(appt.patient_id);
                     patientMap.set(key, {
                         id: key,
-                        name: appt.patient_name || mockStr.name,
-                        email: appt.patient_email || mockStr.email,
+                        name: appt.patient_name || 'Unknown Patient',
+                        email: appt.patient_email || '—',
                         totalAppointments: 0,
                         teleconsultations: 0,
                         inPerson: 0,

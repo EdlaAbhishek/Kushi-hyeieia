@@ -493,13 +493,7 @@ export default function DoctorDashboard() {
                                 </thead>
                                 <tbody>
                                     {appointments.map(appt => {
-                                        const generateMockPatient = (id) => {
-                                            if (!id) return 'Unknown Patient';
-                                            const names = ['Arjun Kumar', 'Sneha Reddy', 'Rahul Sharma', 'Priya Desai', 'Vikram Singh', 'Ananya Patel', 'Neha Gupta', 'Karthik Iyer'];
-                                            const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                                            return names[hash % names.length];
-                                        };
-                                        const displayName = appt.patient_name || generateMockPatient(appt.patient_id);
+                                        const displayName = appt.patient_name || appt.patient_email || 'Unknown Patient';
                                         return (
                                             <tr key={appt.id}>
                                                 <td style={{ fontWeight: 600 }}>
@@ -623,10 +617,8 @@ export default function DoctorDashboard() {
                                 Patient: {(() => {
                                     const a = appointments.find(a => a.id === notesModal);
                                     if (a?.patient_name) return a.patient_name;
-                                    if (!a?.patient_id) return 'Unknown';
-                                    const names = ['Arjun Kumar', 'Sneha Reddy', 'Rahul Sharma', 'Priya Desai', 'Vikram Singh', 'Ananya Patel', 'Neha Gupta', 'Karthik Iyer'];
-                                    const hash = a.patient_id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-                                    return names[hash % names.length];
+                                    if (a?.patient_email) return a.patient_email;
+                                    return 'Unknown Patient';
                                 })()}
                             </p>
                         </div>

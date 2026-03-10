@@ -125,12 +125,12 @@ export default function Hospitals() {
                         <div className="table-responsive">
                             <DataTable>
                                 <thead>
-                                    <tr>
-                                        <th>Hospital</th>
-                                        <th>Location</th>
-                                        <th>Capacity</th>
-                                        <th>Facilities</th>
-                                        <th>Action</th>
+                                    <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Hospital</th>
+                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Location</th>
+                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Capacity</th>
+                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Facilities</th>
+                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -145,17 +145,17 @@ export default function Hospitals() {
                                     ) : filteredHospitals.map((h, i) => {
                                         const hospitalId = h.id || h.name.toLowerCase().replace(/\s+/g, '-');
                                         return (
-                                            <tr key={hospitalId + '-' + i}>
-                                                <td>
+                                            <tr key={hospitalId + '-' + i} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                                                <td style={{ padding: '1.25rem 1rem' }}>
                                                     <strong>{h.name}</strong>
                                                     {h.teleconsult && <div style={{ fontSize: '0.7rem', color: '#10B981', display: 'inline-block', marginLeft: '0.5rem', background: '#F0FDFA', padding: '2px 6px', borderRadius: '4px' }}>📹 Video Consult</div>}
                                                 </td>
-                                                <td>{h.city}</td>
-                                                <td>{h.beds}</td>
-                                                <td>
+                                                <td style={{ padding: '1.25rem 1rem' }}>{h.city}</td>
+                                                <td style={{ padding: '1.25rem 1rem' }}>{h.beds}</td>
+                                                <td style={{ padding: '1.25rem 1rem' }}>
                                                     {h.emergency && <span className="status-badge status-confirmed" style={{ fontSize: '0.7rem' }}>24/7 Emergency</span>}
                                                 </td>
-                                                <td>
+                                                <td style={{ padding: '1.25rem 1rem' }}>
                                                     <ActionButton
                                                         variant="primary"
                                                         size="sm"
