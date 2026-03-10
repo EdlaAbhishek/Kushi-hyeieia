@@ -27,30 +27,36 @@ export default function Services() {
     const handleFileChange = (e) => {
         const selected = e.target.files[0]
         if (selected) {
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg']
+            if (!validTypes.includes(selected.type)) {
+                toast.error('Please upload a JPG or PNG image.', { position: 'bottom-center' })
+                return
+            }
+            // Validate file size (5MB max)
+            if (selected.size > 5 * 1024 * 1024) {
+                toast.error('Image exceeds 5MB limit. Please upload a smaller image.', { position: 'bottom-center' })
+                return
+            }
             if (file?.__previewUrl) URL.revokeObjectURL(file.__previewUrl)
             setFile(selected)
             setScanResult(null)
         }
     }
 
-    const handleScan = async () => {
-        if (!file) return
-        setScanning(true)
+    // Helper to parse JSON from AI response
+    const extractResult = (responseText) => {
+        let cleanText = responseText.replace(/```json\s*/gi, '').replace(/```/g, '').trim()
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
+        if (!jsonMatch) throw new Error('Could not extract JSON from AI response')
+        const parsed = JSON.parse(jsonMatch[0])
+        if (!parsed.medicines || !Array.isArray(parsed.medicines)) throw new Error('AI response missing medicines array')
+        return parsed
+    }
 
-        try {
-            // Convert file to base64
-            const getBase64 = (file) => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader()
-                    reader.onloadend = () => resolve(reader.result)
-                    reader.onerror = reject
-                    reader.readAsDataURL(file)
-                })
-            }
-
-            const base64DataUrl = await getBase64(file)
-
-            const prompt = `You are a precise medical prescription reader. Your job is to ONLY extract the EXACT text written on this prescription image. 
+    // ── Client-side AI fallback using Gemini / OpenRouter ──
+    const clientSideScan = async (base64DataUrl) => {
+        const prompt = `You are a precise medical prescription reader. Your job is to ONLY extract the EXACT text written on this prescription image.
 
 CRITICAL RULES:
 - Read ONLY what is actually written/printed on the prescription. Do NOT invent, guess, or hallucinate any medicines or dosages.
@@ -59,135 +65,106 @@ CRITICAL RULES:
 - Extract the EXACT medicine names, dosages, and durations as written by the doctor.
 - Do NOT add generic/common medicines that are not on the paper.
 - Include patient condition/diagnosis if written on the prescription in the doctor_notes field.
-- Include follow-up instructions in doctor_notes if present.
 
 Return ONLY a valid JSON object with this structure:
 {
   "medicines": [
-    { "name": "Exact medicine name from prescription", "type": "Drug category", "dosage": "Exact dosage as written (e.g. 1-0-1)", "duration": "Exact duration or SOS/as needed" }
+    { "name": "Medicine name", "type": "Drug category", "dosage": "e.g. 500mg", "frequency": "e.g. 1-0-1", "duration": "e.g. 5 days", "notes": "e.g. After food" }
   ],
-  "doctor_notes": "Patient condition, diagnosis, advice, follow-up instructions — copied exactly from prescription. If none visible, write 'No additional notes found on prescription.'"
+  "doctor_notes": "Patient condition, diagnosis, advice, follow-up instructions."
 }
 Do not include \`\`\`json or any other formatting. Return only the raw JSON.`
 
-            // Helper to parse JSON from AI response
-            const extractResult = (responseText) => {
-                let cleanText = responseText.replace(/```json\s*/gi, '').replace(/```/g, '').trim()
-                const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
-                if (!jsonMatch) throw new Error('Could not extract JSON from AI response')
-                const parsed = JSON.parse(jsonMatch[0])
-                if (!parsed.medicines || !Array.isArray(parsed.medicines)) throw new Error('AI response missing medicines array')
-                return parsed
-            }
-
-            // ── PRIMARY: Gemini API (best for handwritten prescriptions) ──
-            const geminiKey = import.meta.env.VITE_GEMINI_API_KEY
-            if (geminiKey) {
-                try {
-                    // Extract raw base64 and mime type from data URL
-                    const base64Data = base64DataUrl.split(',')[1]
-                    const mimeType = file.type || 'image/jpeg'
-
-                    const geminiResponse = await fetch(
-                        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                contents: [{
-                                    parts: [
-                                        { text: prompt },
-                                        { inline_data: { mime_type: mimeType, data: base64Data } }
-                                    ]
-                                }],
-                                generationConfig: { temperature: 0 }
-                            })
-                        }
-                    )
-
-                    if (geminiResponse.ok) {
-                        const geminiData = await geminiResponse.json()
-                        const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
-                        if (text) {
-                            const parsedResult = extractResult(text)
-                            setScanResult(parsedResult)
-                            return
-                        }
-                    } else {
-                        const geminiError = await geminiResponse.json().catch(() => ({}))
-                        console.warn("Gemini API non-OK response:", geminiResponse.status, geminiError)
-                    }
-                } catch (geminiError) {
-                    console.warn("Gemini scan failed, trying OpenRouter fallback:", geminiError)
-                }
-            }
-
-            // ── FALLBACK: OpenRouter models ──
-            const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY
-            if (!openRouterKey) throw new Error("No API keys available for prescription scanning")
-
-            const models = [
-                "nvidia/nemotron-nano-12b-v2-vl:free",
-                "mistralai/mistral-small-3.1-24b-instruct:free",
-                "google/gemma-3-27b-it:free",
-                "google/gemma-3-12b-it:free",
-                "google/gemma-3-4b-it:free"
-            ]
-
-            let lastError = null
-            for (const model of models) {
-                try {
-                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${openRouterKey}`,
-                            "HTTP-Referer": window.location.origin,
-                            "X-Title": "Khushi Hygieia",
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            "model": model,
-                            "temperature": 0,
-                            "messages": [{
-                                "role": "user",
-                                "content": [
-                                    { "type": "text", "text": prompt },
-                                    { "type": "image_url", "image_url": { "url": base64DataUrl } }
-                                ]
-                            }]
-                        })
+        // Try Gemini first
+        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY
+        if (geminiKey) {
+            const base64Data = base64DataUrl.split(',')[1]
+            const mimeType = file.type || 'image/jpeg'
+            const geminiResponse = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
+                        generationConfig: { temperature: 0 }
                     })
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}))
-                        console.warn(`OpenRouter model failed: ${model}`, response.status, errorData)
-                        lastError = new Error(errorData.error?.message || `Model ${model} returned ${response.status}`)
-                        continue
-                    }
-
-                    const data = await response.json()
-                    const responseText = data.choices?.[0]?.message?.content
-                    if (!responseText) {
-                        lastError = new Error(`Model ${model} returned empty response`)
-                        continue
-                    }
-
-                    const parsedResult = extractResult(responseText)
-                    setScanResult(parsedResult)
-                    return
-                } catch (modelError) {
-                    lastError = modelError
-                    continue
                 }
+            )
+            if (geminiResponse.ok) {
+                const geminiData = await geminiResponse.json()
+                const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
+                if (text) return extractResult(text)
+            }
+        }
+
+        // Try OpenRouter
+        const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY
+        if (!openRouterKey) throw new Error('No API keys available')
+        const models = ['nvidia/nemotron-nano-12b-v2-vl:free', 'google/gemma-3-27b-it:free', 'google/gemma-3-12b-it:free']
+        let lastError = null
+        for (const model of models) {
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${openRouterKey}`, 'HTTP-Referer': window.location.origin, 'X-Title': 'Khushi Hygieia', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model, temperature: 0, messages: [{ role: 'user', content: [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url: base64DataUrl } }] }] })
+                })
+                if (!response.ok) { lastError = new Error(`Model ${model} failed`); continue }
+                const data = await response.json()
+                const responseText = data.choices?.[0]?.message?.content
+                if (!responseText) { lastError = new Error('Empty response'); continue }
+                return extractResult(responseText)
+            } catch (e) { lastError = e; continue }
+        }
+        throw lastError || new Error('All models failed')
+    }
+
+    const handleScan = async () => {
+        if (!file) return
+        setScanning(true)
+
+        try {
+            // ── PRIMARY: Azure Vision OCR via /api/analyze-prescription ──
+            try {
+                const arrayBuffer = await file.arrayBuffer()
+                const response = await fetch('/api/analyze-prescription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                    body: arrayBuffer
+                })
+
+                if (response.ok) {
+                    const result = await response.json()
+                    if (result.medicines && Array.isArray(result.medicines)) {
+                        setScanResult(result)
+                        return
+                    }
+                } else {
+                    const errData = await response.json().catch(() => ({}))
+                    console.warn('Azure OCR API failed:', response.status, errData)
+                }
+            } catch (apiError) {
+                console.warn('Azure OCR API unavailable, falling back to client-side AI:', apiError.message)
             }
 
-            throw lastError || new Error('All models failed')
+            // ── FALLBACK: Client-side AI (Gemini / OpenRouter) ──
+            const getBase64 = (f) => new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onloadend = () => resolve(reader.result)
+                reader.onerror = reject
+                reader.readAsDataURL(f)
+            })
+            const base64DataUrl = await getBase64(file)
+            const parsedResult = await clientSideScan(base64DataUrl)
+            setScanResult(parsedResult)
+
         } catch (error) {
-            console.error("Prescription Scan Error:", error)
-            const msg = error.message?.includes('429') || error.message?.includes('rate')
-                ? "API rate limit reached. Please wait a minute and try again."
-                : "Failed to read prescription. Please try a clearer image or try again."
-            toast.error(msg, { position: "bottom-center" })
+            console.error('Prescription Scan Error:', error)
+            toast.error(
+                'Unable to read the prescription clearly. Please upload a clearer image.',
+                { position: 'bottom-center' }
+            )
         } finally {
             setScanning(false)
         }
@@ -217,7 +194,7 @@ Do not include \`\`\`json or any other formatting. Return only the raw JSON.`
 
                                 {!scanResult ? (
                                     <div className="scan-dropzone" style={{ border: '2px dashed var(--border)', borderRadius: '12px', padding: '3rem', textAlign: 'center', background: '#F8FAFC', cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
-                                        <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleFileChange} />
+                                        <input type="file" ref={fileInputRef} hidden accept="image/jpeg,image/png,image/jpg" onChange={handleFileChange} />
                                         {file ? (
                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ position: 'relative' }}>
@@ -254,11 +231,13 @@ Do not include \`\`\`json or any other formatting. Return only the raw JSON.`
                                                 <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '10px', background: '#fff' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                                         <strong style={{ color: 'var(--primary)' }}>{med.name}</strong>
-                                                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#F1F5F9', borderRadius: '4px' }}>{med.type}</span>
+                                                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#F1F5F9', borderRadius: '4px' }}>{med.type || med.notes || '—'}</span>
                                                     </div>
-                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                                        <div><Calendar size={12} /> {med.duration}</div>
-                                                        <div style={{ marginTop: '0.25rem' }}><FileImage size={12} /> {med.dosage}</div>
+                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
+                                                        <div><strong>Dosage:</strong> {med.dosage || '—'}</div>
+                                                        <div><strong>Frequency:</strong> {med.frequency || '—'}</div>
+                                                        <div><Calendar size={12} /> {med.duration || '—'}</div>
+                                                        {med.notes && <div><FileImage size={12} /> {med.notes}</div>}
                                                     </div>
                                                 </div>
                                             ))}
@@ -266,6 +245,10 @@ Do not include \`\`\`json or any other formatting. Return only the raw JSON.`
                                         <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
                                             <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>AI Notes:</strong>
                                             <p style={{ fontSize: '0.85rem', color: '#0C4A6E', margin: 0 }}>{scanResult.doctor_notes}</p>
+                                        </div>
+                                        <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#FEF3C7', borderRadius: '8px', borderLeft: '4px solid #F59E0B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <Shield size={16} color="#D97706" />
+                                            <p style={{ fontSize: '0.8rem', color: '#92400E', margin: 0 }}>⚠️ AI analysis may contain errors. Always follow the doctor's prescription.</p>
                                         </div>
                                     </div>
                                 )}
