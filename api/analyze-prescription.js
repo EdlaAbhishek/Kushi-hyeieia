@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
     const AZURE_VISION_ENDPOINT = process.env.AZURE_VISION_ENDPOINT
     const AZURE_VISION_KEY = process.env.AZURE_VISION_KEY
-    const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 
     if (!AZURE_VISION_ENDPOINT || !AZURE_VISION_KEY) {
         return res.status(500).json({ error: 'Azure Vision credentials not configured' })

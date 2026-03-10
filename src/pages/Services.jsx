@@ -44,120 +44,30 @@ export default function Services() {
         }
     }
 
-    // Helper to parse JSON from AI response
-    const extractResult = (responseText) => {
-        let cleanText = responseText.replace(/```json\s*/gi, '').replace(/```/g, '').trim()
-        const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
-        if (!jsonMatch) throw new Error('Could not extract JSON from AI response')
-        const parsed = JSON.parse(jsonMatch[0])
-        if (!parsed.medicines || !Array.isArray(parsed.medicines)) throw new Error('AI response missing medicines array')
-        return parsed
-    }
-
-    // ── Client-side AI fallback using Gemini / OpenRouter ──
-    const clientSideScan = async (base64DataUrl) => {
-        const prompt = `You are a precise medical prescription reader. Your job is to ONLY extract the EXACT text written on this prescription image.
-
-CRITICAL RULES:
-- Read ONLY what is actually written/printed on the prescription. Do NOT invent, guess, or hallucinate any medicines or dosages.
-- If you cannot clearly read a word, write it as "[unclear]" rather than guessing.
-- If the image is not a prescription or is unreadable, return: {"medicines": [], "doctor_notes": "Could not read prescription. Please upload a clearer image."}
-- Extract the EXACT medicine names, dosages, and durations as written by the doctor.
-- Do NOT add generic/common medicines that are not on the paper.
-- Include patient condition/diagnosis if written on the prescription in the doctor_notes field.
-
-Return ONLY a valid JSON object with this structure:
-{
-  "medicines": [
-    { "name": "Medicine name", "type": "Drug category", "dosage": "e.g. 500mg", "frequency": "e.g. 1-0-1", "duration": "e.g. 5 days", "notes": "e.g. After food" }
-  ],
-  "doctor_notes": "Patient condition, diagnosis, advice, follow-up instructions."
-}
-Do not include \`\`\`json or any other formatting. Return only the raw JSON.`
-
-        // Try Gemini first
-        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY
-        if (geminiKey) {
-            const base64Data = base64DataUrl.split(',')[1]
-            const mimeType = file.type || 'image/jpeg'
-            const geminiResponse = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: base64Data } }] }],
-                        generationConfig: { temperature: 0 }
-                    })
-                }
-            )
-            if (geminiResponse.ok) {
-                const geminiData = await geminiResponse.json()
-                const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
-                if (text) return extractResult(text)
-            }
-        }
-
-        // Try OpenRouter
-        const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY
-        if (!openRouterKey) throw new Error('No API keys available')
-        const models = ['nvidia/nemotron-nano-12b-v2-vl:free', 'google/gemma-3-27b-it:free', 'google/gemma-3-12b-it:free']
-        let lastError = null
-        for (const model of models) {
-            try {
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${openRouterKey}`, 'HTTP-Referer': window.location.origin, 'X-Title': 'Khushi Hygieia', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model, temperature: 0, messages: [{ role: 'user', content: [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url: base64DataUrl } }] }] })
-                })
-                if (!response.ok) { lastError = new Error(`Model ${model} failed`); continue }
-                const data = await response.json()
-                const responseText = data.choices?.[0]?.message?.content
-                if (!responseText) { lastError = new Error('Empty response'); continue }
-                return extractResult(responseText)
-            } catch (e) { lastError = e; continue }
-        }
-        throw lastError || new Error('All models failed')
-    }
-
     const handleScan = async () => {
         if (!file) return
         setScanning(true)
 
         try {
             // ── PRIMARY: Azure Vision OCR via /api/analyze-prescription ──
-            try {
-                const arrayBuffer = await file.arrayBuffer()
-                const response = await fetch('/api/analyze-prescription', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/octet-stream' },
-                    body: arrayBuffer
-                })
-
-                if (response.ok) {
-                    const result = await response.json()
-                    if (result.medicines && Array.isArray(result.medicines)) {
-                        setScanResult(result)
-                        return
-                    }
-                } else {
-                    const errData = await response.json().catch(() => ({}))
-                    console.warn('Azure OCR API failed:', response.status, errData)
-                }
-            } catch (apiError) {
-                console.warn('Azure OCR API unavailable, falling back to client-side AI:', apiError.message)
-            }
-
-            // ── FALLBACK: Client-side AI (Gemini / OpenRouter) ──
-            const getBase64 = (f) => new Promise((resolve, reject) => {
-                const reader = new FileReader()
-                reader.onloadend = () => resolve(reader.result)
-                reader.onerror = reject
-                reader.readAsDataURL(f)
+            const arrayBuffer = await file.arrayBuffer()
+            const response = await fetch('/api/analyze-prescription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream' },
+                body: arrayBuffer
             })
-            const base64DataUrl = await getBase64(file)
-            const parsedResult = await clientSideScan(base64DataUrl)
-            setScanResult(parsedResult)
+
+            if (response.ok) {
+                const result = await response.json()
+                if (result.medicines && Array.isArray(result.medicines)) {
+                    setScanResult(result)
+                    return
+                }
+            } else {
+                const errData = await response.json().catch(() => ({}))
+                console.warn('Azure OCR API failed:', response.status, errData)
+                throw new Error(errData.error || 'Failed to analyze prescription.')
+            }
 
         } catch (error) {
             console.error('Prescription Scan Error:', error)
