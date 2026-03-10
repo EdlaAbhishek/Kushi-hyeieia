@@ -71,6 +71,123 @@ export default function Services() {
     }
     const t = scanLabels[scanLang] || scanLabels.en
 
+    // ─── CONTENT TRANSLATION (translate actual medicine data) ────────
+    const medicalTerms = {
+        hi: {
+            // Frequency patterns
+            'od': 'दिन में एक बार', 'bd': 'दिन में दो बार', 'tid': 'दिन में तीन बार',
+            'qid': 'दिन में चार बार', 'sos': 'ज़रूरत पर', 'hs': 'सोने से पहले', 'stat': 'तुरंत',
+            // Instructions
+            'after food': 'खाने के बाद', 'before food': 'खाने से पहले',
+            'with food': 'खाने के साथ', 'empty stomach': 'खाली पेट',
+            'morning': 'सुबह', 'evening': 'शाम', 'night': 'रात',
+            // Duration units
+            'days': 'दिन', 'day': 'दिन', 'weeks': 'सप्ताह', 'week': 'सप्ताह',
+            'months': 'महीने', 'month': 'महीना',
+            // Fallback text from backend
+            'Raw Prescription Text': 'कच्चा नुस्खा टेक्स्ट',
+            'No specific patient notes detected.': 'कोई विशेष रोगी नोट नहीं मिले।',
+            'Could not read prescription. Please upload a clearer image.': 'नुस्खा नहीं पढ़ा जा सका। कृपया स्पष्ट छवि अपलोड करें।',
+            // Medicine types
+            'tab': 'गोली', 'tablet': 'गोली', 'cap': 'कैप्सूल', 'capsule': 'कैप्सूल',
+            'syr': 'सिरप', 'syrup': 'सिरप', 'inj': 'इंजेक्शन', 'injection': 'इंजेक्शन',
+            'oint': 'मलहम', 'drp': 'ड्रॉप',
+            'for': 'के लिए'
+        },
+        te: {
+            // Frequency patterns
+            'od': 'రోజుకు ఒకసారి', 'bd': 'రోజుకు రెండుసార్లు', 'tid': 'రోజుకు మూడుసార్లు',
+            'qid': 'రోజుకు నాలుగుసార్లు', 'sos': 'అవసరమైనప్పుడు', 'hs': 'నిద్రపోయే ముందు', 'stat': 'వెంటనే',
+            // Instructions
+            'after food': 'భోజనం తర్వాత', 'before food': 'భోజనానికి ముందు',
+            'with food': 'భోజనంతో', 'empty stomach': 'ఖాళీ కడుపుతో',
+            'morning': 'ఉదయం', 'evening': 'సాయంత్రం', 'night': 'రాత్రి',
+            // Duration units
+            'days': 'రోజులు', 'day': 'రోజు', 'weeks': 'వారాలు', 'week': 'వారం',
+            'months': 'నెలలు', 'month': 'నెల',
+            // Fallback text from backend
+            'Raw Prescription Text': 'ముడి ప్రిస్క్రిప్షన్ టెక్స్ట్',
+            'No specific patient notes detected.': 'ప్రత్యేక రోగి గమనికలు కనుగొనబడలేదు.',
+            'Could not read prescription. Please upload a clearer image.': 'ప్రిస్క్రిప్షన్ చదవలేకపోయింది. దయచేసి స్పష్టమైన చిత్రాన్ని అప్‌లోడ్ చేయండి.',
+            // Medicine types
+            'tab': 'టాబ్లెట్', 'tablet': 'టాబ్లెట్', 'cap': 'క్యాప్సూల్', 'capsule': 'క్యాప్సూల్',
+            'syr': 'సిరప్', 'syrup': 'సిరప్', 'inj': 'ఇంజెక్షన్', 'injection': 'ఇంజెక్షన్',
+            'oint': 'మలహం', 'drp': 'డ్రాప్',
+            'for': 'కోసం'
+        }
+    }
+
+    // Translate a frequency like "1-0-1" into local language
+    const translateFrequency = (freq, lang) => {
+        if (lang === 'en' || !freq || freq === '—') return freq
+        const dict = medicalTerms[lang]
+        if (!dict) return freq
+        // Exact match first (od, bd, etc.)
+        const lowerFreq = freq.toLowerCase().trim()
+        if (dict[lowerFreq]) return dict[lowerFreq]
+        // Pattern like "1-0-1" → translate to local
+        const match = freq.match(/^(\d)-(\d)-(\d)$/)
+        if (match) {
+            const parts = lang === 'hi'
+                ? ['सुबह', 'दोपहर', 'रात']
+                : ['ఉదయం', 'మధ్యాహ్నం', 'రాత్రి']
+            const labels = []
+            if (match[1] !== '0') labels.push(`${parts[0]} ${match[1]}`)
+            if (match[2] !== '0') labels.push(`${parts[1]} ${match[2]}`)
+            if (match[3] !== '0') labels.push(`${parts[2]} ${match[3]}`)
+            return labels.join(', ') || freq
+        }
+        return freq
+    }
+
+    // Translate duration like "5 days" or "2 weeks"
+    const translateDuration = (dur, lang) => {
+        if (lang === 'en' || !dur || dur === '—') return dur
+        const dict = medicalTerms[lang]
+        if (!dict) return dur
+        let translated = dur
+        // Replace "for" keyword
+        translated = translated.replace(/\bfor\b/gi, dict['for'] || 'for')
+        // Replace duration units
+        for (const unit of ['days', 'day', 'weeks', 'week', 'months', 'month']) {
+            const regex = new RegExp(`\\b${unit}\\b`, 'gi')
+            translated = translated.replace(regex, dict[unit] || unit)
+        }
+        return translated
+    }
+
+    // Translate notes/instructions
+    const translateNotes = (notes, lang) => {
+        if (lang === 'en' || !notes || notes === '—') return notes
+        const dict = medicalTerms[lang]
+        if (!dict) return notes
+        let translated = notes
+        // Direct match for full phrases
+        if (dict[notes]) return dict[notes]
+        // Replace known instruction phrases
+        for (const phrase of ['after food', 'before food', 'with food', 'empty stomach', 'morning', 'evening', 'night']) {
+            const regex = new RegExp(`\\b${phrase}\\b`, 'gi')
+            translated = translated.replace(regex, dict[phrase] || phrase)
+        }
+        return translated
+    }
+
+    // Translate medicine name prefix (Tab → गोली etc.)
+    const translateMedicineName = (name, lang) => {
+        if (lang === 'en' || !name) return name
+        const dict = medicalTerms[lang]
+        if (!dict) return name
+        if (dict[name]) return dict[name]
+        // Replace prefix like "Tab " → "గోలీ "
+        for (const prefix of ['tablet', 'tab', 'capsule', 'cap', 'syrup', 'syr', 'injection', 'inj', 'oint', 'drp']) {
+            const regex = new RegExp(`^${prefix}\\b\\.?\\s*`, 'i')
+            if (regex.test(name)) {
+                return name.replace(regex, dict[prefix] + ' ')
+            }
+        }
+        return name
+    }
+
     // ─── HANDLERS ─────────────────────────────────────────────────────
     const handleFileChange = (e) => {
         const selected = e.target.files[0]
@@ -198,21 +315,21 @@ export default function Services() {
                                             {scanResult.medicines.map((med, idx) => (
                                                 <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '10px', background: '#fff' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                                        <strong style={{ color: 'var(--primary)' }}>{med.name}</strong>
-                                                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#F1F5F9', borderRadius: '4px' }}>{med.type || med.notes || '—'}</span>
+                                                        <strong style={{ color: 'var(--primary)' }}>{translateMedicineName(med.name, scanLang)}</strong>
+                                                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#F1F5F9', borderRadius: '4px' }}>{translateNotes(med.type || med.notes || '—', scanLang)}</span>
                                                     </div>
                                                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
                                                         <div><strong>{t.dosage}:</strong> {med.dosage || '—'}</div>
-                                                        <div><strong>{t.frequency}:</strong> {med.frequency || '—'}</div>
-                                                        <div><Calendar size={12} /> <strong>{t.duration}:</strong> {med.duration || '—'}</div>
-                                                        {med.notes && <div><FileImage size={12} /> <strong>{t.notes}:</strong> {med.notes}</div>}
+                                                        <div><strong>{t.frequency}:</strong> {translateFrequency(med.frequency, scanLang) || '—'}</div>
+                                                        <div><Calendar size={12} /> <strong>{t.duration}:</strong> {translateDuration(med.duration, scanLang) || '—'}</div>
+                                                        {med.notes && <div><FileImage size={12} /> <strong>{t.notes}:</strong> {translateNotes(med.notes, scanLang)}</div>}
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                         <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
                                             <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>{t.aiNotes}:</strong>
-                                            <p style={{ fontSize: '0.85rem', color: '#0C4A6E', margin: 0 }}>{scanResult.doctor_notes}</p>
+                                            <p style={{ fontSize: '0.85rem', color: '#0C4A6E', margin: 0 }}>{translateNotes(scanResult.doctor_notes, scanLang)}</p>
                                         </div>
                                         <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#FEF3C7', borderRadius: '8px', borderLeft: '4px solid #F59E0B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <Shield size={16} color="#D97706" />
