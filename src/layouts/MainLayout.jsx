@@ -32,7 +32,7 @@ export default function MainLayout() {
     return (
         <>
             <ScrollToTop />
-            <header className={`navbar ${isDoctor ? 'navbar-doctor' : ''}`}>
+            <header className="navbar">
                 <div className="container nav-container">
                     <NavLink to="/" className="logo" onClick={closeMenu}>
                         <img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" />

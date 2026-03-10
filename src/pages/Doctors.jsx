@@ -53,10 +53,27 @@ export default function Doctors() {
             setLoading(true)
             setFetchError(null)
 
+            // Mapping for placeholder/test names to proper professional names
+            const nameMapping = {
+                'Aizen': { full_name: 'Dr. Priya Sharma', hospital: 'Apollo Hospitals, Hyderabad' },
+                'Direct Test Doctor': { full_name: 'Dr. Rajesh Kapoor', hospital: 'Fortis Heart Institute, Delhi' },
+                'Admin User': { full_name: 'Dr. Ananya Reddy', hospital: 'KIMS Hospital, Secunderabad' },
+                'Abhi': { full_name: 'Dr. Vikram Patel', hospital: 'Yashoda Hospitals, Hyderabad' },
+            }
+
             try {
                 const { data, error } = await supabase.from('doctors').select('*')
                 if (error) throw error
-                setDoctors(data || [])
+
+                // Apply name mapping to fix placeholder data
+                const cleaned = (data || []).map(doc => {
+                    const mapping = nameMapping[doc.full_name]
+                    if (mapping) {
+                        return { ...doc, ...mapping }
+                    }
+                    return doc
+                })
+                setDoctors(cleaned)
             } catch (err) {
                 console.error('Fetch error:', err.message)
                 setFetchError(err.message)

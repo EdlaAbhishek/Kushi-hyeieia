@@ -45,7 +45,7 @@ export default function AiChat() {
                 headers: {
                     "Authorization": `Bearer ${apiKey}`,
                     "HTTP-Referer": window.location.origin,
-                    "X-OpenRouter-Title": "Khushi Hygieia",
+                    "X-Title": "Khushi Hygieia",
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -63,7 +63,8 @@ export default function AiChat() {
             }
 
             const data = await response.json()
-            const responseText = data.choices[0].message.content
+            const responseText = data.choices?.[0]?.message?.content
+            if (!responseText) throw new Error('AI returned an empty response. Please try again.')
 
             setMessages(prev => [...prev, { role: 'assistant', content: responseText }])
         } catch (err) {

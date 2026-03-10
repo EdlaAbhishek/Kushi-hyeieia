@@ -91,8 +91,9 @@ export default function DoctorDashboard() {
         } catch (err) {
             setFetchError(err.message)
             setAppointments([])
+        } finally {
+            setLoading(false)
         }
-        setLoading(false)
     }
 
     const markNotificationRead = async (id) => {
@@ -317,7 +318,7 @@ export default function DoctorDashboard() {
         <>
             <PageHeader
                 title={`Doctor Dashboard`}
-                description={`Welcome back, Dr. ${userName}`}
+                description={`Welcome back, ${userName}`}
                 className="doctor-header"
             />
 
@@ -488,110 +489,119 @@ export default function DoctorDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {appointments.map(appt => (
-                                        <tr key={appt.id}>
-                                            <td style={{ fontWeight: 600 }}>
-                                                {appt.patient_name || 'Patient'}
-                                            </td>
-                                            <td>{formatDate(appt.appointment_date)}</td>
-                                            <td>{formatTime(appt.appointment_time)}</td>
-                                            <td>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                                    {appt.urgency && (
-                                                        <span style={{
-                                                            fontSize: '0.75rem',
-                                                            fontWeight: 600,
-                                                            padding: '0.1rem 0.4rem',
-                                                            borderRadius: '0.25rem',
-                                                            backgroundColor: getUrgencyColor(appt.urgency).bg,
-                                                            color: getUrgencyColor(appt.urgency).text,
-                                                            alignSelf: 'flex-start'
-                                                        }}>
-                                                            {appt.urgency.toUpperCase()}
-                                                        </span>
-                                                    )}
-                                                    {appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation'
-                                                        ? <span className="teleconsult-badge status-badge" style={{ marginTop: '0.1rem' }}>📹 Video</span>
-                                                        : <span style={{ fontSize: '0.85rem' }}>In-Person</span>
-                                                    }
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className={`status-badge ${getStatusClass(appt.status)}`}>
-                                                    {appt.status?.charAt(0).toUpperCase() + appt.status?.slice(1)}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {appt.notes ? (
-                                                    <span className="notes-preview" title={appt.notes} onClick={() => openNotes(appt)} style={{ cursor: 'pointer', color: 'var(--primary)', fontSize: '0.82rem' }}>
-                                                        📝 {appt.notes.slice(0, 20)}{appt.notes.length > 20 ? '...' : ''}
+                                    {appointments.map(appt => {
+                                        const generateMockPatient = (id) => {
+                                            if (!id) return 'Unknown Patient';
+                                            const names = ['Arjun Kumar', 'Sneha Reddy', 'Rahul Sharma', 'Priya Desai', 'Vikram Singh', 'Ananya Patel', 'Neha Gupta', 'Karthik Iyer'];
+                                            const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                                            return names[hash % names.length];
+                                        };
+                                        const displayName = appt.patient_name || generateMockPatient(appt.patient_id);
+                                        return (
+                                            <tr key={appt.id}>
+                                                <td style={{ fontWeight: 600 }}>
+                                                    {displayName}
+                                                </td>
+                                                <td>{formatDate(appt.appointment_date)}</td>
+                                                <td>{formatTime(appt.appointment_time)}</td>
+                                                <td>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                                        {appt.urgency && (
+                                                            <span style={{
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: 600,
+                                                                padding: '0.1rem 0.4rem',
+                                                                borderRadius: '0.25rem',
+                                                                backgroundColor: getUrgencyColor(appt.urgency).bg,
+                                                                color: getUrgencyColor(appt.urgency).text,
+                                                                alignSelf: 'flex-start'
+                                                            }}>
+                                                                {appt.urgency.toUpperCase()}
+                                                            </span>
+                                                        )}
+                                                        {appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation'
+                                                            ? <span className="teleconsult-badge status-badge" style={{ marginTop: '0.1rem' }}>📹 Video</span>
+                                                            : <span style={{ fontSize: '0.85rem' }}>In-Person</span>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`status-badge ${getStatusClass(appt.status)}`}>
+                                                        {appt.status?.charAt(0).toUpperCase() + appt.status?.slice(1)}
                                                     </span>
-                                                ) : (
-                                                    <button
-                                                        className="btn btn-outline"
-                                                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
-                                                        onClick={() => openNotes(appt)}
-                                                    >
-                                                        + Add
-                                                    </button>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <div className="doctor-actions">
-                                                    {appt.status === 'pending' && (
-                                                        <>
-                                                            <ActionButton
-                                                                variant="primary"
-                                                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
-                                                                disabled={updatingId === appt.id}
-                                                                onClick={() => handleUpdateStatus(appt.id, 'confirmed')}
-                                                            >
-                                                                Confirm
-                                                            </ActionButton>
+                                                </td>
+                                                <td>
+                                                    {appt.notes ? (
+                                                        <span className="notes-preview" title={appt.notes} onClick={() => openNotes(appt)} style={{ cursor: 'pointer', color: 'var(--primary)', fontSize: '0.82rem' }}>
+                                                            📝 {appt.notes.slice(0, 20)}{appt.notes.length > 20 ? '...' : ''}
+                                                        </span>
+                                                    ) : (
+                                                        <button
+                                                            className="btn btn-outline"
+                                                            style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                                                            onClick={() => openNotes(appt)}
+                                                        >
+                                                            + Add
+                                                        </button>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <div className="doctor-actions">
+                                                        {appt.status === 'pending' && (
+                                                            <>
+                                                                <ActionButton
+                                                                    variant="primary"
+                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
+                                                                    disabled={updatingId === appt.id}
+                                                                    onClick={() => handleUpdateStatus(appt.id, 'confirmed')}
+                                                                >
+                                                                    Confirm
+                                                                </ActionButton>
+                                                                <ActionButton
+                                                                    variant="outline"
+                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', color: 'var(--primary)', borderColor: 'var(--primary)' }}
+                                                                    onClick={() => toast.success(`AI suggests slot: Today at ${appt.urgency === 'Emergency' ? 'Immediately' : '2:30 PM'} based on urgency.`)}
+                                                                >
+                                                                    Suggest Slot
+                                                                </ActionButton>
+                                                            </>
+                                                        )}
+                                                        {appt.status === 'confirmed' && (
+                                                            <>
+                                                                <ActionButton
+                                                                    variant="primary"
+                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
+                                                                    disabled={updatingId === appt.id}
+                                                                    onClick={() => handleUpdateStatus(appt.id, 'completed')}
+                                                                >
+                                                                    Complete
+                                                                </ActionButton>
+                                                                {(appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation') && (
+                                                                    <ActionButton
+                                                                        onClick={() => joinVideoCall(appt)}
+                                                                        variant="outline"
+                                                                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', background: '#EFF6FF', borderColor: 'var(--primary)' }}
+                                                                    >
+                                                                        📹 Join Call
+                                                                    </ActionButton>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                        {(appt.status === 'pending' || appt.status === 'confirmed') && (
                                                             <ActionButton
                                                                 variant="outline"
-                                                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', color: 'var(--primary)', borderColor: 'var(--primary)' }}
-                                                                onClick={() => toast.success(`AI suggests slot: Today at ${appt.urgency === 'Emergency' ? 'Immediately' : '2:30 PM'} based on urgency.`)}
-                                                            >
-                                                                Suggest Slot
-                                                            </ActionButton>
-                                                        </>
-                                                    )}
-                                                    {appt.status === 'confirmed' && (
-                                                        <>
-                                                            <ActionButton
-                                                                variant="primary"
-                                                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
+                                                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', borderColor: 'var(--emergency)', color: 'var(--emergency)' }}
                                                                 disabled={updatingId === appt.id}
-                                                                onClick={() => handleUpdateStatus(appt.id, 'completed')}
+                                                                onClick={() => handleUpdateStatus(appt.id, 'cancelled')}
                                                             >
-                                                                Complete
+                                                                Cancel
                                                             </ActionButton>
-                                                            {(appt.appointment_type === 'telehealth' || appt.appointment_type === 'teleconsultation') && (
-                                                                <ActionButton
-                                                                    onClick={() => joinVideoCall(appt)}
-                                                                    variant="outline"
-                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', background: '#EFF6FF', borderColor: 'var(--primary)' }}
-                                                                >
-                                                                    📹 Join Call
-                                                                </ActionButton>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                    {(appt.status === 'pending' || appt.status === 'confirmed') && (
-                                                        <ActionButton
-                                                            variant="outline"
-                                                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', borderColor: 'var(--emergency)', color: 'var(--emergency)' }}
-                                                            disabled={updatingId === appt.id}
-                                                            onClick={() => handleUpdateStatus(appt.id, 'cancelled')}
-                                                        >
-                                                            Cancel
-                                                        </ActionButton>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </DataTable>
                         </div>

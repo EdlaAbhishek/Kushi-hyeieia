@@ -27,6 +27,7 @@ export default function Services() {
     const handleFileChange = (e) => {
         const selected = e.target.files[0]
         if (selected) {
+            if (file?.__previewUrl) URL.revokeObjectURL(file.__previewUrl)
             setFile(selected)
             setScanResult(null)
         }
@@ -35,17 +36,161 @@ export default function Services() {
     const handleScan = async () => {
         if (!file) return
         setScanning(true)
-        // Simulated AI Scan logic
-        setTimeout(() => {
-            setScanResult({
-                medicines: [
-                    { name: 'Amoxicillin 500mg', type: 'Antibiotic', dosage: '1 tablet every 8 hours', duration: '5 days' },
-                    { name: 'Paracetamol 650mg', type: 'Pain Relief', dosage: '1 tablet as needed', duration: '3 days' }
-                ],
-                doctor_notes: 'Take medicines after food. Complete the antibiotic course.'
-            })
+
+        try {
+            // Convert file to base64
+            const getBase64 = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onloadend = () => resolve(reader.result)
+                    reader.onerror = reject
+                    reader.readAsDataURL(file)
+                })
+            }
+
+            const base64DataUrl = await getBase64(file)
+
+            const prompt = `You are a precise medical prescription reader. Your job is to ONLY extract the EXACT text written on this prescription image. 
+
+CRITICAL RULES:
+- Read ONLY what is actually written/printed on the prescription. Do NOT invent, guess, or hallucinate any medicines or dosages.
+- If you cannot clearly read a word, write it as "[unclear]" rather than guessing.
+- If the image is not a prescription or is unreadable, return: {"medicines": [], "doctor_notes": "Could not read prescription. Please upload a clearer image."}
+- Extract the EXACT medicine names, dosages, and durations as written by the doctor.
+- Do NOT add generic/common medicines that are not on the paper.
+- Include patient condition/diagnosis if written on the prescription in the doctor_notes field.
+- Include follow-up instructions in doctor_notes if present.
+
+Return ONLY a valid JSON object with this structure:
+{
+  "medicines": [
+    { "name": "Exact medicine name from prescription", "type": "Drug category", "dosage": "Exact dosage as written (e.g. 1-0-1)", "duration": "Exact duration or SOS/as needed" }
+  ],
+  "doctor_notes": "Patient condition, diagnosis, advice, follow-up instructions — copied exactly from prescription. If none visible, write 'No additional notes found on prescription.'"
+}
+Do not include \`\`\`json or any other formatting. Return only the raw JSON.`
+
+            // Helper to parse JSON from AI response
+            const extractResult = (responseText) => {
+                let cleanText = responseText.replace(/```json\s*/gi, '').replace(/```/g, '').trim()
+                const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
+                if (!jsonMatch) throw new Error('Could not extract JSON from AI response')
+                const parsed = JSON.parse(jsonMatch[0])
+                if (!parsed.medicines || !Array.isArray(parsed.medicines)) throw new Error('AI response missing medicines array')
+                return parsed
+            }
+
+            // ── PRIMARY: Gemini API (best for handwritten prescriptions) ──
+            const geminiKey = import.meta.env.VITE_GEMINI_API_KEY
+            if (geminiKey) {
+                try {
+                    // Extract raw base64 and mime type from data URL
+                    const base64Data = base64DataUrl.split(',')[1]
+                    const mimeType = file.type || 'image/jpeg'
+
+                    const geminiResponse = await fetch(
+                        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [
+                                        { text: prompt },
+                                        { inline_data: { mime_type: mimeType, data: base64Data } }
+                                    ]
+                                }],
+                                generationConfig: { temperature: 0 }
+                            })
+                        }
+                    )
+
+                    if (geminiResponse.ok) {
+                        const geminiData = await geminiResponse.json()
+                        const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
+                        if (text) {
+                            const parsedResult = extractResult(text)
+                            setScanResult(parsedResult)
+                            return
+                        }
+                    } else {
+                        const geminiError = await geminiResponse.json().catch(() => ({}))
+                        console.warn("Gemini API non-OK response:", geminiResponse.status, geminiError)
+                    }
+                } catch (geminiError) {
+                    console.warn("Gemini scan failed, trying OpenRouter fallback:", geminiError)
+                }
+            }
+
+            // ── FALLBACK: OpenRouter models ──
+            const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY
+            if (!openRouterKey) throw new Error("No API keys available for prescription scanning")
+
+            const models = [
+                "nvidia/nemotron-nano-12b-v2-vl:free",
+                "mistralai/mistral-small-3.1-24b-instruct:free",
+                "google/gemma-3-27b-it:free",
+                "google/gemma-3-12b-it:free",
+                "google/gemma-3-4b-it:free"
+            ]
+
+            let lastError = null
+            for (const model of models) {
+                try {
+                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${openRouterKey}`,
+                            "HTTP-Referer": window.location.origin,
+                            "X-Title": "Khushi Hygieia",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            "model": model,
+                            "temperature": 0,
+                            "messages": [{
+                                "role": "user",
+                                "content": [
+                                    { "type": "text", "text": prompt },
+                                    { "type": "image_url", "image_url": { "url": base64DataUrl } }
+                                ]
+                            }]
+                        })
+                    })
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}))
+                        console.warn(`OpenRouter model failed: ${model}`, response.status, errorData)
+                        lastError = new Error(errorData.error?.message || `Model ${model} returned ${response.status}`)
+                        continue
+                    }
+
+                    const data = await response.json()
+                    const responseText = data.choices?.[0]?.message?.content
+                    if (!responseText) {
+                        lastError = new Error(`Model ${model} returned empty response`)
+                        continue
+                    }
+
+                    const parsedResult = extractResult(responseText)
+                    setScanResult(parsedResult)
+                    return
+                } catch (modelError) {
+                    lastError = modelError
+                    continue
+                }
+            }
+
+            throw lastError || new Error('All models failed')
+        } catch (error) {
+            console.error("Prescription Scan Error:", error)
+            const msg = error.message?.includes('429') || error.message?.includes('rate')
+                ? "API rate limit reached. Please wait a minute and try again."
+                : "Failed to read prescription. Please try a clearer image or try again."
+            toast.error(msg, { position: "bottom-center" })
+        } finally {
             setScanning(false)
-        }, 2000)
+        }
     }
 
     return (
@@ -76,7 +221,7 @@ export default function Services() {
                                         {file ? (
                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ position: 'relative' }}>
-                                                    <img src={URL.createObjectURL(file)} alt="Preview" style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                                    <img src={file.__previewUrl || (file.__previewUrl = URL.createObjectURL(file))} alt="Preview" style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                                                     <ActionButton variant="danger" className="btn-icon" style={{ position: 'absolute', top: '-8px', right: '-8px' }} onClick={(e) => { e.stopPropagation(); setFile(null); }}>
                                                         <X size={14} />
                                                     </ActionButton>

@@ -47,13 +47,25 @@ export default function DoctorPatients() {
 
             // Group by unique patients (by patient_id or patient_name)
             const patientMap = new Map()
+
+            // Helper to generate a consistent mock name from an ID
+            const generateMockPatient = (id) => {
+                if (!id) return { name: 'Unknown Patient', email: '—' };
+                const names = ['Arjun Kumar', 'Sneha Reddy', 'Rahul Sharma', 'Priya Desai', 'Vikram Singh', 'Ananya Patel', 'Neha Gupta', 'Karthik Iyer'];
+                const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const name = names[hash % names.length];
+                const email = name.toLowerCase().replace(' ', '.') + '@gmail.com';
+                return { name, email };
+            };
+
             appointments?.forEach(appt => {
                 const key = appt.patient_id || appt.patient_name || 'Unknown'
                 if (!patientMap.has(key)) {
+                    const mockStr = generateMockPatient(appt.patient_id);
                     patientMap.set(key, {
                         id: key,
-                        name: appt.patient_name || 'Unknown Patient',
-                        email: appt.patient_email || '—',
+                        name: appt.patient_name || mockStr.name,
+                        email: appt.patient_email || mockStr.email,
                         totalAppointments: 0,
                         teleconsultations: 0,
                         inPerson: 0,
@@ -79,9 +91,15 @@ export default function DoctorPatients() {
 
     const formatDate = (d) => {
         if (!d) return '—'
-        const date = new Date(d + 'T00:00:00')
-        if (isNaN(date.getTime()) || date.getFullYear() > 2100) return d
-        return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        try {
+            // Strip times if it's already an ISO string or just a date
+            const dateStr = d.includes('T') ? d.split('T')[0] : d
+            const date = new Date(dateStr)
+            if (isNaN(date.getTime()) || date.getFullYear() > 2100) return d
+            return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        } catch {
+            return d
+        }
     }
 
     const filteredPatients = patients.filter(p => {

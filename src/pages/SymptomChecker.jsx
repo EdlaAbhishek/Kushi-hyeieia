@@ -73,7 +73,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other t
                 headers: {
                     "Authorization": `Bearer ${apiKey}`,
                     "HTTP-Referer": window.location.origin,
-                    "X-OpenRouter-Title": "Khushi Hygieia",
+                    "X-Title": "Khushi Hygieia",
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -93,7 +93,8 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other t
             }
 
             const data = await response.json()
-            const content = data.choices[0].message.content
+            const content = data.choices?.[0]?.message?.content
+            if (!content) throw new Error('AI returned an empty response. Please try again.')
 
             // Try to parse JSON
             try {

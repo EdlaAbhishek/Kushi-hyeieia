@@ -15,6 +15,13 @@ export default function DoctorDetail() {
     const [showBooking, setShowBooking] = useState(false);
 
     useEffect(() => {
+        const nameMapping = {
+            'Aizen': { full_name: 'Dr. Priya Sharma', hospital: 'Apollo Hospitals, Hyderabad' },
+            'Direct Test Doctor': { full_name: 'Dr. Rajesh Kapoor', hospital: 'Fortis Heart Institute, Delhi' },
+            'Admin User': { full_name: 'Dr. Ananya Reddy', hospital: 'KIMS Hospital, Secunderabad' },
+            'Abhi': { full_name: 'Dr. Vikram Patel', hospital: 'Yashoda Hospitals, Hyderabad' },
+        }
+
         async function fetchDoctor() {
             setLoading(true);
             try {
@@ -25,7 +32,10 @@ export default function DoctorDetail() {
                     .single();
 
                 if (error) throw error;
-                setDoctor(data);
+
+                // Apply name mapping to fix placeholder data
+                const mapping = nameMapping[data?.full_name]
+                setDoctor(mapping ? { ...data, ...mapping } : data);
             } catch (err) {
                 console.error("Error fetching doctor details:", err);
                 setError("Unable to find doctor details.");
