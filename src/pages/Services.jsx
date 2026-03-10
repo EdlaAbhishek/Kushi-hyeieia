@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes } from 'lucide-react'
+import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes, Languages } from 'lucide-react'
 import { useAuth } from '../services/AuthContext'
 import InfoButton from '../components/ui/InfoButton'
 import { toast } from 'react-hot-toast'
@@ -21,7 +21,55 @@ export default function Services() {
     const [file, setFile] = useState(null)
     const [scanning, setScanning] = useState(false)
     const [scanResult, setScanResult] = useState(null)
+    const [scanLang, setScanLang] = useState('en')
     const fileInputRef = useRef(null)
+
+    // ─── SCAN RESULT TRANSLATIONS ────────────────────────────────────
+    const scanLabels = {
+        en: {
+            analysisComplete: 'Analysis Complete',
+            scanAnother: 'Scan Another',
+            dosage: 'Dosage',
+            frequency: 'Frequency',
+            duration: 'Duration',
+            notes: 'Notes',
+            aiNotes: 'AI Notes',
+            disclaimer: '⚠️ AI analysis may contain errors. Always follow the doctor\'s prescription.',
+            processing: 'Analyzing Prescription...',
+            processBtn: 'Process Image',
+            dropText: 'Drop your prescription here or click to browse',
+            fileInfo: 'Supports JPG, PNG (Max 5MB)'
+        },
+        hi: {
+            analysisComplete: 'विश्लेषण पूर्ण',
+            scanAnother: 'दोबारा स्कैन करें',
+            dosage: 'खुराक',
+            frequency: 'आवृत्ति',
+            duration: 'अवधि',
+            notes: 'टिप्पणी',
+            aiNotes: 'AI नोट्स',
+            disclaimer: '⚠️ AI विश्लेषण में त्रुटियाँ हो सकती हैं। हमेशा डॉक्टर के नुस्खे का पालन करें।',
+            processing: 'नुस्खा विश्लेषण हो रहा है...',
+            processBtn: 'छवि प्रोसेस करें',
+            dropText: 'अपना नुस्खा यहाँ डालें या ब्राउज़ करने के लिए क्लिक करें',
+            fileInfo: 'JPG, PNG सपोर्ट (अधिकतम 5MB)'
+        },
+        te: {
+            analysisComplete: 'విశ్లేషణ పూర్తయింది',
+            scanAnother: 'మళ్ళీ స్కాన్ చేయండి',
+            dosage: 'మోతాదు',
+            frequency: 'తరచుదనం',
+            duration: 'వ్యవధి',
+            notes: 'గమనికలు',
+            aiNotes: 'AI గమనికలు',
+            disclaimer: '⚠️ AI విశ్లేషణలో తప్పులు ఉండవచ్చు. ఎల్లప్పుడూ డాక్టర్ ప్రిస్క్రిప్షన్ అనుసరించండి.',
+            processing: 'ప్రిస్క్రిప్షన్ విశ్లేషిస్తోంది...',
+            processBtn: 'చిత్రాన్ని ప్రాసెస్ చేయండి',
+            dropText: 'మీ ప్రిస్క్రిప్షన్ ఇక్కడ డ్రాప్ చేయండి లేదా బ్రౌజ్ చేయడానికి క్లిక్ చేయండి',
+            fileInfo: 'JPG, PNG మద్దతు (గరిష్టం 5MB)'
+        }
+    }
+    const t = scanLabels[scanLang] || scanLabels.en
 
     // ─── HANDLERS ─────────────────────────────────────────────────────
     const handleFileChange = (e) => {
@@ -115,7 +163,7 @@ export default function Services() {
                                                 </div>
                                                 <p style={{ fontWeight: 600 }}>{file.name}</p>
                                                 <ActionButton variant="primary" onClick={(e) => { e.stopPropagation(); handleScan(); }} disabled={scanning}>
-                                                    {scanning ? 'Analyzing Prescription...' : 'Process Image'}
+                                                    {scanning ? t.processing : t.processBtn}
                                                 </ActionButton>
                                             </div>
                                         ) : (
@@ -123,18 +171,28 @@ export default function Services() {
                                                 <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', border: '1px solid var(--border)' }}>
                                                     <Upload size={32} color="var(--primary)" />
                                                 </div>
-                                                <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Drop your prescription here or click to browse</p>
-                                                <p style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Supports JPG, PNG (Max 5MB)</p>
+                                                <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{t.dropText}</p>
+                                                <p style={{ fontSize: '0.8rem', color: '#94A3B8' }}>{t.fileInfo}</p>
                                             </>
                                         )}
                                     </div>
                                 ) : (
                                     <div className="scan-results" style={{ animation: 'fadeIn 0.5s ease-out' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                             <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <CheckCircle size={18} color="#059669" /> Analysis Complete
+                                                <CheckCircle size={18} color="#059669" /> {t.analysisComplete}
                                             </h3>
-                                            <button className="btn btn-outline btn-sm" onClick={() => { setScanResult(null); setFile(null); }}>Scan Another</button>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: '#F1F5F9', borderRadius: '6px', padding: '0.25rem 0.5rem' }}>
+                                                    <Languages size={14} color="#64748B" />
+                                                    <select value={scanLang} onChange={(e) => setScanLang(e.target.value)} style={{ border: 'none', background: 'transparent', fontSize: '0.8rem', color: '#334155', cursor: 'pointer', outline: 'none' }}>
+                                                        <option value="en">English</option>
+                                                        <option value="hi">हिंदी</option>
+                                                        <option value="te">తెలుగు</option>
+                                                    </select>
+                                                </div>
+                                                <button className="btn btn-outline btn-sm" onClick={() => { setScanResult(null); setFile(null); }}>{t.scanAnother}</button>
+                                            </div>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                             {scanResult.medicines.map((med, idx) => (
@@ -144,21 +202,21 @@ export default function Services() {
                                                         <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#F1F5F9', borderRadius: '4px' }}>{med.type || med.notes || '—'}</span>
                                                     </div>
                                                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
-                                                        <div><strong>Dosage:</strong> {med.dosage || '—'}</div>
-                                                        <div><strong>Frequency:</strong> {med.frequency || '—'}</div>
-                                                        <div><Calendar size={12} /> {med.duration || '—'}</div>
-                                                        {med.notes && <div><FileImage size={12} /> {med.notes}</div>}
+                                                        <div><strong>{t.dosage}:</strong> {med.dosage || '—'}</div>
+                                                        <div><strong>{t.frequency}:</strong> {med.frequency || '—'}</div>
+                                                        <div><Calendar size={12} /> <strong>{t.duration}:</strong> {med.duration || '—'}</div>
+                                                        {med.notes && <div><FileImage size={12} /> <strong>{t.notes}:</strong> {med.notes}</div>}
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                         <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
-                                            <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>AI Notes:</strong>
+                                            <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>{t.aiNotes}:</strong>
                                             <p style={{ fontSize: '0.85rem', color: '#0C4A6E', margin: 0 }}>{scanResult.doctor_notes}</p>
                                         </div>
                                         <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#FEF3C7', borderRadius: '8px', borderLeft: '4px solid #F59E0B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <Shield size={16} color="#D97706" />
-                                            <p style={{ fontSize: '0.8rem', color: '#92400E', margin: 0 }}>⚠️ AI analysis may contain errors. Always follow the doctor's prescription.</p>
+                                            <p style={{ fontSize: '0.8rem', color: '#92400E', margin: 0 }}>{t.disclaimer}</p>
                                         </div>
                                     </div>
                                 )}
