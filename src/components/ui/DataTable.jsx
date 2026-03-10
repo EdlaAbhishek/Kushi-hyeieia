@@ -8,8 +8,21 @@ export default function DataTable({
     headers = [],
     data = [],
     keyExtractor = (item, index) => index,
-    renderRow
+    renderRow,
+    children
 }) {
+    // If children are provided (e.g. <thead> and <tbody> passed directly), render them as-is
+    if (children) {
+        return (
+            <div className="table-responsive" style={{ overflowX: 'auto', width: '100%' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                    {children}
+                </table>
+            </div>
+        );
+    }
+
+    // Otherwise, use the props-based API
     return (
         <div className="table-responsive" style={{ overflowX: 'auto', width: '100%' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
@@ -35,7 +48,7 @@ export default function DataTable({
                 <tbody>
                     {data.length === 0 ? (
                         <tr>
-                            <td colSpan={headers.length} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            <td colSpan={headers.length || 1} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                                 No data available.
                             </td>
                         </tr>

@@ -4,7 +4,7 @@ import React from 'react';
  * Standardized Status Badge
  * Maps words (Healthy, Warning, Danger, etc.) to consistent system colors.
  */
-export default function StatusBadge({ status, text, className = '' }) {
+export default function StatusBadge({ status, text, className = '', children }) {
     // Determine color variant based on status string matching
     let colorClass = 'bg-success-light'; // default healthy
 
@@ -40,7 +40,7 @@ export default function StatusBadge({ status, text, className = '' }) {
                 ...customStyle
             }}
         >
-            {text || status}
+            {children || text || status}
         </span>
     );
 }

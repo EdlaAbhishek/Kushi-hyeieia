@@ -27,16 +27,16 @@ export default function DoctorPatients() {
             const { data: doctorRow } = await supabase
                 .from('doctors')
                 .select('id')
-                .eq('user_id', user.id)
-                .single()
+                .eq('id', user.id)
+                .maybeSingle()
 
-            const doctorId = doctorRow?.id
+            const doctorId = doctorRow?.id || user.id
 
-            // Fetch all appointments for this doctor
+            // Fetch all appointments for this doctor (try both id formats)
             const { data: appointments, error } = await supabase
                 .from('appointments')
                 .select('*')
-                .or(doctorId ? `doctor_id.eq.${user.id},doctor_id.eq.${doctorId}` : `doctor_id.eq.${user.id}`)
+                .eq('doctor_id', doctorId)
                 .order('created_at', { ascending: false })
 
             if (error) {
@@ -94,11 +94,11 @@ export default function DoctorPatients() {
         try {
             // Strip times if it's already an ISO string or just a date
             const dateStr = d.includes('T') ? d.split('T')[0] : d
-            const date = new Date(dateStr)
-            if (isNaN(date.getTime()) || date.getFullYear() > 2100) return d
+            const date = new Date(dateStr + 'T00:00:00')
+            if (isNaN(date.getTime()) || date.getFullYear() > 2100 || date.getFullYear() < 1900) return 'Recent'
             return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
         } catch {
-            return d
+            return 'Recent'
         }
     }
 

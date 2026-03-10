@@ -58,9 +58,9 @@ export default function MainLayout() {
                         {/* Doctor nav — clean */}
                         {isDoctor && (
                             <>
-                                <NavLink to="/patients" onClick={closeMenu}>Patients</NavLink>
+                                <NavLink to="/doctor-dashboard/patients" onClick={closeMenu}>My Patients</NavLink>
                                 <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
-                                <NavLink to="/services" onClick={closeMenu}>Services</NavLink>
+                                <NavLink to="/doctors" onClick={closeMenu}>Doctor Network</NavLink>
                                 <NavLink to="/chat" onClick={closeMenu}>AI Assistant</NavLink>
                             </>
                         )}
@@ -130,7 +130,7 @@ export default function MainLayout() {
                         <div>
                             <h4 className="footer-heading">For Providers</h4>
                             <ul className="footer-links">
-                                <li><NavLink to="/doctors">Join Network</NavLink></li>
+                                <li><NavLink to="/doctor-dashboard">Join Network</NavLink></li>
                                 <li><NavLink to="/hospitals">Hospital Integration</NavLink></li>
                                 <li><NavLink to="/doctor-dashboard">Provider Portal</NavLink></li>
                             </ul>
