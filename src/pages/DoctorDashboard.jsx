@@ -543,7 +543,7 @@ export default function DoctorDashboard() {
                                                     )}
                                                 </td>
                                                 <td>
-                                                    <div className="doctor-actions">
+                                                    <div className="doctor-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                                         {appt.status === 'pending' && (
                                                             <>
                                                                 <ActionButton
