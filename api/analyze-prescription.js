@@ -6,7 +6,6 @@ export default async function handler(req, res) {
 
     const AZURE_VISION_ENDPOINT = process.env.AZURE_VISION_ENDPOINT
     const AZURE_VISION_KEY = process.env.AZURE_VISION_KEY
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 
     if (!AZURE_VISION_ENDPOINT || !AZURE_VISION_KEY) {
         return res.status(500).json({ error: 'Azure Vision credentials not configured' })
@@ -103,72 +102,97 @@ export default async function handler(req, res) {
             })
         }
 
-        // ── 6. AI Interpretation: Send extracted text to Gemini ──
-        const prompt = `You are a precise medical prescription interpreter. Below is OCR-extracted text from a prescription image.
+        // ── 6. Parsing logic: Extract medicines from Azure OCR text lines ──
 
-EXTRACTED TEXT:
-${extractedText}
+        const medicines = []
+        let currentMedicine = null
+        let doctorNotes = []
 
-CRITICAL RULES:
-- Extract ONLY medicines and information that are clearly present in the text
-- Do NOT invent, guess, or hallucinate any medicines or dosages
-- If a word is unclear, write it as "[unclear]"
-- Extract medicine name, dosage, frequency, duration, and any notes for each medicine
+        // Common patterns
+        const medicineKeywords = ['tab', 'cap', 'syr', 'inj', 'oint', 'drp', 'tablet', 'capsule', 'syrup', 'injection']
+        const frequencyRegex = /(?:\d+-\d+-\d+|\b(?:od|bd|tid|qid|sos|hs|stat)\b)/i
+        const dosageRegex = /\b\d+(?:\.\d+)?(?:mg|ml|g|mcg|iu)\b/i
+        const durationRegex = /\b(?:for\s+)?(\d+\s+(?:day|week|month)s?)\b/i
 
-Return ONLY a valid JSON object with this structure:
-{
-  "medicines": [
-    { "name": "Medicine name", "dosage": "e.g. 500mg", "frequency": "e.g. 1-0-1", "duration": "e.g. 5 days", "notes": "e.g. After food" }
-  ],
-  "doctor_notes": "Patient condition, diagnosis, advice, follow-up instructions. If none visible, write 'No additional notes found.'"
-}
-Do not include \`\`\`json or any other formatting. Return only the raw JSON.`
+        for (let i = 0; i < textLines.length; i++) {
+            const line = textLines[i].trim()
+            if (!line) continue
 
-        let parsedResult = null
+            const lowerLine = line.toLowerCase()
 
-        // Try Gemini first
-        if (GEMINI_API_KEY) {
-            try {
-                const geminiResponse = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            generationConfig: { temperature: 0 }
-                        })
-                    }
-                )
+            // Check if this line looks like a medicine name (starts with clinical keyword or feels like a noun phrase)
+            const startsWithKeyword = medicineKeywords.some(kw => lowerLine.startsWith(kw))
+            // Only consider it a new medicine if it's the start, or it explicitly has a typical drug name format
+            // Often OCR separates "Tab Paracetamol 500mg" or "Paracetamol 500mg"
 
-                if (geminiResponse.ok) {
-                    const geminiData = await geminiResponse.json()
-                    const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
-                    if (text) {
-                        const cleanText = text.replace(/```json\s*/gi, '').replace(/```/g, '').trim()
-                        const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
-                        if (jsonMatch) {
-                            parsedResult = JSON.parse(jsonMatch[0])
-                        }
-                    }
+            if (startsWithKeyword || (dosageRegex.test(line) && !frequencyRegex.test(line) && line.length > 5)) {
+                // If we were building a medicine, push it
+                if (currentMedicine) {
+                    medicines.push(currentMedicine)
                 }
-            } catch (geminiErr) {
-                console.warn('Gemini interpretation failed:', geminiErr.message)
-            }
-        }
 
-        // Fallback: return raw text as a single "medicine" entry
-        if (!parsedResult || !parsedResult.medicines) {
-            parsedResult = {
-                medicines: [{
-                    name: 'Raw Prescription Text',
+                currentMedicine = {
+                    name: line.replace(dosageRegex, '').trim(), // Remove dosage from name if present
                     dosage: '—',
                     frequency: '—',
                     duration: '—',
-                    notes: extractedText
-                }],
-                doctor_notes: 'AI interpretation unavailable. Showing raw OCR text.'
+                    notes: ''
+                }
+
+                // Try to extract dosage from the current line
+                const dosageMatch = line.match(dosageRegex)
+                if (dosageMatch) {
+                    currentMedicine.dosage = dosageMatch[0]
+                }
             }
+            else if (currentMedicine) {
+                // Look for frequency/duration in subsequent lines
+                let matchedPattern = false
+
+                const freqMatch = line.match(frequencyRegex)
+                if (freqMatch) {
+                    currentMedicine.frequency = freqMatch[0]
+                    matchedPattern = true
+                }
+
+                const durMatch = line.match(durationRegex)
+                if (durMatch) {
+                    currentMedicine.duration = durMatch[1]
+                    matchedPattern = true
+                }
+
+                // If it wasn't a frequency/duration but we already have a medicine active, it might be an instruction/note
+                if (!matchedPattern) {
+                    // Check if it's another dosage format or loose text
+                    if (lowerLine.includes('after food') || lowerLine.includes('before food') || lowerLine.includes('bf') || lowerLine.includes('af')) {
+                        currentMedicine.notes += (currentMedicine.notes ? ' ' : '') + line
+                    } else if (line.length > 3) {
+                        // Could be doctor note instead
+                        doctorNotes.push(line)
+                    }
+                }
+            } else {
+                // Not attached to a medicine, likely doctor notes/patient info
+                if (line.length > 3) {
+                    doctorNotes.push(line)
+                }
+            }
+        }
+
+        // Push the last one
+        if (currentMedicine) {
+            medicines.push(currentMedicine)
+        }
+
+        const parsedResult = {
+            medicines: medicines.length > 0 ? medicines : [{
+                name: 'Raw Prescription Text',
+                dosage: '—',
+                frequency: '—',
+                duration: '—',
+                notes: extractedText
+            }],
+            doctor_notes: doctorNotes.length > 0 ? doctorNotes.join('. ') : 'No specific patient notes detected.'
         }
 
         // Add raw_text so frontend can show it if needed
