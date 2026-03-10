@@ -185,14 +185,10 @@ export default async function handler(req, res) {
         }
 
         const parsedResult = {
-            medicines: medicines.length > 0 ? medicines : [{
-                name: 'Raw Prescription Text',
-                dosage: '—',
-                frequency: '—',
-                duration: '—',
-                notes: extractedText
-            }],
-            doctor_notes: doctorNotes.length > 0 ? doctorNotes.join('. ') : 'No specific patient notes detected.'
+            medicines: medicines,
+            doctor_notes: medicines.length === 0
+                ? 'No distinct medicines were found. Please ensure the image is a clear prescription, not a receipt or report.'
+                : (doctorNotes.length > 0 ? doctorNotes.join('. ') : 'No specific patient notes detected.')
         }
 
         // Add raw_text so frontend can show it if needed

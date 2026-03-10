@@ -88,6 +88,8 @@ export default function Services() {
             'Raw Prescription Text': 'कच्चा नुस्खा टेक्स्ट',
             'No specific patient notes detected.': 'कोई विशेष रोगी नोट नहीं मिले।',
             'Could not read prescription. Please upload a clearer image.': 'नुस्खा नहीं पढ़ा जा सका। कृपया स्पष्ट छवि अपलोड करें।',
+            'No distinct medicines were found. Please ensure the image is a clear prescription, not a receipt or report.': 'कोई दवा नहीं मिली। कृपया सुनिश्चित करें कि छवि एक स्पष्ट नुस्खा है, रसीद या रिपोर्ट नहीं।',
+            'No Medicines Detected': 'कोई दवा नहीं मिली',
             // Medicine types
             'tab': 'गोली', 'tablet': 'गोली', 'cap': 'कैप्सूल', 'capsule': 'कैप्सूल',
             'syr': 'सिरप', 'syrup': 'सिरप', 'inj': 'इंजेक्शन', 'injection': 'इंजेक्शन',
@@ -109,6 +111,8 @@ export default function Services() {
             'Raw Prescription Text': 'ముడి ప్రిస్క్రిప్షన్ టెక్స్ట్',
             'No specific patient notes detected.': 'ప్రత్యేక రోగి గమనికలు కనుగొనబడలేదు.',
             'Could not read prescription. Please upload a clearer image.': 'ప్రిస్క్రిప్షన్ చదవలేకపోయింది. దయచేసి స్పష్టమైన చిత్రాన్ని అప్‌లోడ్ చేయండి.',
+            'No distinct medicines were found. Please ensure the image is a clear prescription, not a receipt or report.': 'ఎలాంటి మందులు కనుగొనబడలేదు. దయచేసి చిత్రం స్పష్టమైన ప్రిస్క్రిప్షన్ అని నిర్ధారించుకోండి, రసీదు లేదా నివేదిక కాదు.',
+            'No Medicines Detected': 'మందులు కనుగొనబడలేదు',
             // Medicine types
             'tab': 'టాబ్లెట్', 'tablet': 'టాబ్లెట్', 'cap': 'క్యాప్సూల్', 'capsule': 'క్యాప్సూల్',
             'syr': 'సిరప్', 'syrup': 'సిరప్', 'inj': 'ఇంజెక్షన్', 'injection': 'ఇంజెక్షన్',
@@ -312,20 +316,32 @@ export default function Services() {
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                            {scanResult.medicines.map((med, idx) => (
-                                                <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '10px', background: '#fff' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                                        <strong style={{ color: 'var(--primary)' }}>{translateMedicineName(med.name, scanLang)}</strong>
-                                                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#F1F5F9', borderRadius: '4px' }}>{translateNotes(med.type || med.notes || '—', scanLang)}</span>
+                                            {scanResult.medicines && scanResult.medicines.length > 0 ? (
+                                                scanResult.medicines.map((med, idx) => (
+                                                    <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '10px', background: '#fff' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                                            <strong style={{ color: 'var(--primary)' }}>{translateMedicineName(med.name, scanLang)}</strong>
+                                                            <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#F1F5F9', borderRadius: '4px' }}>{translateNotes(med.type || med.notes || '—', scanLang)}</span>
+                                                        </div>
+                                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
+                                                            <div><strong>{t.dosage}:</strong> {med.dosage || '—'}</div>
+                                                            <div><strong>{t.frequency}:</strong> {translateFrequency(med.frequency, scanLang) || '—'}</div>
+                                                            <div><Calendar size={12} /> <strong>{t.duration}:</strong> {translateDuration(med.duration, scanLang) || '—'}</div>
+                                                            {med.notes && <div><FileImage size={12} /> <strong>{t.notes}:</strong> {translateNotes(med.notes, scanLang)}</div>}
+                                                        </div>
                                                     </div>
-                                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
-                                                        <div><strong>{t.dosage}:</strong> {med.dosage || '—'}</div>
-                                                        <div><strong>{t.frequency}:</strong> {translateFrequency(med.frequency, scanLang) || '—'}</div>
-                                                        <div><Calendar size={12} /> <strong>{t.duration}:</strong> {translateDuration(med.duration, scanLang) || '—'}</div>
-                                                        {med.notes && <div><FileImage size={12} /> <strong>{t.notes}:</strong> {translateNotes(med.notes, scanLang)}</div>}
-                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div style={{ padding: '2rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                                                    <ScanLine size={32} color="#94A3B8" style={{ margin: '0 auto 1rem auto' }} />
+                                                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#475569', fontSize: '1.1rem' }}>
+                                                        {scanLang === 'en' ? 'No Medicines Detected' : (scanLang === 'hi' ? 'कोई दवा नहीं मिली' : 'మందులు కనుగొనబడలేదు')}
+                                                    </h4>
+                                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                                                        {translateNotes(scanResult.doctor_notes, scanLang)}
+                                                    </p>
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
                                         <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
                                             <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>{t.aiNotes}:</strong>
