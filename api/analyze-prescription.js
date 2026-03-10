@@ -104,67 +104,128 @@ export default async function handler(req, res) {
 
         // ── 6. Parsing logic: Extract medicines from Azure OCR text lines ──
 
-        let parsedResult = { medicines: [], doctor_notes: '' }
+        let documentType = 'general'
+        const lowerData = extractedText.toLowerCase()
 
-        const OPENROUTER_API_KEY = process.env.VITE_OPENROUTER_API_KEY
-        const OPENROUTER_MODEL = process.env.VITE_OPENROUTER_MODEL || 'google/gemini-2.0-flash-exp:free'
+        // ── 6a. Document Classification ──
 
-        if (OPENROUTER_API_KEY && extractedText.length > 5) {
-            const prompt = `You are a medical AI assistant parsing OCR data from a messy handwritten prescription or hospital receipt.
-Extract the medicines and doctor's notes from the text below.
-Format your response as a pure JSON object matching this structure EXACTLY:
-{
-  "medicines": [
-    {
-      "name": "Clean Medicine Name (e.g. Paracetamol, Eltroxin, Amtocal)",
-      "dosage": "Dosage (e.g. 500mg, 50-2+2+2)",
-      "frequency": "Frequency (e.g. 1-0-1, OD, bd)",
-      "duration": "Duration (e.g. 5 days, 1 week)",
-      "notes": "Identify if it's a Tablet/Capsule/Syrup AND briefly explain its medical use (e.g. 'Tablet. Used for Thyroid management.')"
-    }
-  ],
-  "doctor_notes": "Any doctor's notes, diagnosis, patient details, or instructions found. If it's a bill/receipt with no clear medicines, briefly explain the document type here and leave the medicines array empty."
-}
+        // Keywords for classification
+        const billKeywords = ['amount', 'total', '₹', 'rs.', 'invoice', 'bill', 'payment', 'receipt', 'balance', 'due']
+        const labKeywords = ['hemoglobin', 'glucose', 'cholesterol', 'test result', 'report', 'reference range', 'pathology', 'laboratory']
+        const rxKeywords = ['tablet', 'tab', 'mg', 'dosage', '1-0-1', 'od', 'bd', 'tds', 'rx', 'r/', 'doctor', 'clinic', 'syrup', 'cap']
 
-ONLY output pure JSON. Do not include markdown blocks, backticks, or any other text. Strip the JSON wrapper before answering.
+        const scoreType = (keywords) => keywords.filter(kw => lowerData.includes(kw)).length
 
-OCR TEXT:
-${extractedText}
-`
-            try {
-                const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: OPENROUTER_MODEL,
-                        messages: [{ role: 'user', content: prompt }]
-                    })
-                })
+        const scores = {
+            bill: scoreType(billKeywords),
+            lab_report: scoreType(labKeywords),
+            prescription: scoreType(rxKeywords)
+        }
 
-                if (openRouterResponse.ok) {
-                    const openRouterData = await openRouterResponse.json()
-                    const aiText = openRouterData.choices[0].message.content
-                    // Clean markdown wrapping if AI returns it
-                    const jsonText = aiText.replace(/```json/gi, '').replace(/```/g, '').trim()
-                    parsedResult = JSON.parse(jsonText)
-                } else {
-                    console.error('OpenRouter API error:', await openRouterResponse.text())
-                    throw new Error('OpenRouter API failed')
-                }
-            } catch (err) {
-                console.error('LLM Parsing failed:', err)
-                parsedResult.doctor_notes = 'Advanced AI processing failed. Please review the raw extracted text below.'
+        // Determine dominant type based on highest score (needs at least 1 match)
+        let maxScore = 0
+        for (const [type, score] of Object.entries(scores)) {
+            if (score > maxScore) {
+                maxScore = score
+                documentType = type
             }
         }
 
-        if (!parsedResult.medicines || parsedResult.medicines.length === 0) {
-            if (!parsedResult.doctor_notes) {
-                parsedResult.doctor_notes = 'No distinct medicines were found. Please ensure the image is a clear prescription, not a receipt or report.'
+        // ── 6b. Contextual Extraction ──
+
+        const extractedData = []
+        let summaryText = 'Extracted text from the uploaded document.'
+
+        if (documentType === 'prescription') {
+            summaryText = 'Medical prescription detected. Extracted medicines and dosages are listed below.'
+
+            // Re-implement heuristic medicine extraction
+            const dosageRegex = /\b\d+(?:\.\d+)?\s*(?:mg|ml|g|mcg|iu|%)\b/i
+            const frequencyRegex = /(?:\d+-\d+-\d+|\b(?:od|bd|tid|qid|sos|hs|stat|tds|once|twice|thrice)\b)/i
+            let currentObject = null
+
+            for (let i = 0; i < textLines.length; i++) {
+                const line = textLines[i].trim()
+                if (line.length < 3) continue
+
+                // Soft match for medicine
+                if (rxKeywords.some(kw => line.toLowerCase().startsWith(kw)) || dosageRegex.test(line)) {
+                    if (currentObject) extractedData.push(currentObject)
+
+                    let cleanName = line.replace(/^\d+[\.\)\-\]]\s*/, '').replace(dosageRegex, '').trim()
+
+                    currentObject = {
+                        name: cleanName || line,
+                        dosage: line.match(dosageRegex)?.[0] || '—',
+                        frequency: line.match(frequencyRegex)?.[0] || '—',
+                        duration: '—'
+                    }
+                } else if (currentObject) {
+                    if (currentObject.frequency === '—' && frequencyRegex.test(line)) {
+                        currentObject.frequency = line.match(frequencyRegex)[0]
+                    }
+                }
             }
-            parsedResult.medicines = []
+            if (currentObject) extractedData.push(currentObject)
+
+        } else if (documentType === 'bill') {
+            summaryText = 'Medical bill or receipt detected. Attempting to extract line items and amounts.'
+
+            // Extract lines that look like: "Consultation Fee  500.00"
+            const itemRegex = /^[a-zA-Z\s\-\.]+[\s\t]+(?:rs\.?|₹)?\s*(\d+(?:\.\d{2})?)$/i
+
+            for (const line of textLines) {
+                if (line.length < 5) continue
+                const match = line.match(itemRegex)
+                if (match) {
+                    const amount = match[1]
+                    const itemName = line.replace(match[0], '').replace(amount, '').trim()
+                    // Don't push if the itemName is empty or just generic "total"
+                    if (itemName.length > 2 && !itemName.toLowerCase().includes('total')) {
+                        extractedData.push({
+                            item: itemName,
+                            amount: amount
+                        })
+                    }
+                }
+
+                // Specifically look for Total
+                if (line.toLowerCase().includes('total') && /\d+/.test(line)) {
+                    const totalMatch = line.match(/\d+(?:\.\d{2})?/)
+                    if (totalMatch) {
+                        extractedData.push({ item: 'TOTAL AMOUNT', amount: totalMatch[0] })
+                    }
+                }
+            }
+
+        } else if (documentType === 'lab_report') {
+            summaryText = 'Diagnostic or lab report detected. Attempting to extract test results and values.'
+
+            // Look for test lines with numbers: "Hemoglobin 14.2 g/dL"
+            const testRegex = /^([a-zA-Z\s\-]+)[\s:]+(\d+(?:\.\d+)?)\s*([a-zA-Z\/%]+)?/
+
+            for (const line of textLines) {
+                if (line.length < 5) continue
+                if (labKeywords.some(kw => line.toLowerCase().includes(kw))) {
+                    const match = line.match(testRegex)
+                    if (match && match[1].length > 3) {
+                        extractedData.push({
+                            test_name: match[1].trim(),
+                            result: match[2].trim(),
+                            unit: match[3] ? match[3].trim() : ''
+                        })
+                    }
+                }
+            }
+        } else {
+            // General Document
+            summaryText = `General text document identified. Extracted ${textLines.length} lines of text. See raw output below.`
+        }
+
+        const parsedResult = {
+            document_type: documentType,
+            summary: summaryText,
+            extracted_data: extractedData
         }
 
         // Add raw_text so frontend can show it if needed

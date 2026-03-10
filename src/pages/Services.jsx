@@ -316,37 +316,92 @@ export default function Services() {
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                            {scanResult.medicines && scanResult.medicines.length > 0 ? (
-                                                scanResult.medicines.map((med, idx) => (
-                                                    <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '10px', background: '#fff' }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                                            <strong style={{ color: 'var(--primary)' }}>{translateMedicineName(med.name, scanLang)}</strong>
-                                                            <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#F1F5F9', borderRadius: '4px' }}>{translateNotes(med.type || med.notes || '—', scanLang)}</span>
-                                                        </div>
-                                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
-                                                            <div><strong>{t.dosage}:</strong> {med.dosage || '—'}</div>
-                                                            <div><strong>{t.frequency}:</strong> {translateFrequency(med.frequency, scanLang) || '—'}</div>
-                                                            <div><Calendar size={12} /> <strong>{t.duration}:</strong> {translateDuration(med.duration, scanLang) || '—'}</div>
-                                                            {med.notes && <div><FileImage size={12} /> <strong>{t.notes}:</strong> {translateNotes(med.notes, scanLang)}</div>}
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div style={{ padding: '2rem', textAlign: 'center', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                                                    <ScanLine size={32} color="#94A3B8" style={{ margin: '0 auto 1rem auto' }} />
-                                                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#475569', fontSize: '1.1rem' }}>
-                                                        {scanLang === 'en' ? 'No Medicines Detected' : (scanLang === 'hi' ? 'कोई दवा नहीं मिली' : 'మందులు కనుగొనబడలేదు')}
+                                            <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #64748B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div>
+                                                    <strong style={{ fontSize: '0.85rem', color: '#475569', display: 'block' }}>Document Type:</strong>
+                                                    <span style={{ fontSize: '1rem', color: '#0F172A', fontWeight: 'bold', textTransform: 'capitalize' }}>{scanResult.document_type.replace('_', ' ')}</span>
+                                                </div>
+                                                <FileText size={24} color="#64748B" />
+                                            </div>
+
+                                            <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
+                                                <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
+                                                <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>{translateNotes(scanResult.summary, scanLang)}</p>
+                                            </div>
+
+                                            {scanResult.extracted_data && scanResult.extracted_data.length > 0 && (
+                                                <div style={{ marginTop: '0.5rem' }}>
+                                                    <h4 style={{ fontSize: '1rem', color: '#334155', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
+                                                        Extracted Information
                                                     </h4>
-                                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                                                        {translateNotes(scanResult.doctor_notes, scanLang)}
-                                                    </p>
+
+                                                    {scanResult.document_type === 'prescription' && scanResult.extracted_data.map((med, idx) => (
+                                                        <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '10px', background: '#fff', marginBottom: '1rem' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                                                <strong style={{ color: 'var(--primary)' }}>{translateMedicineName(med.name, scanLang)}</strong>
+                                                            </div>
+                                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
+                                                                <div><strong>{t.dosage || 'Dosage'}:</strong> {med.dosage || '—'}</div>
+                                                                <div><strong>{t.frequency || 'Frequency'}:</strong> {translateFrequency(med.frequency, scanLang) || '—'}</div>
+                                                                {med.duration && med.duration !== '—' && <div><Calendar size={12} /> <strong>{t.duration || 'Duration'}:</strong> {translateDuration(med.duration, scanLang)}</div>}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+
+                                                    {scanResult.document_type === 'bill' && (
+                                                        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
+                                                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                                                                <thead style={{ background: '#F8FAFC' }}>
+                                                                    <tr>
+                                                                        <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>Item</th>
+                                                                        <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', textAlign: 'right' }}>Amount</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {scanResult.extracted_data.map((item, idx) => (
+                                                                        <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                                            <td style={{ padding: '0.75rem 1rem', fontWeight: item.item === 'TOTAL AMOUNT' ? 'bold' : 'normal' }}>{item.item}</td>
+                                                                            <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: item.item === 'TOTAL AMOUNT' ? 'bold' : 'normal', color: item.item === 'TOTAL AMOUNT' ? 'var(--primary)' : 'inherit' }}>₹{item.amount}</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
+
+                                                    {scanResult.document_type === 'lab_report' && (
+                                                        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
+                                                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                                                                <thead style={{ background: '#F8FAFC' }}>
+                                                                    <tr>
+                                                                        <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>Test Name</th>
+                                                                        <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', textAlign: 'right' }}>Result</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {scanResult.extracted_data.map((item, idx) => (
+                                                                        <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                                            <td style={{ padding: '0.75rem 1rem', color: '#334155', fontWeight: '500' }}>{item.test_name}</td>
+                                                                            <td style={{ padding: '0.75rem 1rem', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{item.result} {item.unit}</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
-                                        <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
-                                            <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>{t.aiNotes}:</strong>
-                                            <p style={{ fontSize: '0.85rem', color: '#0C4A6E', margin: 0 }}>{translateNotes(scanResult.doctor_notes, scanLang)}</p>
-                                        </div>
+
+                                        {scanResult.raw_text && (
+                                            <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                                                <strong style={{ fontSize: '0.85rem', color: '#475569', display: 'block', marginBottom: '0.5rem' }}>Raw Extracted Text:</strong>
+                                                <pre style={{ margin: 0, padding: '0.5rem', background: '#fff', borderRadius: '4px', border: '1px solid #E2E8F0', fontSize: '0.75rem', color: '#64748B', whiteSpace: 'pre-wrap', maxHeight: '150px', overflowY: 'auto' }}>
+                                                    {scanResult.raw_text}
+                                                </pre>
+                                            </div>
+                                        )}
+
                                         <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#FEF3C7', borderRadius: '8px', borderLeft: '4px solid #F59E0B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <Shield size={16} color="#D97706" />
                                             <p style={{ fontSize: '0.8rem', color: '#92400E', margin: 0 }}>{t.disclaimer}</p>
