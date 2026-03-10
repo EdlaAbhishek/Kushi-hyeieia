@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes, Languages } from 'lucide-react'
+import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes, Languages, FileText } from 'lucide-react'
 import { useAuth } from '../services/AuthContext'
 import InfoButton from '../components/ui/InfoButton'
 import { toast } from 'react-hot-toast'
