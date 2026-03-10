@@ -228,7 +228,9 @@ export default function Services() {
 
             if (response.ok) {
                 const result = await response.json()
-                if (result.medicines && Array.isArray(result.medicines)) {
+
+                // Allow the new general document structure to pass through
+                if (result.document_type && result.summary) {
                     setScanResult(result)
                     return
                 }
@@ -241,7 +243,7 @@ export default function Services() {
         } catch (error) {
             console.error('Prescription Scan Error:', error)
             toast.error(
-                'Unable to read the prescription clearly. Please upload a clearer image.',
+                'Unable to read the document clearly. Please upload a clearer image.',
                 { position: 'bottom-center' }
             )
         } finally {
