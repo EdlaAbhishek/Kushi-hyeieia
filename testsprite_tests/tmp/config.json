@@ -2,19 +2,19 @@
   "status": "commited",
   "type": "frontend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:5173/",
-  "loginUser": "abhishekedla9133@gmail.com",
+  "localEndpoint": "http://localhost:4173",
+  "loginUser": "247r1a66m4@cmrtc.ac.in",
   "loginPassword": "8309176874",
   "executionArgs": {
     "projectName": "Kushi hygieia",
     "projectPath": "c:\\Users\\abhis\\OneDrive\\Desktop\\Kushi hygieia",
     "testIds": [],
-    "additionalInstruction": "Test the core user flows: Login, Signup, Doctor search, and SOS emergency trigger as defined in the PRD. Ensure that the AI assistant functionality is also tested. Use the provided credentials in config.json.",
-    "serverMode": "development",
+    "additionalInstruction": "Use the doctor account to log in and ONLY test the Doctor UI. Do not test any patient-only routes. Ensure you test /doctor-dashboard and the features accessible to the doctor.",
+    "serverMode": "production",
     "envs": {
       "API_KEY": "sk-user-JsqpM_1HdODGqxEsMjr_BiPx6DsEclX0X5Ivl1hM0UebRhHWN3VJjAHJkohRsGnTbM3MNDKmtHwESVLs7P4X2j-P0XOz0kfKiJcKv4Zo8SP6wGNyPZgVBBJykhZayGz18f0"
     }
   },
-  "serverPort": 51310,
-  "proxy": "http://b9dcfeb9-58c9-48c1-a9b6-b025812d99c9:brgf53H2fAGU2IBtVkXElgzXhbZ9e29w@tun.testsprite.com:8080"
+  "serverPort": 55604,
+  "proxy": "http://a8773ac3-db0e-4ddf-8ee9-27ad2dbe6ed4:PIuAHkc84JFBKqgFoxMWkiBsDayQV18H@tun.testsprite.com:8080"
 }

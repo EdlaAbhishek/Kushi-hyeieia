@@ -28,6 +28,7 @@ export default function Profile() {
     }
 
     const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '')
+    const [editableEmail, setEditableEmail] = useState(user?.email || '')
     const [nameLoading, setNameLoading] = useState(false)
     const [nameMsg, setNameMsg] = useState('')
     const [profilePhotoUrl, setProfilePhotoUrl] = useState(user?.user_metadata?.profile_photo || null)
@@ -101,14 +102,23 @@ export default function Profile() {
 
     const handleNameUpdate = async (e) => {
         e.preventDefault()
-        if (!fullName.trim()) return
+        if (!fullName.trim() || !editableEmail.trim()) return
+        
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(editableEmail)) {
+            toast.error("Invalid email address format.")
+            return
+        }
+
         setNameLoading(true)
         try {
             const { error } = await supabase.auth.updateUser({
+                email: editableEmail.trim(),
                 data: { full_name: fullName.trim() }
             })
             if (error) throw error
-            toast.success('Name updated successfully!')
+            toast.success('Profile updated successfully! If email changed, please verify.')
         } catch (err) {
             toast.error(err.message)
         } finally {
@@ -228,7 +238,7 @@ export default function Profile() {
                     {/* ── Two-column forms grid ── */}
                     <div className="profile-forms-grid">
                         <div className="profile-card">
-                            <h3 className="profile-card-title"><User size={20} /> Update Name</h3>
+                            <h3 className="profile-card-title"><User size={20} /> Update Personal Info</h3>
                             <form onSubmit={handleNameUpdate}>
                                 <div className="form-group">
                                     <label className="form-label">Full Name</label>
@@ -240,10 +250,25 @@ export default function Profile() {
                                         placeholder="Enter your full name"
                                         aria-invalid={!!error}
                                         aria-label="Full Name"
+                                        required
                                     />
                                 </div>
+                                <div className="form-group">
+                                    <label className="form-label">Email Address</label>
+                                    <input
+                                        className="form-control"
+                                        type="email"
+                                        value={editableEmail}
+                                        onChange={e => setEditableEmail(e.target.value)}
+                                        placeholder="Enter your email"
+                                        aria-invalid={!!error}
+                                        aria-label="Email Address"
+                                        required
+                                    />
+                                    <small style={{ color: 'var(--text-muted)' }}>Updating email requires verification.</small>
+                                </div>
                                 <button className="btn btn-primary" type="submit" disabled={nameLoading}>
-                                    {nameLoading ? 'Saving...' : 'Save Name'}
+                                    {nameLoading ? 'Saving...' : 'Save Profile'}
                                 </button>
                             </form>
                         </div>

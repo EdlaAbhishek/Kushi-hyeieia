@@ -2,12 +2,11 @@ version: "2"
 type: frontend
 tech_stack:
   - JavaScript
-  - React (Vite)
+  - React
+  - Vite
+  - Supabase
   - Lucide React
   - Framer Motion
-  - Tailwind CSS
-  - Supabase
-  - Gemini AI
 routes:
   - path: /login
     file: src/pages/Login.jsx
@@ -20,72 +19,67 @@ routes:
   - path: /
     file: src/pages/Home.jsx
     auth_required: true
-    description: Home page
-  - path: /about
-    file: src/pages/About.jsx
-    auth_required: true
-    description: About page
-  - path: /contact
-    file: src/pages/Contact.jsx
-    auth_required: true
-    description: Contact page
-  - path: /hospitals
-    file: src/pages/Hospitals.jsx
-    auth_required: true
-    description: Hospitals search page
-  - path: /emergency
-    file: src/pages/Emergency.jsx
-    auth_required: true
-    description: Emergency SOS page
-  - path: /profile
-    file: src/pages/Profile.jsx
-    auth_required: true
-    description: User profile page
-  - path: /chat
-    file: src/pages/AiChat.jsx
-    auth_required: true
-    description: AI Healthcare Chatbot
+    description: Landng page for authenticated users
   - path: /dashboard
     file: src/pages/Dashboard.jsx
     auth_required: true
-    description: Patient dashboard
+    description: Patient dashboard overview
+  - path: /doctor-dashboard
+    file: src/pages/DoctorDashboard.jsx
+    auth_required: true
+    description: Doctor workbench and dashboard
+  - path: /chat
+    file: src/pages/AiChat.jsx
+    auth_required: true
+    description: AI health assistant chat
+  - path: /services
+    file: src/pages/Services.jsx
+    auth_required: true
+    description: Health services including prescription scanning
+  - path: /dashboard/symptom-checker
+    file: src/pages/SymptomChecker.jsx
+    auth_required: true
+    description: AI-powered symptom analysis
 features:
-  - name: User Authentication
-    description: Secure login and signup for patients and doctors.
+  - name: Prescription Scanning
+    description: Scan medical prescriptions using AI to extract medicine names and instructions.
     files:
-      - src/pages/Login.jsx
-      - src/pages/Signup.jsx
-      - src/services/AuthContext.jsx
-    entry_route: /login
+      - src/pages/Services.jsx
+      - api/analyze-prescription.js
+    entry_route: /services
     user_interactions:
-      - Fill email and password
-      - Click Login/Signup
+      - Upload a prescription image
+      - Wait for AI analysis results
+      - View extracted medicine list and instructions
     api_calls:
       - method: POST
-        endpoint: /api/auth/login
-    auth_required: false
-  - name: Doctor Search
-    description: Find doctors by specialization.
-    files:
-      - src/pages/Doctors.jsx
-    entry_route: /doctors
-    user_interactions:
-      - Search by name or category
+        endpoint: /api/analyze-prescription
     auth_required: true
-  - name: Emergency SOS
-    description: Trigger emergency alerts and find nearest hospitals.
-    files:
-      - src/pages/Emergency.jsx
-    entry_route: /emergency
-    user_interactions:
-      - Click SOS button
-    auth_required: true
-  - name: AI Assistant
-    description: AI powered healthcare advisor using Gemini.
+  - name: AI Health Chat
+    description: Conversational AI assistant for health queries.
     files:
       - src/pages/AiChat.jsx
+      - api/gemini-chat.js
     entry_route: /chat
     user_interactions:
-      - Type medical queries
+      - Type health question in chat box
+      - Send message and wait for AI response
+    api_calls:
+      - method: POST
+        endpoint: /api/gemini-chat
+    auth_required: true
+  - name: Symptom Checker
+    description: Guided AI diagnosis for reported symptoms.
+    files:
+      - src/pages/SymptomChecker.jsx
+      - api/gemini-symptom.js
+    entry_route: /dashboard/symptom-checker
+    user_interactions:
+      - Enter primary symptom
+      - Answer AI follow-up questions
+      - Review potential conditions and advice
+    api_calls:
+      - method: POST
+        endpoint: /api/gemini-symptom
     auth_required: true
 known_limitations: []

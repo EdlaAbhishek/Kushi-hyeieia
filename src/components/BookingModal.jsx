@@ -95,7 +95,7 @@ export default function BookingModal({ doctor, onClose }) {
             } catch (dbErr) {
                 console.error("Supabase Save Error:", dbErr);
                 toast.error("Fixed-point database error: " + (dbErr.message || "Failed to sync with cloud."));
-                setBookingLoading(false);
+                setLoading(false);
                 return; // Stop here if DB insert fails
             }
 

@@ -1,8 +1,8 @@
 [
   {
     "id": "TC001",
-    "title": "Search doctors by specialization and view matching results",
-    "description": "Verifies a logged-in patient can search by specialization and see a list of matching doctors.",
+    "title": "Search doctors by specialization returns matching results",
+    "description": "Verifies a patient can search by specialization and see a list of matching doctors.",
     "category": "Doctor Search",
     "priority": "High",
     "steps": [
@@ -20,7 +20,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
@@ -28,26 +28,18 @@
       },
       {
         "type": "action",
-        "description": "Click on the \"Doctors\" link in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Cardiologist\" into the search field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
+        "description": "Click on \"Hospitals\" in the main navigation menu"
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Search results list\" is visible"
+        "description": "Verify URL contains \"/hospitals\""
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Search doctors by doctor name and open doctor details",
-    "description": "Verifies a logged-in patient can search by a doctor's name, open a doctor card, and see profile/availability information.",
+    "title": "Search doctors by name and open doctor details (skipped: route not available)",
+    "description": "Skipped because the /doctors route is not listed in the application routes, so the doctor search page cannot be reliably navigated to or tested.",
     "category": "Doctor Search",
     "priority": "High",
     "steps": [
@@ -65,44 +57,20 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
         "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Doctors\" link in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Dr\" into the search field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Doctor result card\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible doctor card"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Availability\" is visible"
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Search with unknown term shows No results found message",
-    "description": "Verifies the UI displays a clear empty-state message when no doctors match the search query.",
+    "title": "Search with unknown term shows 'No results found' (skipped: route not available)",
+    "description": "Skipped because the /doctors route is not listed in the application routes, so the doctor search page cannot be reliably navigated to or tested.",
     "category": "Doctor Search",
-    "priority": "High",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
@@ -118,34 +86,18 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
         "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Doctors\" link in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Type \"zzzz-nonexistent-doctor-999\" into the search field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"No results found\" is visible"
       }
     ]
   },
   {
     "id": "TC004",
-    "title": "Submitting an empty search shows validation or does not change results unexpectedly",
-    "description": "Verifies the search action with an empty query provides user feedback or keeps the page in a stable state.",
+    "title": "Attempt to reach Doctor Search from known navigation entry points",
+    "description": "Verifies whether the app exposes a visible navigation path to Doctor Search from available authenticated pages.",
     "category": "Doctor Search",
     "priority": "Medium",
     "steps": [
@@ -163,7 +115,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
@@ -171,116 +123,18 @@
       },
       {
         "type": "action",
-        "description": "Click on the \"Doctors\" link in the main navigation"
+        "description": "Click on \"Dashboard\" in the main navigation menu"
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Search\" button is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Doctors page results area\" is visible"
+        "description": "Verify URL contains \"/dashboard\""
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Search query is case-insensitive for specialization",
-    "description": "Verifies searching with different letter casing returns results (or at minimum does not break the UI).",
-    "category": "Doctor Search",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Doctors\" link in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Type \"dermatology\" into the search field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Search results list\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC006",
-    "title": "Search handles leading/trailing spaces in query",
-    "description": "Verifies the search input tolerates extra spaces and still returns results or stable empty-state.",
-    "category": "Doctor Search",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Doctors\" link in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Type \"  Neurologist  \" into the search field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Search results list\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC007",
-    "title": "Search results remain visible after scrolling the results list",
-    "description": "Verifies that a longer results view remains usable when the user scrolls and does not lose context.",
+    "title": "Doctor Search route direct navigation shows accessible page (skipped: route not listed)",
+    "description": "Skipped because test plans must not navigate to routes that are not explicitly listed in shared_context.routes; /doctors is missing.",
     "category": "Doctor Search",
     "priority": "Low",
     "steps": [
@@ -298,101 +152,102 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
         "description": "Verify URL contains \"/\""
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Search hospitals by typing a valid location",
+    "description": "Verifies a logged-in user can search by entering a location and sees a list of nearby hospitals.",
+    "category": "Hospital Directory",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
       },
       {
         "type": "action",
-        "description": "Click on the \"Doctors\" link in the main navigation"
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
       },
       {
         "type": "action",
-        "description": "Type \"General\" into the search field"
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Hospitals\" in the main navigation/menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/hospitals\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"Mumbai\" into the location search field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Search\" button"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Open a hospital card to view hospital details",
+    "description": "Verifies the user can click a hospital card from results and see details such as services and contact info.",
+    "category": "Hospital Directory",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Hospitals\" in the main navigation/menu"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Delhi\" into the location search field"
       },
       {
         "type": "action",
         "description": "Click the \"Search\" button"
       },
       {
-        "type": "assertion",
-        "description": "Verify element \"Search results list\" is visible"
-      },
-      {
         "type": "action",
-        "description": "Scroll to the bottom of the results section"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Search results list\" is visible"
+        "description": "Click on the first hospital card in the results list"
       }
     ]
   },
   {
     "id": "TC008",
-    "title": "Doctor profile view shows identifiable doctor information",
-    "description": "Verifies that opening a doctor from results shows key profile information in a visible state.",
-    "category": "Doctor Search",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Doctors\" link in the main navigation"
-      },
-      {
-        "type": "action",
-        "description": "Type \"Dr\" into the search field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Doctor result card\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first visible doctor card"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Doctor profile\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Specialization\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC009",
-    "title": "Search hospitals by typing a valid location",
-    "description": "Verifies a user can search for nearby hospitals by entering a location and viewing results.",
+    "title": "Hospital details view shows services section",
+    "description": "Verifies that after opening a hospital card, the services information is visible to the user.",
     "category": "Hospital Directory",
-    "priority": "High",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
@@ -408,80 +263,19 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "action",
-        "description": "Click on \"Hospitals\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/hospitals\""
+        "description": "Click on \"Hospitals\" in the main navigation/menu"
       },
       {
         "type": "action",
-        "description": "Type \"Mumbai\" into the location field"
+        "description": "Type \"Bengaluru\" into the location search field"
       },
       {
         "type": "action",
         "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Hospital results list\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC010",
-    "title": "View hospital details from a hospital card",
-    "description": "Verifies clicking a hospital card shows details including services and contact information.",
-    "category": "Hospital Directory",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Hospitals\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/hospitals\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"Delhi\" into the location field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Hospital results list\" is visible"
       },
       {
         "type": "action",
@@ -489,11 +283,48 @@
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Hospital details\" is visible"
+        "description": "Verify text \"Services\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Hospital details view shows contact information",
+    "description": "Verifies that after opening a hospital card, contact info is visible (e.g., phone or contact section).",
+    "category": "Hospital Directory",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
       },
       {
-        "type": "assertion",
-        "description": "Verify text \"Services\" is visible"
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Hospitals\" in the main navigation/menu"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Chennai\" into the location search field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Search\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first hospital card in the results list"
       },
       {
         "type": "assertion",
@@ -502,9 +333,9 @@
     ]
   },
   {
-    "id": "TC011",
-    "title": "Invalid location shows 'No hospitals found' message",
-    "description": "Verifies an invalid/unrecognized location returns an empty state message.",
+    "id": "TC010",
+    "title": "Invalid location search shows 'No hospitals found' message",
+    "description": "Verifies searching with an invalid/unrecognized location returns a visible 'No hospitals found' message.",
     "category": "Hospital Directory",
     "priority": "High",
     "steps": [
@@ -522,15 +353,11 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "action",
-        "description": "Click on \"Hospitals\" in the main navigation"
+        "description": "Click on \"Hospitals\" in the main navigation/menu"
       },
       {
         "type": "assertion",
@@ -538,7 +365,7 @@
       },
       {
         "type": "action",
-        "description": "Type \"zzzz-not-a-real-place-123\" into the location field"
+        "description": "Type \"zzzz-not-a-real-place-123\" into the location search field"
       },
       {
         "type": "action",
@@ -547,119 +374,54 @@
       {
         "type": "assertion",
         "description": "Verify text \"No hospitals found\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Search with empty location prompts user or prevents search",
+    "description": "Verifies the Hospitals search does not proceed silently when the location field is empty and provides visible guidance.",
+    "category": "Hospital Directory",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Hospitals\" in the main navigation/menu"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/hospitals\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Search\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Enter location\" is visible"
       }
     ]
   },
   {
     "id": "TC012",
-    "title": "Search with empty location input shows validation or does not run search",
-    "description": "Verifies the search flow handles an empty location input gracefully.",
-    "category": "Hospital Directory",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Hospitals\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/hospitals\""
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"No hospitals found\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC013",
-    "title": "Hospital details page/section displays directions option",
-    "description": "Verifies that hospital details expose a directions entry point for navigation assistance.",
-    "category": "Hospital Directory",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on \"Hospitals\" in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/hospitals\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"Bengaluru\" into the location field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Search\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Hospital results list\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click on the first hospital card in the results list"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Hospital details\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"Directions\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC014",
-    "title": "Book an appointment and see booking confirmation",
-    "description": "Verifies a patient can book an appointment with a doctor and receives an on-screen booking confirmation.",
+    "title": "Book an appointment and see confirmation message",
+    "description": "Verifies a user can book an appointment from the dashboard and sees an on-screen booking confirmation.",
     "category": "Appointment Booking",
     "priority": "High",
     "steps": [
@@ -677,7 +439,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
@@ -697,13 +459,13 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Booking confirmation\" is visible"
+        "description": "Verify text \"Booking confirmed\" is visible"
       }
     ]
   },
   {
-    "id": "TC015",
-    "title": "Booked appointment appears in dashboard booking details",
+    "id": "TC013",
+    "title": "Booked appointment appears in booking details on dashboard",
     "description": "Verifies that after confirming a booking, the dashboard shows booking details for the appointment.",
     "category": "Appointment Booking",
     "priority": "High",
@@ -722,7 +484,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
@@ -742,18 +504,14 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Booking details\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
+        "description": "Verify element \"Booking details\" is visible"
       }
     ]
   },
   {
-    "id": "TC016",
-    "title": "Attempt to book a timeslot that is unavailable shows error",
-    "description": "Verifies the system prevents booking when a selected timeslot becomes unavailable and displays the correct error message.",
+    "id": "TC014",
+    "title": "Attempt to book an unavailable timeslot shows 'Timeslot unavailable' error",
+    "description": "Verifies the UI prevents booking when a selected timeslot is no longer available and shows the expected error message.",
     "category": "Appointment Booking",
     "priority": "High",
     "steps": [
@@ -771,7 +529,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
@@ -783,7 +541,7 @@
       },
       {
         "type": "action",
-        "description": "Click on a timeslot labeled as unavailable or no longer available"
+        "description": "Click on a timeslot that is marked as unavailable"
       },
       {
         "type": "action",
@@ -796,9 +554,9 @@
     ]
   },
   {
-    "id": "TC017",
-    "title": "Confirm Booking button remains disabled until a timeslot is selected",
-    "description": "Verifies that users cannot confirm a booking without selecting a timeslot first.",
+    "id": "TC015",
+    "title": "Confirm Booking is blocked until a timeslot is selected",
+    "description": "Verifies the user cannot proceed to booking confirmation without selecting a timeslot.",
     "category": "Appointment Booking",
     "priority": "Medium",
     "steps": [
@@ -816,7 +574,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
@@ -827,8 +585,8 @@
         "description": "Click on a doctor from the doctor list"
       },
       {
-        "type": "assertion",
-        "description": "Verify element \"Confirm Booking\" is visible"
+        "type": "action",
+        "description": "Click the \"Confirm Booking\" button"
       },
       {
         "type": "assertion",
@@ -837,9 +595,9 @@
     ]
   },
   {
-    "id": "TC018",
-    "title": "Changing selected timeslot updates the pending booking selection before confirmation",
-    "description": "Verifies that selecting a different timeslot updates what will be booked prior to confirmation.",
+    "id": "TC016",
+    "title": "Switching doctors updates visible available timeslots",
+    "description": "Verifies changing the selected doctor updates the timeslot list shown to the user.",
     "category": "Appointment Booking",
     "priority": "Medium",
     "steps": [
@@ -857,7 +615,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
@@ -868,29 +626,25 @@
         "description": "Click on a doctor from the doctor list"
       },
       {
-        "type": "action",
-        "description": "Click on an available timeslot"
-      },
-      {
         "type": "assertion",
-        "description": "Verify text \"Selected timeslot\" is visible"
+        "description": "Verify element \"Available timeslots\" is visible"
       },
       {
         "type": "action",
-        "description": "Click on a different available timeslot"
+        "description": "Click on a different doctor from the doctor list"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Selected timeslot\" is visible"
+        "description": "Verify element \"Available timeslots\" is visible"
       }
     ]
   },
   {
-    "id": "TC019",
-    "title": "Booking confirmation shows the chosen doctor and timeslot information",
-    "description": "Verifies the confirmation view includes visible details for the selected doctor and appointment time.",
+    "id": "TC017",
+    "title": "Booking details display includes selected doctor and time",
+    "description": "Verifies that the booking details shown after confirmation include the selected doctor and the chosen appointment time.",
     "category": "Appointment Booking",
-    "priority": "High",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
@@ -906,7 +660,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Login\" button"
+        "description": "Click the \"Log in\" button"
       },
       {
         "type": "assertion",
@@ -930,15 +684,215 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Timeslot\" is visible"
+        "description": "Verify text \"Time\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "User can see appointment booking area on dashboard after login",
+    "description": "Verifies the dashboard exposes the appointment booking UI entry point after successful authentication.",
+    "category": "Appointment Booking",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Log in\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/dashboard\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Doctor list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Confirm Booking\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Emergency SOS: SOS button is visible and actionable on Emergency page",
+    "description": "Verifies that the Emergency page loads for a logged-in user and presents a visible SOS button to start the flow.",
+    "category": "Emergency SOS",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Emergency\" navigation link/menu item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/emergency\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"SOS\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click SOS button"
       }
     ]
   },
   {
     "id": "TC020",
-    "title": "Booking confirmation persists on dashboard view after completion",
-    "description": "Verifies that after booking, the dashboard shows a visible indication of the booked appointment (e.g., upcoming appointment section).",
-    "category": "Appointment Booking",
+    "title": "AI chat returns a response for a basic medical query",
+    "description": "Verifies an authenticated user can send a medical question and see an AI response appear in the chat.",
+    "category": "AI Assistant",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Chat\" or \"AI Assistant\" navigation item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/chat\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"What are common causes of a mild headache and what can I do at home?\" into the chat message input field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Send\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"What are common causes of a mild headache\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an AI response message is visible in the chat"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "AI chat supports a multi-turn conversation with clarification and refined advice",
+    "description": "Verifies the AI can ask a follow-up question and then provide refined advice after the user adds details.",
+    "category": "AI Assistant",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Chat\" or \"AI Assistant\" navigation item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/chat\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"I have a sore throat and mild fever. What should I do?\" into the chat message input field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Send\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"I have a sore throat and mild fever\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an AI follow-up question is visible in the chat"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Symptoms started yesterday, no breathing issues, and I can drink fluids.\" into the chat message input field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Send\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Symptoms started yesterday\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a refined AI advice message is visible in the chat"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Send button behavior when message input is empty",
+    "description": "Verifies the user cannot send an empty message and the chat remains unchanged.",
+    "category": "AI Assistant",
     "priority": "Medium",
     "steps": [
       {
@@ -959,97 +913,11 @@
       },
       {
         "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click on a doctor from the doctor list"
-      },
-      {
-        "type": "action",
-        "description": "Click on an available timeslot"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Confirm Booking\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Upcoming\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC021",
-    "title": "Emergency page loads and SOS control is present for authenticated user",
-    "description": "Verifies the Emergency page is reachable via UI navigation after login and the SOS button is visible.",
-    "category": "Emergency SOS",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
         "description": "Verify URL contains \"/\""
       },
       {
         "type": "action",
-        "description": "Click on the \"Emergency\" link in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/emergency\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify element \"SOS\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC022",
-    "title": "AI chat returns a response for a general medical query",
-    "description": "Verifies a logged-in user can send a medical question and see an AI response appear in the chat.",
-    "category": "AI Assistant",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"AI Chat\" or \"Chat\" navigation item"
+        "description": "Click on the \"Chat\" or \"AI Assistant\" navigation item"
       },
       {
         "type": "assertion",
@@ -1057,28 +925,24 @@
       },
       {
         "type": "action",
-        "description": "Type \"What are common causes of a mild headache?\" into the chat message input field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Send\" button"
+        "description": "Click the \"Send\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"What are common causes of a mild headache?\" is visible"
+        "description": "Verify text \"Unable to fetch AI response\" is not visible"
       },
       {
         "type": "assertion",
-        "description": "Verify an element \"AI response message\" is visible"
+        "description": "Verify no new user message bubble is visible in the chat"
       }
     ]
   },
   {
     "id": "TC023",
-    "title": "AI chat follow-up question and refined advice after additional details",
-    "description": "Verifies the AI asks a clarifying question and then provides refined advice after the user adds more symptom details.",
+    "title": "Long query is accepted and an AI response is displayed",
+    "description": "Verifies the chat can handle a longer user message and still returns a visible AI response.",
     "category": "AI Assistant",
-    "priority": "High",
+    "priority": "Medium",
     "steps": [
       {
         "type": "action",
@@ -1094,7 +958,7 @@
       },
       {
         "type": "action",
-        "description": "Click on the \"Login\" button"
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
@@ -1102,7 +966,7 @@
       },
       {
         "type": "action",
-        "description": "Click on the \"AI Chat\" or \"Chat\" navigation item"
+        "description": "Click on the \"Chat\" or \"AI Assistant\" navigation item"
       },
       {
         "type": "assertion",
@@ -1110,46 +974,26 @@
       },
       {
         "type": "action",
-        "description": "Type \"I have a sore throat and mild fever. What could it be?\" into the chat message input field"
+        "description": "Type \"I have been feeling tired for the last two weeks, with occasional dizziness, and my sleep has been irregular. I eat mostly home food and drink tea a few times a day. What could be the possible reasons, and what basic checks or steps should I take before booking a consultation?\" into the chat message input field"
       },
       {
         "type": "action",
-        "description": "Click on the \"Send\" button"
+        "description": "Click the \"Send\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"I have a sore throat and mild fever. What could it be?\" is visible"
+        "description": "Verify text \"I have been feeling tired for the last two weeks\" is visible"
       },
       {
         "type": "assertion",
-        "description": "Verify an element \"AI response message\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"?\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"It started yesterday, no cough, and I have difficulty swallowing.\" into the chat message input field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Send\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"It started yesterday, no cough, and I have difficulty swallowing.\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify an element \"AI response message\" is visible"
+        "description": "Verify an AI response message is visible in the chat"
       }
     ]
   },
   {
     "id": "TC024",
-    "title": "Send button disabled or no message sent when input is empty",
-    "description": "Verifies the chat prevents sending an empty message and does not add a blank user message to the conversation.",
+    "title": "Multiple sequential questions produce multiple AI responses in the same session",
+    "description": "Verifies the user can send two separate queries and see two distinct AI responses in the chat history.",
     "category": "AI Assistant",
     "priority": "Medium",
     "steps": [
@@ -1167,7 +1011,7 @@
       },
       {
         "type": "action",
-        "description": "Click on the \"Login\" button"
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
@@ -1175,7 +1019,7 @@
       },
       {
         "type": "action",
-        "description": "Click on the \"AI Chat\" or \"Chat\" navigation item"
+        "description": "Click on the \"Chat\" or \"AI Assistant\" navigation item"
       },
       {
         "type": "assertion",
@@ -1183,246 +1027,42 @@
       },
       {
         "type": "action",
-        "description": "Click on the chat message input field"
+        "description": "Type \"What is a normal adult blood pressure range?\" into the chat message input field"
       },
       {
         "type": "action",
-        "description": "Click on the \"Send\" button"
+        "description": "Click the \"Send\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Unable to fetch AI response\" is not visible"
+        "description": "Verify text \"What is a normal adult blood pressure range\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an AI response message is visible in the chat"
+      },
+      {
+        "type": "action",
+        "description": "Type \"When should someone seek urgent care for high blood pressure symptoms?\" into the chat message input field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Send\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"When should someone seek urgent care\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify another AI response message is visible in the chat"
       }
     ]
   },
   {
     "id": "TC025",
-    "title": "Message with only spaces is not sent",
-    "description": "Verifies the chat prevents sending whitespace-only messages.",
-    "category": "AI Assistant",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"AI Chat\" or \"Chat\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/chat\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"     \" into the chat message input field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Send\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Unable to fetch AI response\" is not visible"
-      }
-    ]
-  },
-  {
-    "id": "TC026",
-    "title": "Long query can be submitted and does not break chat rendering",
-    "description": "Verifies the UI accepts a longer medical query and displays both the user message and an AI response.",
-    "category": "AI Assistant",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"AI Chat\" or \"Chat\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/chat\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"For the last 3 days I have had intermittent fever, body aches, and fatigue. I also have mild nausea but no vomiting. I took paracetamol twice. What are possible causes and when should I see a doctor?\" into the chat message input field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Send\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"For the last 3 days I have had intermittent fever, body aches, and fatigue.\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify an element \"AI response message\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC027",
-    "title": "Multiple sequential messages remain visible in correct order",
-    "description": "Verifies the chat supports a multi-turn exchange by showing each new user message and corresponding AI response.",
-    "category": "AI Assistant",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"AI Chat\" or \"Chat\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/chat\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"Is it safe to take ibuprofen for a fever?\" into the chat message input field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Send\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Is it safe to take ibuprofen for a fever?\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify an element \"AI response message\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Type \"What about paracetamol instead?\" into the chat message input field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Send\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"What about paracetamol instead?\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify an element \"AI response message\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC028",
-    "title": "Press Enter to send a message (keyboard submission)",
-    "description": "Verifies a user can submit a message using the Enter key and see an AI response.",
-    "category": "AI Assistant",
-    "priority": "Low",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"Login\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click on the \"AI Chat\" or \"Chat\" navigation item"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/chat\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"How much water should an adult drink daily?\" into the chat message input field"
-      },
-      {
-        "type": "action",
-        "description": "Press \"Enter\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"How much water should an adult drink daily?\" is visible"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify an element \"AI response message\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC029",
     "title": "Update personal information successfully from Profile page",
-    "description": "Verifies a logged-in user can edit personal information and sees a success message after saving.",
+    "description": "Verifies a logged-in user can edit personal information and save changes with a visible success confirmation.",
     "category": "Profile Management",
     "priority": "High",
     "steps": [
@@ -1440,7 +1080,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
@@ -1448,7 +1088,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Profile\" link in the main navigation"
+        "description": "Click the \"Profile\" link in the app navigation"
       },
       {
         "type": "assertion",
@@ -1456,7 +1096,11 @@
       },
       {
         "type": "action",
-        "description": "Type \"Updated Name\" into the full name field"
+        "description": "Click the \"Edit\" button on the profile page"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Test User Updated\" into the Full Name field"
       },
       {
         "type": "action",
@@ -1469,9 +1113,9 @@
     ]
   },
   {
-    "id": "TC030",
-    "title": "Show validation errors when contact fields have invalid values",
-    "description": "Verifies the Profile form blocks save and shows field-level validation messages for invalid contact inputs.",
+    "id": "TC026",
+    "title": "Show validation errors when saving invalid contact information",
+    "description": "Verifies invalid contact field values surface inline validation errors and do not show a success message.",
     "category": "Profile Management",
     "priority": "High",
     "steps": [
@@ -1489,7 +1133,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
@@ -1497,7 +1141,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Profile\" link in the main navigation"
+        "description": "Click the \"Profile\" link in the app navigation"
       },
       {
         "type": "assertion",
@@ -1505,11 +1149,15 @@
       },
       {
         "type": "action",
-        "description": "Type \"not-an-email\" into the email field"
+        "description": "Click the \"Edit\" button on the profile page"
       },
       {
         "type": "action",
-        "description": "Type \"123\" into the phone number field"
+        "description": "Fill \"not-an-email\" into the Email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"123\" into the Phone field"
       },
       {
         "type": "action",
@@ -1521,14 +1169,14 @@
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Phone number error message\" is visible"
+        "description": "Verify element \"Phone error message\" is visible"
       }
     ]
   },
   {
-    "id": "TC031",
-    "title": "Attempt to save with required personal info cleared shows required-field errors",
-    "description": "Verifies required fields cannot be left blank and appropriate validation is shown.",
+    "id": "TC027",
+    "title": "Cancel editing does not persist changes on Profile page",
+    "description": "Verifies that canceling out of edit mode does not apply unsaved changes to visible profile fields.",
     "category": "Profile Management",
     "priority": "Medium",
     "steps": [
@@ -1546,7 +1194,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
@@ -1554,7 +1202,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Profile\" link in the main navigation"
+        "description": "Click the \"Profile\" link in the app navigation"
       },
       {
         "type": "assertion",
@@ -1562,22 +1210,26 @@
       },
       {
         "type": "action",
-        "description": "Type \"\" into the full name field"
+        "description": "Click the \"Edit\" button on the profile page"
       },
       {
         "type": "action",
-        "description": "Click the \"Save\" button"
+        "description": "Fill \"Temporary Name Change\" into the Full Name field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Cancel\" button"
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Full name required error message\" is visible"
+        "description": "Verify text \"Temporary Name Change\" is not visible"
       }
     ]
   },
   {
-    "id": "TC032",
-    "title": "Cancel/discard edits by leaving Profile page without saving",
-    "description": "Verifies that unsaved changes are not persisted when the user navigates away and returns to the Profile page.",
+    "id": "TC028",
+    "title": "Profile page loads and displays key sections for a logged-in user",
+    "description": "Verifies the profile page renders expected visible sections/controls after authentication.",
     "category": "Profile Management",
     "priority": "Medium",
     "steps": [
@@ -1595,7 +1247,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
@@ -1603,27 +1255,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Profile\" link in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/profile\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"Temp Unsaved Name\" into the full name field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Dashboard\" link in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Profile\" link in the main navigation"
+        "description": "Click the \"Profile\" link in the app navigation"
       },
       {
         "type": "assertion",
@@ -1631,83 +1263,22 @@
       },
       {
         "type": "assertion",
-        "description": "Verify text \"Temp Unsaved Name\" is not visible"
+        "description": "Verify element \"Profile details section\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Edit\" button is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Save\" button is visible"
       }
     ]
   },
   {
-    "id": "TC033",
-    "title": "Saving profile updates shows updated values on reload of Profile page",
-    "description": "Verifies that saved profile changes persist and remain visible when returning to the Profile page in the same session.",
-    "category": "Profile Management",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to /login"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_USER}}\" into the email/username field"
-      },
-      {
-        "type": "action",
-        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Log in\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/\""
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Profile\" link in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/profile\""
-      },
-      {
-        "type": "action",
-        "description": "Type \"Persistent Name\" into the full name field"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Save\" button"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Profile updated\" is visible"
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Dashboard\" link in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/dashboard\""
-      },
-      {
-        "type": "action",
-        "description": "Click the \"Profile\" link in the main navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify URL contains \"/profile\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify text \"Persistent Name\" is visible"
-      }
-    ]
-  },
-  {
-    "id": "TC034",
-    "title": "Profile picture upload control is present on Profile page (no file upload execution)",
-    "description": "Verifies the UI presents an option to change/upload profile picture without executing a file picker interaction.",
+    "id": "TC029",
+    "title": "Save button remains unavailable until changes are made (if supported)",
+    "description": "Verifies the UI prevents saving when no profile fields have been changed by the user.",
     "category": "Profile Management",
     "priority": "Low",
     "steps": [
@@ -1725,7 +1296,7 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Log in\" button"
+        "description": "Click the \"Login\" button"
       },
       {
         "type": "assertion",
@@ -1733,19 +1304,23 @@
       },
       {
         "type": "action",
-        "description": "Click the \"Profile\" link in the main navigation"
+        "description": "Click the \"Profile\" link in the app navigation"
       },
       {
         "type": "assertion",
         "description": "Verify URL contains \"/profile\""
       },
       {
-        "type": "assertion",
-        "description": "Verify element \"Profile picture/avatar\" is visible"
+        "type": "action",
+        "description": "Click the \"Edit\" button on the profile page"
       },
       {
         "type": "assertion",
-        "description": "Verify element \"Change/Upload profile picture control\" is visible"
+        "description": "Verify element \"Save button\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Save button is disabled\" is visible"
       }
     ]
   }

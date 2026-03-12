@@ -113,7 +113,7 @@ export default function Hospitals() {
                         <input
                             type="text"
                             className="form-control"
-                            placeholder="Search hospitals by name or city..."
+                            placeholder="Enter location or hospital name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />

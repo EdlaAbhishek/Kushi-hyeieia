@@ -57,7 +57,7 @@ export default function AiChat() {
             setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
         } catch (err) {
             console.error("AI Error:", err)
-            setMessages(prev => [...prev, { role: 'assistant', content: `AI Error: ${err.message}` }])
+            setMessages(prev => [...prev, { role: 'assistant', content: `Unable to fetch AI response: ${err.message}`, isError: true }])
         } finally {
             setLoading(false)
         }
@@ -89,6 +89,21 @@ export default function AiChat() {
                                             <p key={j}>{line}</p>
                                         ))}
                                     </div>
+                                    {msg.isError && (
+                                        <button 
+                                            className="btn btn-outline" 
+                                            style={{ marginTop: '0.5rem', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+                                            onClick={() => {
+                                                const lastUserMsg = messages.slice(0, i).reverse().find(m => m.role === 'user');
+                                                if (lastUserMsg) {
+                                                    setInput(lastUserMsg.content);
+                                                    setMessages(messages.slice(0, i));
+                                                }
+                                            }}
+                                        >
+                                            Retry
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                             {loading && (
