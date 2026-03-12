@@ -18,10 +18,13 @@ export default async function handler(req, res) {
         }
 
         const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-        // Build conversation history for Gemini
-        const systemInstruction = `You are Khushi Care AI, a helpful, empathetic healthcare assistant for the Khushi Hygieia platform — an Indian healthcare app serving patients in English, Hindi, and Telugu.
+        // System instruction must be passed to getGenerativeModel, NOT to startChat
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-1.5-flash',
+            systemInstruction: {
+                parts: [{
+                    text: `You are Khushi Care AI, a helpful, empathetic healthcare assistant for the Khushi Hygieia platform — an Indian healthcare app serving patients in English, Hindi, and Telugu.
 
 Rules:
 - Provide general health guidance, wellness tips, and first-aid information.
@@ -30,6 +33,9 @@ Rules:
 - Be warm, supportive, and culturally sensitive to Indian healthcare context.
 - If someone describes an emergency (chest pain, difficulty breathing, severe bleeding), urgently advise them to call 108 (Indian emergency) or visit the nearest hospital immediately.
 - Keep responses concise (under 300 words) unless the user asks for detailed information.`
+                }]
+            }
+        })
 
         // Convert messages to Gemini chat format
         const chatHistory = []
@@ -44,7 +50,6 @@ Rules:
 
             // Gemini history MUST strictly alternate between user and model
             if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === mappedRole) {
-                // Merge consecutive messages of the same role
                 chatHistory[chatHistory.length - 1].parts[0].text += '\n\n' + msg.content
                 continue
             }
@@ -55,10 +60,7 @@ Rules:
             })
         }
 
-        const chat = model.startChat({
-            history: chatHistory,
-            systemInstruction
-        })
+        const chat = model.startChat({ history: chatHistory })
 
         // Send the latest user message
         const latestMessage = messages[messages.length - 1]
