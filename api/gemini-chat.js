@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
         // System instruction must be passed to getGenerativeModel, NOT to startChat
         const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-flash-latest',
+            model: 'gemini-1.5-flash',
             systemInstruction: {
                 parts: [{
                     text: `You are Khushi Care AI, a helpful, empathetic healthcare assistant for the Khushi Hygieia platform — an Indian healthcare app serving patients in English, Hindi, and Telugu.
