@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight, ShieldCheck } from 'lucide-react'
+import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight } from 'lucide-react'
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
@@ -21,7 +21,6 @@ export default function Doctors() {
     const [searchQuery, setSearchQuery] = useState('')
     const [loading, setLoading] = useState(true)
     const [fetchError, setFetchError] = useState(null)
-    const [careMode, setCareMode] = useState('standard') // 'standard' or 'women'
 
     // Booking states
     const [showBooking, setShowBooking] = useState(false)
@@ -93,14 +92,8 @@ export default function Doctors() {
                 (doc.specialty || '').toLowerCase().includes(query)
             )
         }
-        // Women's Privacy Mode: prioritize female doctors and women-friendly clinics
-        if (careMode === 'women') {
-            result = result.filter(doc =>
-                (doc.gender || '').toLowerCase() === 'female' || doc.women_friendly === true
-            )
-        }
         return result
-    }, [doctors, selectedSpecialty, searchQuery, careMode])
+    }, [doctors, selectedSpecialty, searchQuery])
 
     return (
         <>
@@ -109,33 +102,6 @@ export default function Doctors() {
                 description="5,000+ verified specialists across India."
             />
 
-            {/* ─── Care Preferences ─── */}
-            <SectionContainer>
-                <div className="care-preference-bar">
-                    <span className="care-label">
-                        <ShieldCheck size={18} /> Care Preferences
-                    </span>
-                    <div className="care-toggle-group">
-                        <button
-                            className={`care-toggle-btn ${careMode === 'standard' ? 'active' : ''}`}
-                            onClick={() => setCareMode('standard')}
-                        >
-                            🏥 Standard Care
-                        </button>
-                        <button
-                            className={`care-toggle-btn ${careMode === 'women' ? 'active' : ''}`}
-                            onClick={() => setCareMode('women')}
-                        >
-                            🛡️ Women's Privacy Mode
-                        </button>
-                    </div>
-                    {careMode === 'women' && (
-                        <span style={{ fontSize: '0.78rem', color: '#9D174D', fontWeight: 500 }}>
-                            Showing women-friendly doctors and clinics
-                        </span>
-                    )}
-                </div>
-            </SectionContainer>
 
             {/* ─── Specialty Filter ─── */}
             <SectionContainer>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { toast } from 'react-hot-toast'
-import { FileText, Eye, Clock, ShieldCheck, UserCheck, RefreshCw, AlertCircle, Lock, Send } from 'lucide-react'
+import { FileText, Eye, Clock, UserCheck, RefreshCw, AlertCircle, Lock, Send } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
@@ -39,12 +39,6 @@ export default function DoctorPatientRecords() {
     const [recordsLoading, setRecordsLoading] = useState(false)
     const [fetchError, setFetchError] = useState(null)
     const [recordsError, setRecordsError] = useState(null)
-
-    // Women Privacy Mode
-    const [privacyMode, setPrivacyMode] = useState(false)
-
-    // Hidden count tracking
-    const [hiddenCount, setHiddenCount] = useState(0)
 
     // Access request loading
     const [requestingAccess, setRequestingAccess] = useState(false)
@@ -107,25 +101,12 @@ export default function DoctorPatientRecords() {
                 .eq('patient_id', patientId)
                 .order('uploaded_at', { ascending: false })
 
-            // Women Privacy Mode: filter using the sensitive boolean column
-            if (privacyMode) {
-                query = query.eq('sensitive', false)
-            }
-
             const { data, error } = await query
             if (error) throw error
 
             setRecords(data || [])
 
-            // Calculate hidden count when privacy mode is on
-            if (privacyMode) {
-                const { count } = await supabase
-                    .from('patient_records')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('patient_id', patientId)
-                    .eq('sensitive', true)
-                setHiddenCount(count || 0)
-            }
+
         } catch (err) {
             console.error('Fetch records error:', err)
             setRecordsError('Unable to load patient records. Please retry.')
@@ -134,12 +115,6 @@ export default function DoctorPatientRecords() {
         }
     }
 
-    // Re-load records when privacy mode changes
-    useEffect(() => {
-        if (selectedPatientId) {
-            loadPatientRecords(selectedPatientId)
-        }
-    }, [privacyMode])
 
     const requestSensitiveAccess = async () => {
         if (!selectedPatientId) return
@@ -225,34 +200,6 @@ export default function DoctorPatientRecords() {
                 description="View medical records shared by your patients."
             />
 
-            {/* Women Privacy Mode Toggle */}
-            <SectionContainer>
-                <div className="care-preference-bar" style={{ background: privacyMode ? 'linear-gradient(135deg, #FDF2F8, #FCE7F3)' : '#F8FAFC', borderColor: privacyMode ? '#FBCFE8' : 'var(--border)' }}>
-                    <span className="care-label" style={{ color: privacyMode ? '#831843' : 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <ShieldCheck size={18} /> Women Privacy Mode
-                        <InfoTooltip text="Protects sensitive medical records such as reproductive or sexual health information. Only general records are visible unless the patient grants access." />
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div className="toggle-switch">
-                            <input
-                                type="checkbox"
-                                checked={privacyMode}
-                                onChange={(e) => setPrivacyMode(e.target.checked)}
-                                id="privacy-mode-toggle"
-                            />
-                            <span className="toggle-slider" onClick={() => setPrivacyMode(!privacyMode)}></span>
-                        </div>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: privacyMode ? '#9D174D' : 'var(--text-muted)' }}>
-                            {privacyMode ? 'ON' : 'OFF'}
-                        </span>
-                    </div>
-                    {privacyMode && (
-                        <span style={{ fontSize: '0.78rem', color: '#9D174D', fontWeight: 500 }}>
-                            Sensitive health information is hidden by patient privacy settings
-                        </span>
-                    )}
-                </div>
-            </SectionContainer>
 
             <SectionContainer>
                 <div>

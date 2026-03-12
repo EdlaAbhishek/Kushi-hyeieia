@@ -61,7 +61,7 @@ export default function DoctorDashboard() {
 
             const { data, error } = await supabase
                 .from('appointments')
-                .select('*')
+                .select('*, patients:patient_id(full_name, email)')
                 .eq('doctor_id', user.id)
                 .order('appointment_date', { ascending: false })
             if (error) throw error
@@ -488,30 +488,30 @@ export default function DoctorDashboard() {
                     )}
 
                     {!loading && appointments.length > 0 && (
-                        <div className="doctor-table-wrap">
+                        <div className="doctor-table-wrap" style={{ overflowX: 'auto' }}>
                             <DataTable>
                                 <thead>
-                                    <tr>
-                                        <th>Patient</th>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Urgency / Type</th>
-                                        <th>Status</th>
-                                        <th>Notes</th>
-                                        <th>Actions</th>
+                                    <tr style={{ backgroundColor: 'var(--surface)', borderBottom: '2px solid var(--border)' }}>
+                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Patient</th>
+                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Date</th>
+                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Time</th>
+                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Urgency / Type</th>
+                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Status</th>
+                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Notes</th>
+                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {appointments.map(appt => {
-                                        const displayName = appt.patient_name || appt.patient_email || 'Unknown Patient';
+                                        const displayName = appt.patients?.full_name || appt.patients?.email || appt.patient_name || appt.patient_email || 'Patient';
                                         return (
-                                            <tr key={appt.id}>
-                                                <td style={{ fontWeight: 600 }}>
+                                            <tr key={appt.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                                                <td style={{ padding: '0.75rem 1rem', fontWeight: 600, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                                                     {displayName}
                                                 </td>
-                                                <td>{formatDate(appt.appointment_date)}</td>
-                                                <td>{formatTime(appt.appointment_time)}</td>
-                                                <td>
+                                                <td style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>{formatDate(appt.appointment_date)}</td>
+                                                <td style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>{formatTime(appt.appointment_time)}</td>
+                                                <td style={{ padding: '0.75rem 1rem', verticalAlign: 'middle' }}>
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                                         {appt.urgency && (
                                                             <span style={{
@@ -532,12 +532,12 @@ export default function DoctorDashboard() {
                                                         }
                                                     </div>
                                                 </td>
-                                                <td>
+                                                <td style={{ padding: '0.75rem 1rem', verticalAlign: 'middle' }}>
                                                     <span className={`status-badge ${getStatusClass(appt.status)}`}>
                                                         {(appt.status || 'pending').charAt(0).toUpperCase() + (appt.status || 'pending').slice(1)}
                                                     </span>
                                                 </td>
-                                                <td>
+                                                <td style={{ padding: '0.75rem 1rem', verticalAlign: 'middle' }}>
                                                     {appt.notes ? (
                                                         <span className="notes-preview" title={appt.notes} onClick={() => openNotes(appt)} style={{ cursor: 'pointer', color: 'var(--primary)', fontSize: '0.82rem' }}>
                                                             📝 {appt.notes.slice(0, 20)}{appt.notes.length > 20 ? '...' : ''}
@@ -552,7 +552,7 @@ export default function DoctorDashboard() {
                                                         </button>
                                                     )}
                                                 </td>
-                                                <td>
+                                                <td style={{ padding: '0.75rem 1rem', verticalAlign: 'middle' }}>
                                                     <div className="doctor-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                                         {appt.status === 'pending' && (
                                                             <>
