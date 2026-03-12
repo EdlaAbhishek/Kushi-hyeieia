@@ -125,7 +125,7 @@ export default async function handler(req, res) {
         // ── 2. Call Gemini 1.5 Pro (complex prescription analysis) ──
         console.log('Sending to Gemini 1.5 Pro...')
         const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' })
 
         const prompt = `You are an expert medical prescription analyzer. Carefully analyze the provided prescription image.
 
