@@ -231,9 +231,14 @@ export default function HealthVault() {
 
     const handleViewRecord = async (filePath) => {
         try {
+            let actualPath = filePath
+            if (filePath.includes('/medical-records/')) {
+                actualPath = filePath.split('/medical-records/')[1]
+            }
+
             const { data, error } = await supabase.storage
                 .from('medical-records')
-                .createSignedUrl(filePath, 3600) // 1 hour expiry
+                .createSignedUrl(actualPath, 3600) // 1 hour expiry
             
             if (error) throw error
             if (data?.signedUrl) {
