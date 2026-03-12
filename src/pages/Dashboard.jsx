@@ -57,7 +57,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
 
                 const { data, error } = await supabase
                     .from('appointments')
-                    .select('*, doctors(*)')
+                    .select('*, doctors(id, full_name, specialty, hospital, hospital_name, profile_photo)')
                     .eq('patient_id', user.id)
                     .order('appointment_date', { ascending: false })
                 if (error) throw error

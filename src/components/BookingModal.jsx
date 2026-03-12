@@ -54,15 +54,10 @@ export default function BookingModal({ doctor, onClose }) {
             const appointmentData = {
                 doctor_id: doctor.id,
                 patient_id: user.id,
-                patient_name: (appointmentType === 'telehealth' && anonymousMode)
-                    ? 'Private Patient'
-                    : (user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email),
-                patient_email: (appointmentType === 'telehealth' && anonymousMode) ? null : user?.email,
                 appointment_date: bookingDate,
                 appointment_time: bookingTime,
                 appointment_type: appointmentType === 'telehealth' ? 'teleconsultation' : 'in_person',
-                status: 'pending',
-                anonymous_consultation: (appointmentType === 'telehealth' && anonymousMode)
+                status: 'pending'
             };
 
             // Store in localStorage as requested (mock)
