@@ -352,31 +352,7 @@ export default function DoctorPatientRecords() {
                             </div>
                         )}
 
-                        {/* Privacy Shield Active Banner */}
-                        {privacyMode && !recordsLoading && (
-                            <div className="privacy-shield-banner">
-                                <div className="shield-icon">
-                                    <Lock size={16} color="#9D174D" />
-                                </div>
-                                <div className="shield-text">
-                                    <div className="shield-title">Privacy Shield Active</div>
-                                    <p className="shield-desc">
-                                        {hiddenCount > 0
-                                            ? `${hiddenCount} sensitive medical record${hiddenCount !== 1 ? 's are' : ' is'} hidden due to patient privacy settings.`
-                                            : 'Some sensitive medical records are hidden due to patient privacy settings.'
-                                        }
-                                    </p>
-                                </div>
-                                <ActionButton
-                                    variant="outline"
-                                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', borderColor: '#EC4899', color: '#9D174D', flexShrink: 0 }}
-                                    onClick={requestSensitiveAccess}
-                                    disabled={requestingAccess}
-                                >
-                                    <Send size={13} /> {requestingAccess ? 'Sending...' : 'Request Access'}
-                                </ActionButton>
-                            </div>
-                        )}
+
 
                         {!recordsLoading && !recordsError && records.length === 0 && (
                             <div className="dashboard-empty">

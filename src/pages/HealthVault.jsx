@@ -219,8 +219,7 @@ export default function HealthVault() {
                     patient_id: user.id,
                     file_url: publicUrl,
                     file_name: file.name,
-                    record_type: selectedType,
-                    sensitive: privacyLevel === 'sensitive'
+                    record_type: selectedType
                 })
             if (dbError) throw dbError
 

@@ -45,16 +45,32 @@ export default function DoctorPatients() {
                 return
             }
 
-            // Group by unique patients (by patient_id or patient_name)
+            // Separately fetch patient names from the patients table
+            const patientIds = [...new Set((appointments || []).map(a => a.patient_id).filter(Boolean))]
+            let patientNameMap = {}
+            if (patientIds.length > 0) {
+                const { data: patientData } = await supabase
+                    .from('patients')
+                    .select('id, full_name, email')
+                    .in('id', patientIds)
+                if (patientData) {
+                    patientData.forEach(p => {
+                        patientNameMap[p.id] = { name: p.full_name, email: p.email }
+                    })
+                }
+            }
+
+            // Group by unique patients (by patient_id)
             const patientMap = new Map()
 
             appointments?.forEach(appt => {
-                const key = appt.patient_id || appt.patient_name || 'Unknown'
+                const key = appt.patient_id || 'Unknown'
+                const patientInfo = patientNameMap[appt.patient_id] || {}
                 if (!patientMap.has(key)) {
                     patientMap.set(key, {
                         id: key,
-                        name: appt.patient_name || 'Unknown Patient',
-                        email: appt.patient_email || '—',
+                        name: patientInfo.name || 'Patient',
+                        email: patientInfo.email || '—',
                         totalAppointments: 0,
                         teleconsultations: 0,
                         inPerson: 0,
