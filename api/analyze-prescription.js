@@ -122,10 +122,10 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Image exceeds 5MB limit' })
         }
 
-        // ── 2. Call Gemini 1.5 Pro (complex prescription analysis) ──
-        console.log('Sending to Gemini 1.5 Pro...')
+        // ── 2. Call Gemini 2.5 Flash (prescription image analysis) ──
+        console.log('Sending to Gemini 2.5 Flash...')
         const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' })
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
         const prompt = `You are an expert medical prescription analyzer. Carefully analyze the provided prescription image.
 

@@ -260,10 +260,10 @@ export default function Services() {
 
         } catch (error) {
             console.error('Prescription Scan Error:', error)
-            toast.error(
-                'Unable to clearly interpret the prescription. Please upload a clearer image.',
-                { position: 'bottom-center' }
-            )
+            const errorMsg = error.message && !error.message.includes('fetch')
+                ? error.message
+                : 'Unable to clearly interpret the prescription. Please upload a clearer image.'
+            toast.error(errorMsg, { position: 'bottom-center' })
         } finally {
             setScanning(false)
         }
