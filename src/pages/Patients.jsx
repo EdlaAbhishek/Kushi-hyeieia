@@ -24,12 +24,24 @@ export default function Patients() {
             try {
                 const { data, error } = await supabase
                     .from('appointments')
-                    .select('*, doctors(id, full_name, specialty, hospital, hospital_name, profile_photo)')
+                    .select('*')
                     .eq('patient_id', user.id)
                     .eq('status', 'completed')
                     .limit(6)
                 if (data) {
-                    setCompletedAppts(data)
+                    // Separately fetch doctor details
+                    const doctorIds = [...new Set(data.map(a => a.doctor_id).filter(Boolean))]
+                    let doctorMap = {}
+                    if (doctorIds.length > 0) {
+                        const { data: doctorData } = await supabase
+                            .from('doctors')
+                            .select('id, full_name, specialty, hospital, hospital_name, profile_photo')
+                            .in('id', doctorIds)
+                        if (doctorData) {
+                            doctorData.forEach(d => { doctorMap[d.id] = d })
+                        }
+                    }
+                    setCompletedAppts(data.map(appt => ({ ...appt, doctors: doctorMap[appt.doctor_id] || null })))
                 }
             } catch (err) {
                 // Ignore error silently

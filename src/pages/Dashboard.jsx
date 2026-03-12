@@ -57,11 +57,30 @@ export default function Dashboard({ activeTab = 'overview' }) {
 
                 const { data, error } = await supabase
                     .from('appointments')
-                    .select('*, doctors(id, full_name, specialty, hospital, hospital_name, profile_photo)')
+                    .select('*')
                     .eq('patient_id', user.id)
                     .order('appointment_date', { ascending: false })
                 if (error) throw error
-                setAppointments(data || [])
+
+                // Separately fetch doctor details
+                const doctorIds = [...new Set((data || []).map(a => a.doctor_id).filter(Boolean))]
+                let doctorMap = {}
+                if (doctorIds.length > 0) {
+                    const { data: doctorData } = await supabase
+                        .from('doctors')
+                        .select('id, full_name, specialty, hospital, hospital_name, profile_photo')
+                        .in('id', doctorIds)
+                    if (doctorData) {
+                        doctorData.forEach(d => { doctorMap[d.id] = d })
+                    }
+                }
+
+                // Merge doctor info onto appointments
+                const appointmentsWithDoctors = (data || []).map(appt => ({
+                    ...appt,
+                    doctors: doctorMap[appt.doctor_id] || null
+                }))
+                setAppointments(appointmentsWithDoctors)
             } catch (err) {
                 console.error('Appointments fetch error:', err.message)
                 setFetchError(err.message)

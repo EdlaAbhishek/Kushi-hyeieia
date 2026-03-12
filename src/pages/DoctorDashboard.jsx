@@ -61,14 +61,33 @@ export default function DoctorDashboard() {
 
             const { data, error } = await supabase
                 .from('appointments')
-                .select('*, patients!patient_id(full_name)')
+                .select('*')
                 .eq('doctor_id', user.id)
                 .order('appointment_date', { ascending: false })
             if (error) throw error
 
+            // Separately fetch patient names from the patients table
+            const patientIds = [...new Set((data || []).map(a => a.patient_id).filter(Boolean))]
+            let patientMap = {}
+            if (patientIds.length > 0) {
+                const { data: patientData } = await supabase
+                    .from('patients')
+                    .select('id, full_name')
+                    .in('id', patientIds)
+                if (patientData) {
+                    patientData.forEach(p => { patientMap[p.id] = p.full_name })
+                }
+            }
+
+            // Merge patient names onto appointments
+            const appointmentsWithNames = (data || []).map(appt => ({
+                ...appt,
+                patient_display_name: patientMap[appt.patient_id] || 'Patient'
+            }))
+
             // Sort by urgency first (Emergency -> Urgent -> Routine), then date 
             const urgencyWeight = { 'Emergency': 3, 'Urgent': 2, 'Routine': 1 }
-            const sortedAppointments = (data || []).sort((a, b) => {
+            const sortedAppointments = appointmentsWithNames.sort((a, b) => {
                 const weightA = urgencyWeight[a.urgency] || 1
                 const weightB = urgencyWeight[b.urgency] || 1
                 if (weightA !== weightB) {
@@ -503,7 +522,7 @@ export default function DoctorDashboard() {
                                 </thead>
                                 <tbody>
                                     {appointments.map(appt => {
-                                        const displayName = appt.patients?.full_name || 'Patient';
+                                        const displayName = appt.patient_display_name || 'Patient';
                                         return (
                                             <tr key={appt.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
                                                 <td style={{ padding: '0.75rem 1rem', fontWeight: 600, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
