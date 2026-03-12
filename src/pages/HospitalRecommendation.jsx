@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabase'
 import { MapPin, Navigation, Activity, Hospital, Star, AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
-import InfoButton from '../components/ui/InfoButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
 import DashboardCard from '../components/ui/DashboardCard'
@@ -130,11 +130,6 @@ export default function HospitalRecommendation() {
         setLoadingAi(true)
 
         try {
-            const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
-            const model = import.meta.env.VITE_OPENROUTER_MODEL || "arcee-ai/trinity-large-preview:free"
-
-            if (!apiKey) throw new Error("OpenRouter API key is missing.")
-
             // Prepare hospital data for the prompt (top 10 closest to save tokens)
             const availableHospitals = hospitals.slice(0, 10).map(h => ({
                 id: h.id,
@@ -144,87 +139,45 @@ export default function HospitalRecommendation() {
                 specialties: h.specialties.length > 0 ? h.specialties.join(', ') : 'General Practice'
             }))
 
-            const prompt = `
-You are an intelligent medical triage and hospital routing assistant. 
-Based on the patient's symptoms and the list of nearby hospitals, select the BEST hospital for their condition.
-
-Patient Symptoms: "${symptoms}"
-
-Available Nearby Hospitals:
-${JSON.stringify(availableHospitals, null, 2)}
-
-Instructions:
-1. Analyze the symptoms to determine the likely medical domain (e.g., Cardiology, Orthopedics, Emergency).
-2. Find the hospital that has the matching 'specialties'.
-3. If it sounds like a life-threatening emergency, prioritize hospitals with 'emergency: true'.
-4. If multiple hospitals are suitable, prefer the one with the shortest distance.
-5. Return exactly ONE recommended hospital ID and your reasoning.
-
-Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
-{
-  "recommendedHospitalId": "<uuid from the list>",
-  "reasoning": "<Explanation of why this hospital is the best fit, mentioning the matching specialties and distance.>",
-  "urgency": "Emergency" | "Urgent" | "Routine"
-}
-`
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "HTTP-Referer": window.location.origin,
-                    "X-OpenRouter-Title": "Khushi Hygieia",
-                    "Content-Type": "application/json"
-                },
+            const response = await fetch('/api/gemini-hospital', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    "model": model,
-                    "temperature": 0.1,
-                    "response_format": { "type": "json_object" },
-                    "messages": [
-                        { role: "system", content: "You are an AI Hospital Recommendation engine. Always output strictly valid JSON." },
-                        { role: "user", content: prompt }
-                    ]
+                    symptoms,
+                    hospitals: availableHospitals
                 })
             })
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`)
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.error || `Server error: ${response.status}`)
             }
 
-            const data = await response.json()
-            const content = data.choices[0].message.content
+            const jsonResult = await response.json()
 
-            try {
-                const cleanedContent = content.replace(/```json/g, '').replace(/```/g, '').trim()
-                const jsonResult = JSON.parse(cleanedContent)
+            if (!jsonResult.recommendedHospitalId) {
+                throw new Error('AI did not return a valid hospital ID.')
+            }
 
-                if (!jsonResult.recommendedHospitalId) {
-                    throw new Error("AI did not return a valid hospital ID.")
-                }
+            const recHospital = hospitals.find(h => h.id === jsonResult.recommendedHospitalId)
 
-                const recHospital = hospitals.find(h => h.id === jsonResult.recommendedHospitalId)
-
-                if (recHospital) {
-                    setAiRecommendation({
-                        hospital: recHospital,
-                        reasoning: jsonResult.reasoning,
-                        urgency: jsonResult.urgency
-                    })
-                } else {
-                    // Fallback if AI hallucinates an ID, pick the closest one
-                    setAiRecommendation({
-                        hospital: hospitals[0],
-                        reasoning: "AI recommended a general facility based on your location. " + jsonResult.reasoning,
-                        urgency: jsonResult.urgency
-                    })
-                }
-
-            } catch (parseError) {
-                console.error("Parse Error:", content)
-                throw new Error("Failed to interpret AI response.")
+            if (recHospital) {
+                setAiRecommendation({
+                    hospital: recHospital,
+                    reasoning: jsonResult.reasoning,
+                    urgency: jsonResult.urgency
+                })
+            } else {
+                // Fallback if AI hallucinates an ID, pick the closest one
+                setAiRecommendation({
+                    hospital: hospitals[0],
+                    reasoning: 'AI recommended a general facility based on your location. ' + jsonResult.reasoning,
+                    urgency: jsonResult.urgency
+                })
             }
 
         } catch (err) {
-            console.error("AI Error:", err)
+            console.error('AI Error:', err)
             setAiError(err.message)
         } finally {
             setLoadingAi(false)
@@ -243,7 +196,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown):
                 description="Find the best care based on your location and symptoms."
                 className="doctor-header"
                 action={
-                    <InfoButton content={{
+                    <InfoTooltip content={{
                         en: {
                             title: 'Smart Hospital Finder',
                             helps: 'This tool helps you find the nearest hospitals equipped to handle your specific medical needs based on distance and specialization.',

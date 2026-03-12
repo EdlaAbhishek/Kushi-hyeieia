@@ -6,7 +6,7 @@ import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
 import DashboardCard from '../components/ui/DashboardCard'
 import ActionButton from '../components/ui/ActionButton'
-import InfoButton from '../components/ui/InfoButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 
 export default function BloodDonation() {
     const { user } = useAuth()
@@ -148,7 +148,7 @@ export default function BloodDonation() {
                 description="Connect with nearby donors or check hospital blood inventory."
                 className="doctor-header"
                 action={
-                    <InfoButton content={{
+                    <InfoTooltip content={{
                         en: { title: 'Blood Donation Network', helps: 'One-stop hub for blood donors, hospital inventory, and urgent public broadcasts.', usage: '1. Find Donors: Search for volunteers nearby.\n2. Hospital Inventory: Check live stock in hospitals.\n3. Broadcasts: Post or view urgent requests for help.' },
                         hi: { title: 'रक्तदान नेटवर्क', helps: 'रक्त दाताओं, अस्पताल सूची और तत्काल सार्वजनिक प्रसारण के लिए वन-स्टॉप हब।', usage: '1. दाता खोजें: पास के स्वयंसेवकों को खोजें।\n2. अस्पताल सूची: अस्पतालों में लाइव स्टॉक की जांच करें।\n3. प्रसारण: मदद के लिए तत्काल अनुरोध पोस्ट करें या देखें।' },
                         te: { title: 'రక్త దాన నెట్‌వర్క్', helps: 'రక్తదాతలు, ఆసుపత్రి ఇన్వెంటరీ మరియు అత్యవసర బహిరంగ ప్రసారాల కోసం వన్-స్టాప్ హబ్.', usage: '1. దాతలను కనుగొనండి: సమీపంలోని వాలంటీర్ల కోసం వెతకండి.\n2. హాస్పిటల్ ఇన్వెంటరీ: ఆసుపత్రులలో లైవ్ స్టాక్‌ను తనిఖీ చేయండి.\n3. ప్రసారాలు: సహాయం కోసం అత్యవసర అభ్యర్థనలను పోస్ట్ చేయండి లేదా వీక్షించండి.' }

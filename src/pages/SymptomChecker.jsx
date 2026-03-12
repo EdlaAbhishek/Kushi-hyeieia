@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { AlertCircle, CheckCircle, Activity, Info, AlertTriangle, Stethoscope } from 'lucide-react'
-import InfoButton from '../components/ui/InfoButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 
 export default function SymptomChecker() {
     const { user } = useAuth()
@@ -33,87 +33,36 @@ export default function SymptomChecker() {
         setLoading(true)
 
         try {
-            const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
-            const model = import.meta.env.VITE_OPENROUTER_MODEL || "arcee-ai/trinity-large-preview:free"
-
-            if (!apiKey) throw new Error("OpenRouter API key is missing. Please add VITE_OPENROUTER_API_KEY to your .env file.")
-
-            // Construct the prompt
-            const prompt = `
-You are an AI medical triage assistant. Analyze the patient's data and provide a triage assessment.
-DO NOT provide medical advice.
-
-Patient Data:
-- Age: ${formData.age}
-- Gender: ${formData.gender}
-- Symptoms: ${formData.symptoms}
-- Temperature: ${formData.temperature ? formData.temperature + ' °F' : 'Not provided'}
-- Blood Pressure: ${formData.bloodPressureSys && formData.bloodPressureDia ? `${formData.bloodPressureSys}/${formData.bloodPressureDia} mmHg` : 'Not provided'}
-- Heart Rate: ${formData.heartRate ? formData.heartRate + ' bpm' : 'Not provided'}
-- SpO2: ${formData.spo2 ? formData.spo2 + '%' : 'Not provided'}
-
-Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other text):
-{
-  "triage": "Emergency" | "Urgent" | "Routine",
-  "confidenceScore": <integer between 0 and 100>,
-  "explainability": [
-    "<reasoning regarding specific symptom or vital>",
-    "<another reasoning point>"
-  ],
-  "preliminaryCarePlan": [
-    "<suggested test>",
-    "<suggested lifestyle tip>",
-    "<follow-up suggestion>"
-  ]
-}
-`
-
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "HTTP-Referer": window.location.origin,
-                    "X-Title": "Khushi Hygieia",
-                    "Content-Type": "application/json"
-                },
+            const response = await fetch('/api/gemini-symptom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    "model": model,
-                    "temperature": 0.1,
-                    "response_format": { "type": "json_object" },
-                    "messages": [
-                        { role: "system", content: "You are an AI Symptom Checker. Always output strictly valid JSON matching the requested schema." },
-                        { role: "user", content: prompt }
-                    ]
+                    age: formData.age,
+                    gender: formData.gender,
+                    symptoms: formData.symptoms,
+                    temperature: formData.temperature,
+                    bloodPressureSys: formData.bloodPressureSys,
+                    bloodPressureDia: formData.bloodPressureDia,
+                    heartRate: formData.heartRate,
+                    spo2: formData.spo2
                 })
             })
 
             if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`)
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.error || `Server error: ${response.status}`)
             }
 
-            const data = await response.json()
-            const content = data.choices?.[0]?.message?.content
-            if (!content) throw new Error('AI returned an empty response. Please try again.')
+            const jsonResult = await response.json()
 
-            // Try to parse JSON
-            try {
-                // Remove potential markdown code blocks if the model ignored instructions
-                const cleanedContent = content.replace(/```json/g, '').replace(/```/g, '').trim()
-                const jsonResult = JSON.parse(cleanedContent)
-
-                if (!jsonResult.triage || !jsonResult.confidenceScore) {
-                    throw new Error("Invalid response schema from AI.")
-                }
-
-                setResult(jsonResult)
-            } catch (parseError) {
-                console.error("Failed to parse JSON:", content);
-                throw new Error("Failed to interpret AI response. Please try again.")
+            if (!jsonResult.triage || !jsonResult.confidenceScore) {
+                throw new Error('Invalid response schema from AI.')
             }
+
+            setResult(jsonResult)
 
         } catch (err) {
-            console.error("AI Triage Error:", err)
+            console.error('AI Triage Error:', err)
             setError(err.message)
         } finally {
             setLoading(false)
@@ -148,7 +97,7 @@ Respond ONLY with a valid JSON format EXACTLY like this (no markdown, no other t
                             <Stethoscope size={24} color="var(--primary)" />
                             AI Symptom Checker
                         </h1>
-                        <InfoButton content={{
+                        <InfoTooltip content={{
                             en: { title: 'AI Symptom Checker', helps: 'This tool uses artificial intelligence to analyze your symptoms and suggest how urgently you need medical care.', usage: '1. Enter your age and gender.\n2. Describe your symptoms clearly.\n3. (Optional) Enter your vitals like temperature or blood pressure.\n4. Click "Analyze Symptoms" to get a triage recommendation.' },
                             hi: { title: 'एआई लक्षण चेकर', helps: 'यह टूल आपके लक्षणों का विश्लेषण करने और आपको कितनी जल्दी चिकित्सा देखभाल की आवश्यकता है, इसका सुझाव देने के लिए आर्टिफिशियल इंटेलिजेंस का उपयोग करता है।', usage: '1. अपनी उम्र और लिंग दर्ज करें।\n2. अपने लक्षणों का स्पष्ट रूप से वर्णन करें।\n3. (वैकल्पिक) तापमान या रक्तचाप जैसे अपने वाइटल दर्ज करें।\n4. ट्राइएज सिफ़ारिश पाने के लिए "लक्षणों का विश्लेषण करें" पर क्लिक करें।' },
                             te: { title: 'AI సింప్టమ్ చెకర్', helps: 'మీరు ఎంత త్వరగా వైద్య సహాయం పొందాలో సూచించడానికి మరియు మీ లక్షణాలను విశ్లేషించడానికి ఈ సాధనం ఆర్టిఫిషియల్ ఇంటెలిజెన్స్ (AI) ఉపయోగిస్తుంది.', usage: '1. మీ వయస్సు మరియు లింగాన్ని నమోదు చేయండి.\n2. మీ లక్షణాలను స్పష్టంగా వివరించండి.\n3. (ఐచ్ఛికం) ఉష్ణోగ్రత లేదా రక్తపోటు వంటి మీ వైటల్స్ నమోదు చేయండి.\n4. ట్రియాజ్ సిఫార్సును పొందడానికి "లక్షణాలను విశ్లేషించండి" క్లిక్ చేయండి.' }

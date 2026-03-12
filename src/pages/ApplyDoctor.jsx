@@ -3,7 +3,7 @@ import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { Stethoscope, CheckCircle, AlertTriangle } from 'lucide-react'
 import { motion } from 'framer-motion'
-import InfoButton from '../components/ui/InfoButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 
 export default function ApplyDoctor() {
     const { user } = useAuth()
@@ -80,7 +80,7 @@ export default function ApplyDoctor() {
                         <p style={{ margin: 0, color: '#64748B', fontSize: '0.9rem' }}>Submit your credentials for verification to access the medical dashboard.</p>
                     </div>
                 </div>
-                <InfoButton content={{
+                <InfoTooltip content={{
                     en: { title: 'Doctor Verification', helps: 'This process guards the platform to ensure only certified medical professionals can interact with patients as clinical experts.', usage: 'Enter your name exactly as it appears on your medical license. Provide your specialization, years of experience, and registration number. An administrator will review your credentials within 24-48 hours.' },
                     hi: { title: 'डॉक्टर सत्यापन', helps: 'यह प्रक्रिया प्लेटफ़ॉर्म की सुरक्षा करती है ताकि यह सुनिश्चित हो सके कि केवल प्रमाणित चिकित्सा पेशेवर ही रोगियों के साथ विशेषज्ञ के रूप में बातचीत कर सकें।', usage: 'अपना नाम ठीक वैसे ही दर्ज करें जैसा यह आपके मेडिकल लाइसेंस पर दिखाई देता है। अपनी विशेषज्ञता, अनुभव के वर्ष और पंजीकरण संख्या प्रदान करें। 24-48 घंटों के भीतर एक प्रशासक आपकी साख की समीक्षा करेगा।' },
                     te: { title: 'డాక్టర్ ధృవీకరణ', helps: 'ధృవీకరించబడిన వైద్య నిపుణులు మాత్రమే క్లినికల్ నిపుణులుగా రోగులతో ఇంటరాక్ట్ అయ్యేలా ఈ ప్రక్రియ ప్లాట్‌ఫారమ్‌ను రక్షిస్తుంది.', usage: 'మీ వైద్య లైసెన్స్‌లో ఉన్న విధంగానే మీ పేరును నమోదు చేయండి. మీ స్పెషలైజేషన్, అనుభవ సంవత్సరాలు మరియు రిజిస్ట్రేషన్ నంబర్‌ను అందించండి. 24-48 గంటల్లో నిర్వాహకుడు మీ ఆధారాలను సమీక్షిస్తారు.' }

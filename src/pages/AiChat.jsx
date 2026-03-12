@@ -35,22 +35,11 @@ export default function AiChat() {
         setLoading(true)
 
         try {
-            const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
-            const model = import.meta.env.VITE_OPENROUTER_MODEL || "arcee-ai/trinity-large-preview:free"
-
-            if (!apiKey) throw new Error("OpenRouter API key is missing. Please add VITE_OPENROUTER_API_KEY to your .env file.")
-
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "HTTP-Referer": window.location.origin,
-                    "X-Title": "Khushi Hygieia",
-                    "Content-Type": "application/json"
-                },
+            const response = await fetch('/api/gemini-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    "model": model,
-                    "messages": newMessages.map(m => ({
+                    messages: newMessages.map(m => ({
                         role: m.role,
                         content: m.content
                     }))
@@ -58,15 +47,14 @@ export default function AiChat() {
             })
 
             if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`)
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.error || `Server error: ${response.status}`)
             }
 
             const data = await response.json()
-            const responseText = data.choices?.[0]?.message?.content
-            if (!responseText) throw new Error('AI returned an empty response. Please try again.')
+            if (!data.reply) throw new Error('AI returned an empty response. Please try again.')
 
-            setMessages(prev => [...prev, { role: 'assistant', content: responseText }])
+            setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
         } catch (err) {
             console.error("AI Error:", err)
             setMessages(prev => [...prev, { role: 'assistant', content: `AI Error: ${err.message}` }])

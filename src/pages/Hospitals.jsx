@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MapPin, Navigation } from 'lucide-react'
+import { MapPin, Navigation, ShieldCheck } from 'lucide-react'
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
-import InfoButton from '../components/ui/InfoButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 import { toast } from 'react-hot-toast'
 import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
@@ -35,6 +35,7 @@ export default function Hospitals() {
     const [hospitals, setHospitals] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
+    const [womenFriendlyFilter, setWomenFriendlyFilter] = useState(false)
 
     useEffect(() => {
         fetchHospitals()
@@ -78,10 +79,12 @@ export default function Hospitals() {
         }
     }
 
-    const filteredHospitals = hospitals.filter(h =>
-        h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        h.city.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    const filteredHospitals = hospitals.filter(h => {
+        const matchesSearch = h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            h.city.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesWomen = !womenFriendlyFilter || h.women_friendly === true
+        return matchesSearch && matchesWomen
+    })
 
     return (
         <>
@@ -99,7 +102,7 @@ export default function Hospitals() {
                             <h2 className="section-title">Hospital Directory</h2>
                             <p className="section-subtitle">Partner hospitals across India with emergency and teleconsultation availability.</p>
                         </div>
-                        <InfoButton content={{
+                        <InfoTooltip content={{
                             en: { title: 'Hospital Network', helps: 'Find nearby hospitals and check their facilities.', usage: 'Search hospitals by city or name. You can see bed capacity, emergency status, and book appointments directly.' },
                             hi: { title: 'अस्पताल नेटवर्क', helps: 'आस-पास के अस्पतालों को खोजें और उनकी सुविधाओं की जांच करें।', usage: 'शहर या नाम के आधार पर अस्पतालों की खोज करें। आप बेड क्षमता, आपातकालीन स्थिति देख सकते हैं और सीधे अपॉइंटमेंट बुक कर सकते हैं।' },
                             te: { title: 'ఆసుపత్రి నెట్‌వర్క్', helps: 'సమీపంలోని ఆసుపత్రులను కనుగొనండి మరియు వారి సౌకర్యాలను తనిఖీ చేయండి.', usage: 'నగరం లేదా పేరు ద్వారా ఆసుపత్రుల కోసం శోధించండి. మీరు బెడ్ సామర్థ్యం, అత్యవసర స్థితిని చూడవచ్చు మరియు నేరుగా అపాయింట్‌మెంట్‌లను బుక్ చేసుకోవచ్చు.' }
@@ -114,6 +117,22 @@ export default function Hospitals() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                    </div>
+
+                    {/* Women-Friendly Clinics Filter */}
+                    <div className="women-filter-bar">
+                        <div className="toggle-switch">
+                            <input
+                                type="checkbox"
+                                checked={womenFriendlyFilter}
+                                onChange={(e) => setWomenFriendlyFilter(e.target.checked)}
+                                id="women-filter"
+                            />
+                            <span className="toggle-slider" onClick={() => setWomenFriendlyFilter(!womenFriendlyFilter)}></span>
+                        </div>
+                        <label htmlFor="women-filter" style={{ fontSize: '0.88rem', fontWeight: 600, color: womenFriendlyFilter ? '#9D174D' : 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <ShieldCheck size={16} /> Women-Friendly Clinics
+                        </label>
                     </div>
 
                     {loading ? (
@@ -149,6 +168,7 @@ export default function Hospitals() {
                                                 <td style={{ padding: '1.25rem 1rem' }}>
                                                     <strong>{h.name}</strong>
                                                     {h.teleconsult && <div style={{ fontSize: '0.7rem', color: '#10B981', display: 'inline-block', marginLeft: '0.5rem', background: '#F0FDFA', padding: '2px 6px', borderRadius: '4px' }}>📹 Video Consult</div>}
+                                                    {h.women_friendly && <div className="privacy-badge privacy-badge--women" style={{ display: 'inline-flex', marginLeft: '0.5rem' }}><ShieldCheck size={10} /> Women-Friendly</div>}
                                                 </td>
                                                 <td style={{ padding: '1.25rem 1rem' }}>{h.city}</td>
                                                 <td style={{ padding: '1.25rem 1rem' }}>{h.beds}</td>

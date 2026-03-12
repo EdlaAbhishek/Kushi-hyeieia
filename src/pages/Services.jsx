@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes, Languages, FileText } from 'lucide-react'
 import { useAuth } from '../services/AuthContext'
-import InfoButton from '../components/ui/InfoButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 import { toast } from 'react-hot-toast'
 import LabTestModal from '../components/LabTestModal'
 import PageHeader from '../components/ui/PageHeader'
@@ -38,7 +38,13 @@ export default function Services() {
             processing: 'Analyzing Prescription...',
             processBtn: 'Process Image',
             dropText: 'Drop your prescription here or click to browse',
-            fileInfo: 'Supports JPG, PNG (Max 5MB)'
+            fileInfo: 'Supports JPG, PNG (Max 5MB)',
+            medicineType: 'Type',
+            purpose: 'Purpose',
+            correctedFrom: 'OCR Corrected from',
+            unverifiedMsg: 'Drug information unavailable but detected in prescription.',
+            verified: 'Verified',
+            unverified: 'Unverified'
         },
         hi: {
             analysisComplete: 'विश्लेषण पूर्ण',
@@ -52,7 +58,13 @@ export default function Services() {
             processing: 'नुस्खा विश्लेषण हो रहा है...',
             processBtn: 'छवि प्रोसेस करें',
             dropText: 'अपना नुस्खा यहाँ डालें या ब्राउज़ करने के लिए क्लिक करें',
-            fileInfo: 'JPG, PNG सपोर्ट (अधिकतम 5MB)'
+            fileInfo: 'JPG, PNG सपोर्ट (अधिकतम 5MB)',
+            medicineType: 'प्रकार',
+            purpose: 'उद्देश्य',
+            correctedFrom: 'OCR सुधार',
+            unverifiedMsg: 'दवा की जानकारी अनुपलब्ध है लेकिन नुस्खे में पाई गई।',
+            verified: 'सत्यापित',
+            unverified: 'असत्यापित'
         },
         te: {
             analysisComplete: 'విశ్లేషణ పూర్తయింది',
@@ -66,7 +78,13 @@ export default function Services() {
             processing: 'ప్రిస్క్రిప్షన్ విశ్లేషిస్తోంది...',
             processBtn: 'చిత్రాన్ని ప్రాసెస్ చేయండి',
             dropText: 'మీ ప్రిస్క్రిప్షన్ ఇక్కడ డ్రాప్ చేయండి లేదా బ్రౌజ్ చేయడానికి క్లిక్ చేయండి',
-            fileInfo: 'JPG, PNG మద్దతు (గరిష్టం 5MB)'
+            fileInfo: 'JPG, PNG మద్దతు (గరిష్టం 5MB)',
+            medicineType: 'రకం',
+            purpose: 'ఉద్దేశ్యం',
+            correctedFrom: 'OCR సరిదిద్దబడింది',
+            unverifiedMsg: 'ఔషధ సమాచారం అందుబాటులో లేదు కానీ ప్రిస్క్రిప్షన్‌లో గుర్తించబడింది.',
+            verified: 'ధృవీకరించబడింది',
+            unverified: 'ధృవీకరించబడలేదు'
         }
     }
     const t = scanLabels[scanLang] || scanLabels.en
@@ -229,21 +247,21 @@ export default function Services() {
             if (response.ok) {
                 const result = await response.json()
 
-                // Allow the new general document structure to pass through
-                if (result.document_type && result.summary) {
+                // Allow the new general document structure and exact prescription structure to pass through
+                if (result.document_type) {
                     setScanResult(result)
                     return
                 }
             } else {
                 const errData = await response.json().catch(() => ({}))
-                console.warn('Azure OCR API failed:', response.status, errData)
+                console.warn('API failed:', response.status, errData)
                 throw new Error(errData.error || 'Failed to analyze prescription.')
             }
 
         } catch (error) {
             console.error('Prescription Scan Error:', error)
             toast.error(
-                'Unable to read the document clearly. Please upload a clearer image.',
+                'Unable to clearly interpret the prescription. Please upload a clearer image.',
                 { position: 'bottom-center' }
             )
         } finally {
@@ -266,7 +284,7 @@ export default function Services() {
                             <DashboardCard
                                 title="AI Prescription Scanner"
                                 icon={ScanLine}
-                                action={<InfoButton content={{
+                                action={<InfoTooltip content={{
                                     en: { title: 'Prescription Scanner', helps: 'Helps you understand handwritten or printed prescriptions using AI.', usage: 'Upload a clear image of your prescription. Our AI will extract medicine names, dosages, and durations for your reference.' },
                                     hi: { title: 'प्रिस्क्रिप्शन स्कैनर', helps: 'AI का उपयोग करके हस्तलिखित या मुद्रित नुस्खों को समझने में आपकी मदद करता है।', usage: 'अपने नुस्खे की एक स्पष्ट छवि अपलोड करें। हमारा AI आपके संदर्भ के लिए दवा के नाम, खुराक और अवधि निकालेगा।' },
                                     te: { title: 'ప్రిస్క్రిప్షన్ స్కానర్', helps: 'AIని ఉపయోగించి చేతితో రాసిన లేదా ముద్రించిన ప్రిస్క్రిప్షన్లను అర్థం చేసుకోవడంలో మీకు సహాయపడుతుంది.', usage: 'మీ ప్రిస్క్రిప్షన్ యొక్క స్పష్టమైన చిత్రాన్ని అప్‌లోడ్ చేయండి. మా AI మీ సూచన కోసం ఔషధాల పేర్లు, మోతాదులు మరియు వ్యవధిని సేకరిస్తుంది.' }
@@ -326,10 +344,22 @@ export default function Services() {
                                                 <FileText size={24} color="#64748B" />
                                             </div>
 
-                                            {scanResult.document_type !== 'general' ? (
+                                            {scanResult.document_type?.toLowerCase() === 'prescription' ? (
                                                 <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
                                                     <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
-                                                    <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>{translateNotes(scanResult.summary, scanLang)}</p>
+                                                    <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>
+                                                        {scanResult.medicines && scanResult.medicines.length > 0 
+                                                            ? (scanLang === 'en' ? `Found ${scanResult.medicines.length} medicine(s) in your prescription.` : (scanLang === 'hi' ? `आपके नुस्खे में ${scanResult.medicines.length} दवा(एं) मिलीं।` : `మీ ప్రిస్క్రిప్షన్‌లో ${scanResult.medicines.length} మందు(లు) కనుగొనబడ్డాయి.`))
+                                                            : (scanLang === 'en' ? 'Prescription detected, but specific medicines could not be clearly identified.' : (scanLang === 'hi' ? 'नुस्खा मिला, लेकिन विशिष्ट दवाओं की स्पष्ट पहचान नहीं हो सकी।' : 'ప్రిస్క్రిప్షన్ కనుగొనబడింది, కానీ నిర్దిష్ట మందులను స్పష్టంగా గుర్తించలేకపోయింది.'))
+                                                        }
+                                                    </p>
+                                                </div>
+                                            ) : scanResult.document_type?.toLowerCase() !== 'general' ? (
+                                                <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
+                                                    <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
+                                                    <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>
+                                                        {scanResult.summary ? translateNotes(scanResult.summary, scanLang) : 'Extracted details below.'}
+                                                    </p>
                                                 </div>
                                             ) : (
                                                 <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #94A3B8' }}>
@@ -340,66 +370,117 @@ export default function Services() {
                                                 </div>
                                             )}
 
-                                            {scanResult.extracted_data && scanResult.extracted_data.length > 0 && (
+                                            {/* ─── PRESCRIPTION: Medicine Cards ─── */}
+                                            {scanResult.document_type?.toLowerCase() === 'prescription' && scanResult.medicines && scanResult.medicines.length > 0 && (
+                                                <div style={{ marginTop: '0.5rem' }}>
+                                                    <h4 style={{ fontSize: '1rem', color: '#334155', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        💊 Detected Medicines ({scanResult.medicines.length})
+                                                    </h4>
+
+                                                    {scanResult.medicines.map((med, idx) => {
+                                                        const confidenceColors = {
+                                                            high: { bg: '#D1FAE5', text: '#065F46', border: '#10B981', label: '✓ High Confidence' },
+                                                            medium: { bg: '#FEF3C7', text: '#92400E', border: '#F59E0B', label: '~ Medium Confidence' },
+                                                            low: { bg: '#FEE2E2', text: '#991B1B', border: '#EF4444', label: '? Low Confidence' }
+                                                        }
+                                                        const conf = confidenceColors[med.confidence] || confidenceColors.low
+
+                                                        return (
+                                                            <div key={idx} style={{ padding: '1.25rem', border: '1px solid var(--border)', borderRadius: '12px', background: '#FFFFFF', marginBottom: '1rem', borderLeft: `4px solid #3B82F6` }}>
+                                                                {/* Header: Name + Badges */}
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                                        <strong style={{ fontSize: '1.1rem', color: '#0F172A' }}>{translateMedicineName(med.name, scanLang)}</strong>
+                                                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', background: conf.bg, color: conf.text, fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 600 }}>
+                                                                            {conf.label}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span style={{ background: '#E2E8F0', color: '#475569', fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 500 }}>
+                                                                        {med.type}
+                                                                    </span>
+                                                                </div>
+
+                                                                {/* Uses for */}
+                                                                <div style={{ fontSize: '0.88rem', color: '#334155', lineHeight: 1.6, marginBottom: '0.6rem' }}>
+                                                                    <strong style={{ color: '#475569' }}>Uses for:</strong>{' '}
+                                                                    <span style={{ color: '#0F172A' }}>{med.purpose}</span>
+                                                                </div>
+
+                                                                {/* Does */}
+                                                                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                                                                    {med.instructions && (
+                                                                        <div><strong>Does:</strong> {med.instructions}</div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {/* ─── PRESCRIPTION: Fallback if empty ─── */}
+                                            {scanResult.document_type?.toLowerCase() === 'prescription' && (!scanResult.medicines || scanResult.medicines.length === 0) && (
+                                                <div style={{ marginTop: '0.5rem' }}>
+                                                    <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #94A3B8' }}>
+                                                        <strong style={{ fontSize: '0.85rem', color: '#475569', display: 'block', marginBottom: '0.25rem' }}>Extracted Text:</strong>
+                                                        <p style={{ fontSize: '0.9rem', color: '#475569', margin: 0, whiteSpace: 'pre-wrap' }}>
+                                                            {scanResult.raw_text || "The image was processed, but no readable text was returned by the scanner."}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* ─── BILL ─── */}
+                                            {scanResult.document_type === 'bill' && scanResult.extracted_data && scanResult.extracted_data.length > 0 && (
                                                 <div style={{ marginTop: '0.5rem' }}>
                                                     <h4 style={{ fontSize: '1rem', color: '#334155', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
                                                         Extracted Information
                                                     </h4>
-
-                                                    {scanResult.document_type === 'prescription' && scanResult.extracted_data.map((med, idx) => (
-                                                        <div key={idx} style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '10px', background: '#fff', marginBottom: '1rem' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                                                <strong style={{ color: 'var(--primary)' }}>{translateMedicineName(med.name, scanLang)}</strong>
-                                                            </div>
-                                                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
-                                                                <div><strong>{t.dosage || 'Dosage'}:</strong> {med.dosage || '—'}</div>
-                                                                <div><strong>{t.frequency || 'Frequency'}:</strong> {translateFrequency(med.frequency, scanLang) || '—'}</div>
-                                                                {med.duration && med.duration !== '—' && <div><Calendar size={12} /> <strong>{t.duration || 'Duration'}:</strong> {translateDuration(med.duration, scanLang)}</div>}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-
-                                                    {scanResult.document_type === 'bill' && (
-                                                        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
-                                                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-                                                                <thead style={{ background: '#F8FAFC' }}>
-                                                                    <tr>
-                                                                        <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>Item</th>
-                                                                        <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', textAlign: 'right' }}>Amount</th>
+                                                    <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
+                                                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                                                            <thead style={{ background: '#F8FAFC' }}>
+                                                                <tr>
+                                                                    <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>Item</th>
+                                                                    <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', textAlign: 'right' }}>Amount</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {scanResult.extracted_data.map((item, idx) => (
+                                                                    <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                                        <td style={{ padding: '0.75rem 1rem', fontWeight: item.item === 'TOTAL AMOUNT' ? 'bold' : 'normal' }}>{item.item}</td>
+                                                                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: item.item === 'TOTAL AMOUNT' ? 'bold' : 'normal', color: item.item === 'TOTAL AMOUNT' ? 'var(--primary)' : 'inherit' }}>₹{item.amount}</td>
                                                                     </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {scanResult.extracted_data.map((item, idx) => (
-                                                                        <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                                                                            <td style={{ padding: '0.75rem 1rem', fontWeight: item.item === 'TOTAL AMOUNT' ? 'bold' : 'normal' }}>{item.item}</td>
-                                                                            <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: item.item === 'TOTAL AMOUNT' ? 'bold' : 'normal', color: item.item === 'TOTAL AMOUNT' ? 'var(--primary)' : 'inherit' }}>₹{item.amount}</td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    )}
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            )}
 
-                                                    {scanResult.document_type === 'lab_report' && (
-                                                        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
-                                                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-                                                                <thead style={{ background: '#F8FAFC' }}>
-                                                                    <tr>
-                                                                        <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>Test Name</th>
-                                                                        <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', textAlign: 'right' }}>Result</th>
+                                            {/* ─── LAB REPORT ─── */}
+                                            {scanResult.document_type === 'lab_report' && scanResult.extracted_data && scanResult.extracted_data.length > 0 && (
+                                                <div style={{ marginTop: '0.5rem' }}>
+                                                    <h4 style={{ fontSize: '1rem', color: '#334155', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
+                                                        Extracted Information
+                                                    </h4>
+                                                    <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
+                                                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                                                            <thead style={{ background: '#F8FAFC' }}>
+                                                                <tr>
+                                                                    <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)' }}>Test Name</th>
+                                                                    <th style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', textAlign: 'right' }}>Result</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {scanResult.extracted_data.map((item, idx) => (
+                                                                    <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                                        <td style={{ padding: '0.75rem 1rem', color: '#334155', fontWeight: '500' }}>{item.test_name}</td>
+                                                                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{item.result} {item.unit}</td>
                                                                     </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {scanResult.extracted_data.map((item, idx) => (
-                                                                        <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                                                                            <td style={{ padding: '0.75rem 1rem', color: '#334155', fontWeight: '500' }}>{item.test_name}</td>
-                                                                            <td style={{ padding: '0.75rem 1rem', textAlign: 'right', color: 'var(--primary)', fontWeight: 'bold' }}>{item.result} {item.unit}</td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    )}
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
@@ -427,7 +508,7 @@ export default function Services() {
                             <DashboardCard
                                 title="Pathology & Diagnostics"
                                 icon={Droplet}
-                                action={<InfoButton content={{
+                                action={<InfoTooltip content={{
                                     en: { title: 'Diagnostic Services', helps: 'Book blood tests and body checkups from home.', usage: 'Select a test or package, and our certified technician will visit your home for sample collection. Reports are delivered digitally.' },
                                     hi: { title: 'नैदानिक सेवाए', helps: 'घर से रक्त परीक्षण और शरीर की जांच बुक करें।', usage: 'एक परीक्षण या पैकेज चुनें, और हमारा प्रमाणित तकनीशियन नमूना संग्रह के लिए आपके घर आएगा। रिपोर्ट डिजिटल रूप से वितरित की जाती हैं।' },
                                     te: { title: 'డయాగ్నస్టిక్ సేవలు', helps: 'ఇంటి నుండి రక్త పరీక్షలు మరియు శరీర తనిఖీలను బుక్ చేసుకోండి.', usage: 'పరీక్షను లేదా ప్యాకేజీని ఎంచుకోండి, మా ధృవీకరించబడిన సాంకేతిక నిపుణుడు నమూనా సేకరణ కోసం మీ ఇంటిని సందర్శిస్తారు. నివేదికలు డిజిటల్‌గా అందించబడతాయి.' }

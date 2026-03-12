@@ -3552,3 +3552,617 @@ select.form-control {
         padding: 2rem 1.5rem;
     }
 }
+
+
+/* ============================================================
+   Women's Privacy Mode & Health Vault Styles
+   ============================================================ */
+
+/* ------------ Care Preference Toggle ------------ */
+.care-preference-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #FDF2F8, #FCE7F3);
+    border: 1.5px solid #FBCFE8;
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.care-preference-bar .care-label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #831843;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.care-toggle-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.care-toggle-btn {
+    padding: 0.45rem 1rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: 1.5px solid #E2E8F0;
+    background: #fff;
+    color: #334155;
+}
+
+.care-toggle-btn:hover {
+    border-color: #EC4899;
+    color: #EC4899;
+}
+
+.care-toggle-btn.active {
+    background: linear-gradient(135deg, #EC4899, #DB2777);
+    color: #fff;
+    border-color: #EC4899;
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+}
+
+/* ------------ Privacy & Women-Friendly Badges ------------ */
+.privacy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.privacy-badge--women {
+    background: linear-gradient(135deg, #FDF2F8, #FCE7F3);
+    color: #9D174D;
+    border: 1px solid #FBCFE8;
+}
+
+.privacy-badge--anon {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+}
+
+/* ------------ Anonymous Consultation Toggle ------------ */
+.anon-toggle-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-top: 0.75rem;
+}
+
+.anon-toggle-bar label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.anon-toggle-bar .toggle-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #CBD5E1;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #EC4899, #DB2777);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(18px);
+}
+
+/* ------------ Health Vault Styles ------------ */
+.vault-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #FAFAFA;
+}
+
+.vault-upload-area:hover,
+.vault-upload-area.dragover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.vault-upload-area .upload-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.vault-upload-area h3 {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin-bottom: 0.35rem;
+}
+
+.vault-upload-area p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Record Cards Grid */
+.records-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+}
+
+.record-card {
+    background: #fff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.3s, transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.record-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.record-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.record-type-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.record-type-icon.prescription { background: #DBEAFE; color: #1D4ED8; }
+.record-type-icon.lab_report   { background: #D1FAE5; color: #059669; }
+.record-type-icon.scan         { background: #E0E7FF; color: #4338CA; }
+.record-type-icon.xray         { background: #FEE2E2; color: #DC2626; }
+.record-type-icon.discharge_summary { background: #FEF3C7; color: #D97706; }
+.record-type-icon.other        { background: #F3F4F6; color: #4B5563; }
+
+.record-card-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.record-card-info p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.record-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-light);
+}
+
+/* Share Modal Duration Buttons */
+.duration-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.duration-btn {
+    padding: 0.75rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: #fff;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.duration-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.duration-btn.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+    box-shadow: 0 2px 8px rgba(21, 101, 192, 0.15);
+}
+
+/* Doctor select for sharing */
+.doctor-select-list {
+    max-height: 250px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.doctor-select-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+}
+
+.doctor-select-item:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.doctor-select-item.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.doctor-select-item .doctor-mini-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* Permission expiry badge */
+.expiry-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.expiry-badge.active {
+    background: #D1FAE5;
+    color: #059669;
+}
+
+.expiry-badge.expired {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+/* Women-friendly filter bar for hospitals */
+.women-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .care-preference-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .records-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .duration-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ------------ InfoTooltip ------------ */
+.info-tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.info-tooltip-trigger {
+    background: none;
+    border: 1.5px solid var(--border);
+    color: var(--primary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.info-tooltip-trigger:hover {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+.info-tooltip-popup {
+    position: absolute;
+    z-index: 999;
+    max-width: 260px;
+    min-width: 200px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+}
+.info-tooltip-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: var(--surface);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+}
+.info-tooltip-close:hover {
+    background: #E2E8F0;
+    color: var(--text-dark);
+}
+.info-tooltip-text {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-main);
+    line-height: 1.55;
+    padding-right: 0.75rem;
+}
+.info-tooltip-body {
+    padding-right: 0.75rem;
+}
+.info-tooltip-title {
+    margin: 0 0 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+.info-tooltip-desc {
+    margin: 0 0 0.5rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+.info-tooltip-usage {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border);
+    font-size: 0.78rem;
+    color: var(--text-main);
+}
+.info-tooltip-usage strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--text-dark);
+}
+
+/* ------------ Privacy Level Selector ------------ */
+.privacy-level-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+.privacy-level-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-family: var(--font);
+    color: var(--text-main);
+    transition: all 0.2s;
+}
+.privacy-level-btn:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+.privacy-level-btn.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+}
+.privacy-level-btn.sensitive.active {
+    border-color: #EC4899;
+    background: #FDF2F8;
+    color: #9D174D;
+}
+
+/* ------------ Privacy Shield Banner ------------ */
+.privacy-shield-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.15rem;
+    background: linear-gradient(135deg, #FDF2F8, #FCE7F3);
+    border-radius: var(--radius-sm);
+    border: 1px solid #FBCFE8;
+    margin-bottom: 1rem;
+}
+.privacy-shield-banner .shield-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #FCE7F3;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.privacy-shield-banner .shield-text {
+    flex: 1;
+}
+.privacy-shield-banner .shield-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #831843;
+    margin-bottom: 0.1rem;
+}
+.privacy-shield-banner .shield-desc {
+    font-size: 0.78rem;
+    color: #9D174D;
+    margin: 0;
+    line-height: 1.45;
+}
+
+/* ------------ Access Request Cards ------------ */
+.access-request-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: box-shadow 0.2s;
+    flex-wrap: wrap;
+}
+.access-request-card:hover {
+    box-shadow: var(--shadow-md);
+}
+.access-request-info {
+    flex: 1;
+    min-width: 0;
+}
+.access-request-info h4 {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+}
+.access-request-info p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0.15rem 0 0;
+}
+.access-request-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+.access-request-actions .btn-approve {
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    background: #D1FAE5;
+    color: #065F46;
+    transition: all 0.2s;
+}
+.access-request-actions .btn-approve:hover {
+    background: #A7F3D0;
+}
+.access-request-actions .btn-deny {
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    background: #FEE2E2;
+    color: #991B1B;
+    transition: all 0.2s;
+}
+.access-request-actions .btn-deny:hover {
+    background: #FECACA;
+}

@@ -4,7 +4,7 @@ import { useAuth } from '../services/AuthContext'
 import {
     Stethoscope, Calendar, Droplets, Users, MapPin,
     BarChart3, Activity, ChevronLeft, ChevronRight,
-    HeartPulse, Hospital
+    HeartPulse, Hospital, FolderHeart, FileText
 } from 'lucide-react'
 
 export default function DashboardLayout() {
@@ -17,6 +17,7 @@ export default function DashboardLayout() {
             items: [
                 { label: 'Dr. Dashboard', path: '/doctor-dashboard', icon: Activity, end: true },
                 { label: 'Patients', path: '/doctor-dashboard/patients', icon: Users },
+                { label: 'Patient Records', path: '/doctor-dashboard/patient-records', icon: FileText },
                 { label: 'Health Worker Mode', path: '/doctor-dashboard/health-worker', icon: HeartPulse },
                 { label: 'Smart Hospital REC', path: '/doctor-dashboard/hospital-rec', icon: Hospital },
             ]
@@ -37,6 +38,7 @@ export default function DashboardLayout() {
                 { label: 'Appointments', path: '/dashboard/appointments', icon: Calendar },
                 { label: 'Blood Donation', path: '/dashboard/blood-donation', icon: Droplets },
                 { label: 'Smart Hospital REC', path: '/dashboard/hospital-rec', icon: Hospital },
+                { label: 'Health Vault', path: '/dashboard/health-vault', icon: FolderHeart },
                 { label: 'Become a Doctor', path: '/dashboard/apply-doctor', icon: Stethoscope },
             ]
         }

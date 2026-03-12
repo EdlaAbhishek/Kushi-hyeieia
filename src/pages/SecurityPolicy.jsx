@@ -26,7 +26,7 @@ export default function SecurityPolicy() {
                     <Eye size={24} color="#059669" /> AI Usage Transparency
                 </h2>
                 <p style={{ lineHeight: 1.6, marginBottom: '1rem' }}>
-                    Khushi Hygieia uses advanced Artificial Intelligence models (such as Gemini/OpenRouter) to provide symptom analysis and hospital recommendations.
+                    Khushi Hygieia uses advanced Artificial Intelligence models (powered by Google Gemini) to provide symptom analysis and hospital recommendations.
                 </p>
                 <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '1rem' }}>
                     <h3 style={{ color: '#B91C1C', fontSize: '1rem', marginBottom: '0.5rem' }}>Important Medical Disclaimer</h3>

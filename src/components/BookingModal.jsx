@@ -12,6 +12,7 @@ export default function BookingModal({ doctor, onClose }) {
     const [bookingDate, setBookingDate] = useState('');
     const [bookingTime, setBookingTime] = useState('');
     const [appointmentType, setAppointmentType] = useState('in-person');
+    const [anonymousMode, setAnonymousMode] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [bookedSlots, setBookedSlots] = useState(['10:00 AM', '02:30 PM']); // Mocked booked slots
@@ -53,12 +54,15 @@ export default function BookingModal({ doctor, onClose }) {
             const appointmentData = {
                 doctor_id: doctor.id,
                 patient_id: user.id,
-                patient_name: user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email,
-                patient_email: user?.email,
+                patient_name: (appointmentType === 'telehealth' && anonymousMode)
+                    ? 'Private Patient'
+                    : (user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email),
+                patient_email: (appointmentType === 'telehealth' && anonymousMode) ? null : user?.email,
                 appointment_date: bookingDate,
                 appointment_time: bookingTime,
                 appointment_type: appointmentType === 'telehealth' ? 'teleconsultation' : 'in_person',
-                status: 'pending'
+                status: 'pending',
+                anonymous_consultation: (appointmentType === 'telehealth' && anonymousMode)
             };
 
             // Store in localStorage as requested (mock)
@@ -202,6 +206,26 @@ export default function BookingModal({ doctor, onClose }) {
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Anonymous Consultation Toggle — only for telehealth */}
+                            {appointmentType === 'telehealth' && (
+                                <div className="anon-toggle-bar">
+                                    <div>
+                                        <label>🔒 Anonymous Consultation</label>
+                                        <div className="toggle-hint">Your identity will be hidden from the doctor</div>
+                                    </div>
+                                    <div className="toggle-switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={anonymousMode}
+                                            onChange={(e) => setAnonymousMode(e.target.checked)}
+                                            id="anon-toggle"
+                                        />
+                                        <span className="toggle-slider" onClick={() => setAnonymousMode(!anonymousMode)}></span>
+                                    </div>
+                                </div>
+                            )}
+
 
                             <div className="form-group">
                                 <label className="form-label">Doctor Name</label>

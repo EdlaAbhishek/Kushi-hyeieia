@@ -5,7 +5,7 @@ import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
 import { MessageCircle, X, Send, AlertTriangle, Activity } from 'lucide-react'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
-import InfoButton from '../components/ui/InfoButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 import { toast } from 'react-hot-toast'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import SectionContainer from '../components/ui/SectionContainer'
@@ -283,7 +283,16 @@ export default function Dashboard({ activeTab = 'overview' }) {
     return (
         <>
             <PageHeader
-                title={`Welcome back, ${userName}`}
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        Welcome back, {userName}
+                        <InfoTooltip content={{
+                            title: "Patient Dashboard",
+                            description: "This is your central hub for managing your health. From here, you can view upcoming appointments, track health trends, check your lab test bookings, and access your medical records.",
+                            usage: "Use the tabs to navigate or click the Action buttons to book new appointments."
+                        }} />
+                    </div>
+                }
                 description="Manage your appointments, health records, and upcoming tests."
                 action={
                     <ActionButton to="/doctors" variant="primary">
@@ -295,28 +304,68 @@ export default function Dashboard({ activeTab = 'overview' }) {
             <SectionContainer style={{ paddingTop: '1.5rem' }}>
                 <div>
                     {/* Personal Health Trends Panel (Only on Overview) */}
+                    {/* Personal Health Metrics (Overview Only) */}
                     {activeTab === 'overview' && (
-                        <div style={{ marginBottom: '3rem' }}>
+                        <div style={{ marginBottom: '3.5rem' }}>
                             <div className="section-header" style={{ marginBottom: '1.5rem' }}>
                                 <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
-                                    <Activity size={24} color="var(--primary)" /> Personal Health Trends
+                                    <Activity size={24} color="var(--primary)" /> Personal Health Insights
                                 </h2>
-                                <p className="section-subtitle">Your overall wellness score over time.</p>
+                                <p className="section-subtitle">AI-driven metrics and historical wellness trends.</p>
                             </div>
-                            <DashboardCard style={{ padding: '1.5rem', height: 300 }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={mockHealthData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                                        <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} dy={10} />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} domain={['dataMin - 10', 'dataMax + 10']} />
-                                        <Tooltip
-                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                            cursor={{ stroke: 'var(--primary)', strokeWidth: 1, strokeDasharray: '5 5' }}
-                                        />
-                                        <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6, stroke: 'var(--primary)', strokeWidth: 2, fill: '#fff' }} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </DashboardCard>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                                {/* Health Trends Chart */}
+                                <DashboardCard style={{ padding: '1.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>Wellness Score Trend</h3>
+                                        <InfoTooltip content={{
+                                            en: { title: 'Wellness Score', helps: 'A weighted average of your recent vital signs, lab results, and symptom history.', usage: 'Track this monthly. A score above 80 is considered excellent.' },
+                                            hi: { title: 'कल्याण स्कोर', helps: 'आपके हालिया महत्वपूर्ण संकेतों, लैब परिणामों और लक्षण इतिहास का भारित औसत।', usage: 'इसे मासिक रूप से ट्रैक करें। 80 से ऊपर का स्कोर उत्कृष्ट माना जाता है।' },
+                                            te: { title: 'వెల్నెస్ స్కోర్', helps: 'మీ ఇటీవలి కీలక సంకేతాలు, ల్యాబ్ ఫలితాలు మరియు లక్షణ చరిత్ర యొక్క సగటు.', usage: 'దీన్ని నెలవారీగా ట్రాక్ చేయండి. 80 కంటే ఎక్కువ స్కోరు అద్భుతంగా పరిగణించబడుతుంది.' }
+                                        }} />
+                                    </div>
+                                    <div style={{ height: 200 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={mockHealthData}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                                                <YAxis hide domain={['dataMin - 5', 'dataMax + 5']} />
+                                                <Tooltip
+                                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                    cursor={{ stroke: 'var(--primary)', strokeWidth: 1 }}
+                                                />
+                                                <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </DashboardCard>
+
+                                {/* Predictive Risk Score Card */}
+                                <DashboardCard style={{ padding: '1.5rem', background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)', border: '1px solid #E2E8F0' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <AlertTriangle size={20} color="#EAB308" /> AI Risk Profile
+                                        </h3>
+                                        <InfoTooltip content={{
+                                            en: { title: 'Predictive Risk Profile', helps: 'AI analysis of clinical records to identify potential risks before symptoms occur.', usage: 'Update your Health Vault regularly to improve the precision of this score.' },
+                                            hi: { title: 'भविष्य कहनेवाला जोखिम प्रोफ़ाइल', helps: 'लक्षणों के होने से पहले संभावित जोखिमों की पहचान करने के लिए नैदानिक ​​रिकॉर्ड का एआई विश्लेषण।', usage: 'इस स्कोर की सटीकता में सुधार के लिए अपने हेल्थ वॉल्ट को नियमित रूप से अपडेट करें।' },
+                                            te: { title: 'ప్రిడిక్టివ్ రిస్క్ ప్రొఫైల్', helps: 'లక్షణాలు కనిపించే ముందే సంభావ్య ప్రమాదాలను గుర్తించడానికి క్లినికల్ రికార్డుల AI విశ్లేషణ.', usage: 'ఈ స్కోర్ యొక్క ఖచ్చితత్వాన్ని మెరుగుపరచడానికి మీ హెల్త్ వాల్ట్‌ను క్రమం తప్పకుండా అప్‌డేట్ చేయండి.' }
+                                        }} />
+                                    </div>
+                                    
+                                    <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                                        <div style={{ fontSize: '3.5rem', fontWeight: 800, color: '#1E293B', lineHeight: 1 }}>12%</div>
+                                        <div style={{ color: '#10B981', fontWeight: 600, fontSize: '0.9rem', marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                            <span>↓ 2%</span> <span style={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.8 }}>since last checkup</span>
+                                        </div>
+                                        
+                                        <div style={{ marginTop: '1.5rem', background: '#fff', padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem', color: '#64748B', border: '1px solid #E2E8F0' }}>
+                                            <strong>Status:</strong> Low baseline risk. Maintain current lifestyle and regular monitoring.
+                                        </div>
+                                    </div>
+                                </DashboardCard>
+                            </div>
                         </div>
                     )}
 
@@ -330,7 +379,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
                                         : `${appointments.length} appointment${appointments.length !== 1 ? 's' : ''} found`}
                                 </p>
                             </div>
-                            <InfoButton content={{
+                            <InfoTooltip content={{
                                 en: { title: 'Your Appointments', helps: 'This section organizes your upcoming and past medical visits so you can manage your healthcare schedule.', usage: 'View your scheduled doctors here. You can cancel an appointment if needed or click "Join Chat" to message the doctor if the feature is enabled.' },
                                 hi: { title: 'आपकी नियुक्तियां', helps: 'यह अनुभाग आपकी आगामी और पिछली चिकित्सा यात्राओं को व्यवस्थित करता है ताकि आप अपनी स्वास्थ्य देखभाल अनुसूची का प्रबंधन कर सकें।', usage: 'यहाँ अपने निर्धारित डॉक्टरों को देखें। आप आवश्यक होने पर अपॉइंटमेंट रद्द कर सकते हैं या सुविधा सक्षम होने पर डॉक्टर को संदेश भेजने के लिए "चैट में शामिल हों" पर क्लिक कर सकते हैं।' },
                                 te: { title: 'మీ అపాయింట్‌మెంట్‌లు', helps: 'ఈ విభాగం మీ రాబోయే మరియు గత వైద్య సందర్శనలను నిర్వహిస్తుంది, తద్వారా మీరు మీ ఆరోగ్య సంరక్షణ షెడ్యూల్‌ను నిర్వహించవచ్చు.', usage: 'ఇక్కడ షెడ్యూల్ చేయబడిన మీ వైద్యులను చూడండి. అవసరమైతే మీరు అపాయింట్‌మెంట్‌ను రద్దు చేయవచ్చు లేదా ఫీచర్ ప్రారంభించబడి ఉంటే డాక్టర్‌కు మెసేజ్ చేయడానికి "చాట్‌లో చేరండి" క్లిక్ చేయవచ్చు.' }
@@ -466,7 +515,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
                                             : `${labBookings.length} lab booking${labBookings.length !== 1 ? 's' : ''}`}
                                     </p>
                                 </div>
-                                <InfoButton content={{
+                                <InfoTooltip content={{
                                     en: { title: 'Lab Tests', helps: 'This section tracks the diagnostic tests you have scheduled.', usage: 'View your requested home collections here.' },
                                     hi: { title: 'प्रयोगशाला परीक्षण', helps: 'यह अनुभाग आपके द्वारा निर्धारित नैदानिक परीक्षणों को ट्रैक करता है।', usage: 'अपने अनुरोधित होम संग्रह को यहां देखें।' },
                                     te: { title: 'ప్రయోగశాల పరీక్షలు', helps: 'ఈ విభాగం మీరు ప్లాన్ చేసిన రోగనిర్ధారణ పరీక్షలను ట్రాక్ చేస్తుంది.', usage: 'మీరు అభ్యర్థించిన హోమ్ కలెక్షన్లను ఇక్కడ వీక్షించండి.' }

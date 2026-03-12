@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast'
 import PageHeader from '../components/ui/PageHeader'
 import DashboardCard from '../components/ui/DashboardCard'
 import ActionButton from '../components/ui/ActionButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 
 export default function HealthWorkerMode() {
     const [patientData, setPatientData] = useState({
@@ -153,6 +154,11 @@ export default function HealthWorkerMode() {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <Users size={28} />
                         {t("Health Worker Mode")}
+                        <InfoTooltip content={{
+                            title: "Health Worker Mode",
+                            description: "A specialized interface for ASHA workers and field nurses to input patient vitals in remote or rural areas.",
+                            usage: "Fields can be filled while offline. Data is saved locally and will automatically sync when an internet connection is restored."
+                        }} />
                     </span>
                 }
                 description={t("Remote primary care data entry (ASHA/Camp interface)")}

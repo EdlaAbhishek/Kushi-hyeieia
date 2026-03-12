@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
 import DashboardCard from '../components/ui/DashboardCard'
+import InfoTooltip from '../components/ui/InfoTooltip'
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#6366F1', '#8B5CF6']
 const TRIAGE_COLORS = ['#34D399', '#FBBF24', '#F87171']
@@ -168,6 +169,11 @@ export default function AdminDashboard({ mode = 'population' }) {
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <TrendingUp size={28} />
                             System Analytics
+                            <InfoTooltip content={{
+                                title: "System Analytics",
+                                description: "Comprehensive view of platform usage, appointment trends, and consultation types across the entire hospital network.",
+                                usage: "Use the dropdown to filter by time range. Monitor teleconsultation vs in-person trends."
+                            }} />
                         </span>
                     }
                     description="Appointment metrics, consultation trends, and system usage."
@@ -318,6 +324,11 @@ export default function AdminDashboard({ mode = 'population' }) {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <Activity size={28} />
                         Population Health
+                        <InfoTooltip content={{
+                            title: "Population Health",
+                            description: "Aggregated health metrics and risk stratifications for the patient population to help identify public health trends.",
+                            usage: "Monitor high-risk patient counts and disease distributions to allocate resources effectively."
+                        }} />
                     </span>
                 }
                 description="Overview of hospital patient demographics and risk factors."

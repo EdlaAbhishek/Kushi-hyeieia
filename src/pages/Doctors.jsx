@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight } from 'lucide-react'
+import { MapPin, BadgeCheck, Clock, TestTubes, CalendarDays, ArrowRight, ShieldCheck } from 'lucide-react'
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
-import InfoButton from '../components/ui/InfoButton'
+import InfoTooltip from '../components/ui/InfoTooltip'
 import { toast } from 'react-hot-toast'
 import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
@@ -21,6 +21,7 @@ export default function Doctors() {
     const [searchQuery, setSearchQuery] = useState('')
     const [loading, setLoading] = useState(true)
     const [fetchError, setFetchError] = useState(null)
+    const [careMode, setCareMode] = useState('standard') // 'standard' or 'women'
 
     // Booking states
     const [showBooking, setShowBooking] = useState(false)
@@ -53,27 +54,11 @@ export default function Doctors() {
             setLoading(true)
             setFetchError(null)
 
-            // Mapping for placeholder/test names to proper professional names
-            const nameMapping = {
-                'Aizen': { full_name: 'Dr. Priya Sharma', hospital: 'Apollo Hospitals, Hyderabad' },
-                'Direct Test Doctor': { full_name: 'Dr. Rajesh Kapoor', hospital: 'Fortis Heart Institute, Delhi' },
-                'Admin User': { full_name: 'Dr. Ananya Reddy', hospital: 'KIMS Hospital, Secunderabad' },
-                'Abhi': { full_name: 'Dr. Vikram Patel', hospital: 'Yashoda Hospitals, Hyderabad' },
-            }
-
             try {
                 const { data, error } = await supabase.from('doctors').select('*')
                 if (error) throw error
 
-                // Apply name mapping to fix placeholder data
-                const cleaned = (data || []).map(doc => {
-                    const mapping = nameMapping[doc.full_name]
-                    if (mapping) {
-                        return { ...doc, ...mapping }
-                    }
-                    return doc
-                })
-                setDoctors(cleaned)
+                setDoctors(data || [])
             } catch (err) {
                 console.error('Fetch error:', err.message)
                 setFetchError(err.message)
@@ -108,8 +93,14 @@ export default function Doctors() {
                 (doc.specialty || '').toLowerCase().includes(query)
             )
         }
+        // Women's Privacy Mode: prioritize female doctors and women-friendly clinics
+        if (careMode === 'women') {
+            result = result.filter(doc =>
+                (doc.gender || '').toLowerCase() === 'female' || doc.women_friendly === true
+            )
+        }
         return result
-    }, [doctors, selectedSpecialty, searchQuery])
+    }, [doctors, selectedSpecialty, searchQuery, careMode])
 
     return (
         <>
@@ -117,6 +108,34 @@ export default function Doctors() {
                 title="Doctor Network"
                 description="5,000+ verified specialists across India."
             />
+
+            {/* ─── Care Preferences ─── */}
+            <SectionContainer>
+                <div className="care-preference-bar">
+                    <span className="care-label">
+                        <ShieldCheck size={18} /> Care Preferences
+                    </span>
+                    <div className="care-toggle-group">
+                        <button
+                            className={`care-toggle-btn ${careMode === 'standard' ? 'active' : ''}`}
+                            onClick={() => setCareMode('standard')}
+                        >
+                            🏥 Standard Care
+                        </button>
+                        <button
+                            className={`care-toggle-btn ${careMode === 'women' ? 'active' : ''}`}
+                            onClick={() => setCareMode('women')}
+                        >
+                            🛡️ Women's Privacy Mode
+                        </button>
+                    </div>
+                    {careMode === 'women' && (
+                        <span style={{ fontSize: '0.78rem', color: '#9D174D', fontWeight: 500 }}>
+                            Showing women-friendly doctors and clinics
+                        </span>
+                    )}
+                </div>
+            </SectionContainer>
 
             {/* ─── Specialty Filter ─── */}
             <SectionContainer>
@@ -127,7 +146,7 @@ export default function Doctors() {
                             <h2 className="section-title">Browse by Specialty</h2>
                             <p className="section-subtitle">Select a specialty to filter doctors.</p>
                         </div>
-                        <InfoButton content={{
+                        <InfoTooltip content={{
                             en: { title: 'Doctor Network', helps: 'Find verified specialists for your health needs.', usage: 'Filter specialists by their field or search for specific doctors/hospitals. Each doctor profile shows their expertise and real-time availability.' },
                             hi: { title: 'डॉक्टर नेटवर्क', helps: 'अपनी स्वास्थ्य आवश्यकताओं के लिए सत्यापित विशेषज्ञों को खोजें।', usage: 'विशेषज्ञों को उनके क्षेत्र के आधार पर फ़िल्टर करें या विशिष्ट डॉक्टरों/अस्पतालों की खोज करें। प्रत्येक डॉक्टर प्रोफ़ైల్ उनकी विशेषज्ञता और रीयल-टाइम उपलब्धता दिखाती है।' },
                             te: { title: 'డాక్టర్ నెట్‌వర్క్', helps: 'మీ ఆరోగ్య అవసరాల కోసం ధృవీకరించబడిన నిపుణులను కనుగొనండి.', usage: 'నిపుణులను వారి రంగం ఆధారంగా ఫిల్టర్ చేయండి లేదా నిర్దిష్ట వైద్యులు/ఆసుపత్రుల కోసం శోధించండి. ప్రతి డాక్టర్ ప్రొఫైల్ వారి నైపుణ్యం మరియు రియల్ టైమ్ లభ్యతను చూపుతుంది.' }
@@ -283,6 +302,11 @@ export default function Doctors() {
                                                 <BadgeCheck size={14} color="#10B981" />
                                                 <span>Verified Professional</span>
                                             </div>
+                                            {(doc.women_friendly || (doc.gender || '').toLowerCase() === 'female') && (
+                                                <div className="privacy-badge privacy-badge--women" style={{ marginTop: '0.25rem' }}>
+                                                    <ShieldCheck size={12} /> Women-Friendly Doctor
+                                                </div>
+                                            )}
                                         </div>
                                         <ActionButton variant="primary" style={{ width: '100%', marginTop: 'auto' }} onClick={() => navigate(`/doctors/${doc.id}`)}>
                                             {isDoctor ? 'View Profile' : 'View Profile & Book'} <ArrowRight size={15} />

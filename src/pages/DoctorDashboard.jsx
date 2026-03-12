@@ -5,7 +5,8 @@ import { supabase } from '../services/supabase'
 import { MessageCircle, X, Send, AlertTriangle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
-import InfoButton from '../components/ui/InfoButton'
+
+import InfoTooltip from '../components/ui/InfoTooltip'
 import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
 import DashboardCard from '../components/ui/DashboardCard'
@@ -320,7 +321,16 @@ export default function DoctorDashboard() {
     return (
         <>
             <PageHeader
-                title={`Doctor Dashboard`}
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        Doctor Dashboard
+                        <InfoTooltip content={{
+                            title: "Doctor Workspace",
+                            description: "Your centralized hub for managing patient appointments, viewing daily schedules, and updating your availability status.",
+                            usage: "Update your status to busy/offline to prevent new bookings. Use the action buttons to confirm or complete appointments."
+                        }} />
+                    </div>
+                }
                 description={`Welcome back, ${userName}`}
                 className="doctor-header"
             />
@@ -376,7 +386,7 @@ export default function DoctorDashboard() {
                                 <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
                                     <AlertTriangle size={20} color="var(--primary)" /> Recent Notifications
                                 </h2>
-                                <InfoButton content={{
+                                <InfoTooltip content={{
                                     en: { title: 'Doctor Privacy', helps: 'Manage your workload and patient appointments.', usage: 'Toggle your status between Available, Busy, or Offline. When Busy or Offline, new patients cannot book appointments, but existing ones are preserved.' },
                                     hi: { title: 'डॉक्टर की गोपनीयता', helps: 'अपने कार्यभार और रोगी नियुक्तियों का प्रबंधन करें।', usage: 'उपलब्ध, व्यस्त या ऑफ़लाइन के बीच अपनी स्थिति टॉगल करें। व्यस्त या ऑफ़लाइन होने पर, नए रोगी अपॉइंटमेंट बुक नहीं कर सकते।' },
                                     te: { title: 'డాక్టర్ గోప్యత', helps: 'మీ పని భారాన్ని మరియు రోగి అపాయింట్‌మెంట్‌లను నిర్వహించండి.', usage: 'మీ స్థితిని అందుబాటులో ఉంది, బిజీగా లేదా ఆఫ్‌లైన్ మధ్య టోగుల్ చేయండి. బిజీగా లేదా ఆఫ్‌లైన్లో ఉన్నప్పుడు, కొత్త రోగులు అపాయింట్‌మెంట్‌లను బుక్ చేయలేరు.' }
