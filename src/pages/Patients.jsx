@@ -24,7 +24,7 @@ export default function Patients() {
             try {
                 const { data, error } = await supabase
                     .from('appointments')
-                    .select('*, doctors(*)')
+                    .select('*, doctors(id, full_name, specialty, hospital, hospital_name, profile_photo)')
                     .eq('patient_id', user.id)
                     .eq('status', 'completed')
                     .limit(6)

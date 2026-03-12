@@ -61,7 +61,7 @@ export default function DoctorDashboard() {
 
             const { data, error } = await supabase
                 .from('appointments')
-                .select('*, patients:patient_id(full_name, email)')
+                .select('*, patients!patient_id(full_name)')
                 .eq('doctor_id', user.id)
                 .order('appointment_date', { ascending: false })
             if (error) throw error
@@ -503,7 +503,7 @@ export default function DoctorDashboard() {
                                 </thead>
                                 <tbody>
                                     {appointments.map(appt => {
-                                        const displayName = appt.patients?.full_name || appt.patients?.email || appt.patient_name || appt.patient_email || 'Patient';
+                                        const displayName = appt.patients?.full_name || 'Patient';
                                         return (
                                             <tr key={appt.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
                                                 <td style={{ padding: '0.75rem 1rem', fontWeight: 600, whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
