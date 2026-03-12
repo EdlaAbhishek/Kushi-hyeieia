@@ -35,8 +35,22 @@ Rules:
         const chatHistory = []
         for (let i = 0; i < messages.length - 1; i++) {
             const msg = messages[i]
+            const mappedRole = msg.role === 'user' ? 'user' : 'model'
+
+            // Gemini history MUST start with a 'user' message
+            if (chatHistory.length === 0 && mappedRole !== 'user') {
+                continue
+            }
+
+            // Gemini history MUST strictly alternate between user and model
+            if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === mappedRole) {
+                // Merge consecutive messages of the same role
+                chatHistory[chatHistory.length - 1].parts[0].text += '\n\n' + msg.content
+                continue
+            }
+
             chatHistory.push({
-                role: msg.role === 'user' ? 'user' : 'model',
+                role: mappedRole,
                 parts: [{ text: msg.content }]
             })
         }
