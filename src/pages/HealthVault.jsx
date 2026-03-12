@@ -35,7 +35,6 @@ export default function HealthVault() {
     const [loading, setLoading] = useState(true)
     const [uploading, setUploading] = useState(false)
     const [selectedType, setSelectedType] = useState('prescription')
-    const [privacyLevel, setPrivacyLevel] = useState('general') // 'general' or 'sensitive'
     const [dragover, setDragover] = useState(false)
 
     // Share modal state
@@ -209,15 +208,12 @@ export default function HealthVault() {
 
             if (uploadError) throw uploadError
 
-            const { data: { publicUrl } } = supabase.storage
-                .from('medical-records')
-                .getPublicUrl(fileName)
-
+            // Store the file path — we'll generate signed URLs when viewing
             const { error: dbError } = await supabase
                 .from('patient_records')
                 .insert({
                     patient_id: user.id,
-                    file_url: publicUrl,
+                    file_url: fileName,
                     file_name: file.name,
                     record_type: selectedType
                 })
@@ -230,6 +226,22 @@ export default function HealthVault() {
             toast.error('Failed to upload: ' + err.message)
         } finally {
             setUploading(false)
+        }
+    }
+
+    const handleViewRecord = async (filePath) => {
+        try {
+            const { data, error } = await supabase.storage
+                .from('medical-records')
+                .createSignedUrl(filePath, 3600) // 1 hour expiry
+            
+            if (error) throw error
+            if (data?.signedUrl) {
+                window.open(data.signedUrl, '_blank')
+            }
+        } catch (err) {
+            console.error('Error generating signed URL:', err)
+            toast.error('Failed to open file: ' + err.message)
         }
     }
 
@@ -440,29 +452,7 @@ export default function HealthVault() {
                         </div>
                     </div>
 
-                    {/* Privacy Level Selector */}
-                    <div style={{ marginBottom: '1.25rem' }}>
-                        <label className="form-label" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            Privacy Level
-                            <InfoTooltip text="Sensitive records (pregnancy, menstrual, fertility, sexual health) can be hidden from doctors using Women Privacy Mode." />
-                        </label>
-                        <div className="privacy-level-selector">
-                            <button
-                                className={`privacy-level-btn ${privacyLevel === 'general' ? 'active' : ''}`}
-                                onClick={() => setPrivacyLevel('general')}
-                                type="button"
-                            >
-                                <Unlock size={15} /> General
-                            </button>
-                            <button
-                                className={`privacy-level-btn sensitive ${privacyLevel === 'sensitive' ? 'active' : ''}`}
-                                onClick={() => setPrivacyLevel('sensitive')}
-                                type="button"
-                            >
-                                <Lock size={15} /> Sensitive
-                            </button>
-                        </div>
-                    </div>
+
 
                     {/* Upload Area */}
                     <div
@@ -478,11 +468,7 @@ export default function HealthVault() {
                         <p style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.5rem' }}>
                             Supported formats: PDF, JPG, PNG, DICOM
                         </p>
-                        {privacyLevel === 'sensitive' && (
-                            <p style={{ fontSize: '0.78rem', color: '#9D174D', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem', justifyContent: 'center' }}>
-                                <Lock size={13} /> This record will be marked as sensitive
-                            </p>
-                        )}
+
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -573,7 +559,7 @@ export default function HealthVault() {
                                             <ActionButton
                                                 variant="outline"
                                                 style={{ flex: 1, fontSize: '0.78rem', padding: '0.35rem 0.5rem' }}
-                                                onClick={() => window.open(record.file_url, '_blank')}
+                                                onClick={() => handleViewRecord(record.file_url)}
                                             >
                                                 <Eye size={14} /> View
                                             </ActionButton>

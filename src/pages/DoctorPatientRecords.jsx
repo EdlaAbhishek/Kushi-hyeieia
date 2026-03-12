@@ -160,6 +160,22 @@ export default function DoctorPatientRecords() {
         }
     }
 
+    const handleViewRecord = async (filePath) => {
+        try {
+            const { data, error } = await supabase.storage
+                .from('medical-records')
+                .createSignedUrl(filePath, 3600) // 1 hour expiry
+            
+            if (error) throw error
+            if (data?.signedUrl) {
+                window.open(data.signedUrl, '_blank')
+            }
+        } catch (err) {
+            console.error('Error generating signed URL:', err)
+            toast.error('Failed to open file: ' + err.message)
+        }
+    }
+
     const formatDate = (d) => {
         try {
             return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -382,17 +398,6 @@ export default function DoctorPatientRecords() {
                                                     <h4>{record.file_name || typeInfo.label}</h4>
                                                     <p>
                                                         {typeInfo.label} • {formatDate(record.uploaded_at)}
-                                                        {record.sensitive && (
-                                                            <span style={{
-                                                                marginLeft: '0.4rem', background: '#FDF2F8',
-                                                                color: '#9D174D', padding: '0.1rem 0.4rem',
-                                                                borderRadius: 'var(--radius-pill)', fontSize: '0.68rem',
-                                                                fontWeight: 600
-                                                            }}>
-                                                                <Lock size={10} style={{ verticalAlign: 'middle', marginRight: '0.15rem' }} />
-                                                                Sensitive
-                                                            </span>
-                                                        )}
                                                     </p>
                                                 </div>
                                             </div>
@@ -400,7 +405,7 @@ export default function DoctorPatientRecords() {
                                                 <ActionButton
                                                     variant="primary"
                                                     style={{ flex: 1, fontSize: '0.78rem', padding: '0.35rem 0.5rem' }}
-                                                    onClick={() => window.open(record.file_url, '_blank')}
+                                                    onClick={() => handleViewRecord(record.file_url)}
                                                 >
                                                     <Eye size={14} /> View Record
                                                 </ActionButton>
