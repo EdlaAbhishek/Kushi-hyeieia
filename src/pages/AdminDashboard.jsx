@@ -231,25 +231,24 @@ export default function AdminDashboard({ mode = 'population' }) {
                                                 }}>
                                                     Reject
                                                 </ActionButton>
-                                                <ActionButton variant="primary" style={{ fontSize: '0.8rem' }} onClick={() => {
-                                                    const sql = `
--- COPY & RUN THIS IN SUPABASE SQL EDITOR --
--- 1. Approve User Metadata
--- Go to Auth > Users > Search ID: ${app.user_id} 
--- Edit User Metadata -> change "role": "patient" to "role": "doctor"
-
--- 2. Add to Doctors Table
-INSERT INTO doctors (id, full_name, specialty, hospital, license_number, availability_status)
-VALUES ('${app.user_id}', '${app.full_name}', '${app.specialization}', '${app.hospital_affiliation || 'Kushi Hygieia Network'}', '${app.license_number}', 'available');
-
--- 3. Cleanup Application
-DELETE FROM doctor_applications WHERE id = '${app.id}';
-                                                    `
-                                                    navigator.clipboard.writeText(sql)
-                                                    alert("Approval shortcut: I have copied the SQL command to your clipboard. \n\n1. Go to Supabase SQL Editor\n2. Paste and Run\n3. Update user metadata role to 'doctor' in Auth settings.")
-                                                    console.log(sql)
+                                                <ActionButton variant="primary" style={{ fontSize: '0.8rem' }} onClick={async () => {
+                                                    try {
+                                                        const { error } = await supabase.rpc('approve_doctor_application', { app_id: app.id })
+                                                        if (error) {
+                                                            if (error.message.includes('Could not find the function')) {
+                                                                toast.error("Function not found! You must run the setup SQL in the Supabase Dashboard first.");
+                                                                return;
+                                                            }
+                                                            throw error;
+                                                        }
+                                                        toast.success(`Successfully approved ${app.full_name}! They are now a doctor.`);
+                                                        fetchApplications();
+                                                    } catch (err) {
+                                                        console.error("RPC Error:", err);
+                                                        toast.error("Approval failed: " + err.message);
+                                                    }
                                                 }}>
-                                                    Approve (Copy SQL)
+                                                    Approve Doctor
                                                 </ActionButton>
                                             </div>
                                         </div>
