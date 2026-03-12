@@ -27,6 +27,7 @@ export default function DashboardLayout() {
             items: [
                 { label: 'Population Health', path: '/doctor-dashboard/population-health', icon: BarChart3 },
                 { label: 'System Analytics', path: '/doctor-dashboard/analytics', icon: Activity },
+                { label: 'Doctor Applications', path: '/doctor-dashboard/applications', icon: Users },
             ]
         }
     ] : [

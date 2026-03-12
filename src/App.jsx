@@ -130,6 +130,7 @@ export default function App() {
                                         <Route path="hospital-rec" element={<HospitalRecommendation />} />
                                         <Route path="population-health" element={<AdminDashboard mode="population" />} />
                                         <Route path="analytics" element={<AdminDashboard mode="analytics" />} />
+                                        <Route path="applications" element={<AdminDashboard mode="applications" />} />
                                     </Route>
 
                                     <Route path="/health-worker" element={<Navigate to="/doctor-dashboard/health-worker" replace />} />

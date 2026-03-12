@@ -27,15 +27,35 @@ export default function AdminDashboard({ mode = 'population' }) {
     const [triageData, setTriageData] = useState([])
     const [appointmentTrend, setAppointmentTrend] = useState([])
     const [typeDistribution, setTypeDistribution] = useState([])
+    const [applications, setApplications] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         if (mode === 'analytics') {
             fetchAnalyticsData()
+        } else if (mode === 'applications') {
+            fetchApplications()
         } else {
             fetchDashboardData()
         }
     }, [mode])
+
+    const fetchApplications = async () => {
+        try {
+            setIsLoading(true)
+            const { data, error } = await supabase
+                .from('doctor_applications')
+                .select('*')
+                .order('created_at', { ascending: false })
+            
+            if (error) throw error
+            setApplications(data || [])
+        } catch (err) {
+            console.error("Error fetching applications:", err)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const fetchDashboardData = async () => {
         try {
@@ -157,6 +177,89 @@ export default function AdminDashboard({ mode = 'population' }) {
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
                 <div className="loading-spinner"></div>
             </div>
+        )
+    }
+
+    // ── Doctor Applications Review View ──
+    if (mode === 'applications') {
+        return (
+            <>
+                <PageHeader
+                    title={
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <Users size={28} />
+                            Doctor Applications
+                            <InfoTooltip content={{
+                                title: "Doctor Applications",
+                                description: "Review credentials submitted by healthcare professionals seeking doctor role access.",
+                                usage: "Verify the license number against the official registry before approving."
+                            }} />
+                        </span>
+                    }
+                    description="Review and manage pending medical professional applications."
+                />
+
+                <SectionContainer>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                        {applications.length === 0 ? (
+                            <DashboardCard style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                                <Users size={40} color="#94A3B8" style={{ margin: '0 auto 1.5rem' }} />
+                                <h3 style={{ color: '#1E293B', marginBottom: '0.5rem' }}>No pending applications</h3>
+                                <p style={{ color: '#64748B' }}>New "Become a Doctor" submissions will appear here for your review.</p>
+                            </DashboardCard>
+                        ) : (
+                            <div style={{ display: 'grid', gap: '1rem' }}>
+                                {applications.map(app => (
+                                    <DashboardCard key={app.id} style={{ padding: '1.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                                            <div>
+                                                <h3 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>{app.full_name}</h3>
+                                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', color: '#64748B', fontSize: '0.9rem' }}>
+                                                    <span><strong>Specialty:</strong> {app.specialization}</span>
+                                                    <span><strong>Experience:</strong> {app.experience_years} years</span>
+                                                    <span><strong>License:</strong> {app.license_number}</span>
+                                                </div>
+                                                <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#94A3B8' }}>
+                                                    Applied on {new Date(app.created_at).toLocaleDateString()} at {new Date(app.created_at).toLocaleTimeString()}
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                                <ActionButton variant="outline" style={{ fontSize: '0.8rem', color: '#EF4444', borderColor: '#FECACA' }} onClick={() => {
+                                                    if(window.confirm("Are you sure you want to reject this application? This will permanently delete it.")) {
+                                                       supabase.from('doctor_applications').delete().eq('id', app.id).then(() => fetchApplications());
+                                                    }
+                                                }}>
+                                                    Reject
+                                                </ActionButton>
+                                                <ActionButton variant="primary" style={{ fontSize: '0.8rem' }} onClick={() => {
+                                                    const sql = `
+-- COPY & RUN THIS IN SUPABASE SQL EDITOR --
+-- 1. Approve User Metadata
+-- Go to Auth > Users > Search ID: ${app.user_id} 
+-- Edit User Metadata -> change "role": "patient" to "role": "doctor"
+
+-- 2. Add to Doctors Table
+INSERT INTO doctors (id, full_name, specialty, hospital, license_number, availability_status)
+VALUES ('${app.user_id}', '${app.full_name}', '${app.specialization}', '${app.hospital_affiliation || 'Kushi Hygieia Network'}', '${app.license_number}', 'available');
+
+-- 3. Cleanup Application
+DELETE FROM doctor_applications WHERE id = '${app.id}';
+                                                    `
+                                                    navigator.clipboard.writeText(sql)
+                                                    alert("Approval shortcut: I have copied the SQL command to your clipboard. \n\n1. Go to Supabase SQL Editor\n2. Paste and Run\n3. Update user metadata role to 'doctor' in Auth settings.")
+                                                    console.log(sql)
+                                                }}>
+                                                    Approve (Copy SQL)
+                                                </ActionButton>
+                                            </div>
+                                        </div>
+                                    </DashboardCard>
+                                ))}
+                            </div>
+                        )}
+                    </motion.div>
+                </SectionContainer>
+            </>
         )
     }
 
