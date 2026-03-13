@@ -88,7 +88,7 @@ export default function Doctors() {
             const query = searchQuery.toLowerCase()
             result = result.filter(doc =>
                 (doc.full_name || '').toLowerCase().includes(query) ||
-                (doc.hospital || '').toLowerCase().includes(query) ||
+                (doc.hospital_name || '').toLowerCase().includes(query) ||
                 (doc.specialty || '').toLowerCase().includes(query)
             )
         }
@@ -262,7 +262,7 @@ export default function Doctors() {
                                         <div className="doctor-card-details">
                                             <div className="doctor-detail-row">
                                                 <MapPin size={14} />
-                                                <span>{doc.hospital || 'Hospital not listed'}</span>
+                                                <span>{doc.hospital_name || 'Hospital not listed'}</span>
                                             </div>
                                             <div className="doctor-detail-row">
                                                 <BadgeCheck size={14} color="#10B981" />
