@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock, Activity, Users, ArrowLeft, Star, BedDouble } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Activity, Users, Star, BedDouble, Stethoscope, ArrowLeft, ChevronRight, Video } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
+import BookingModal from '../components/BookingModal';
 import { toast } from 'react-hot-toast';
-import LoadingSpinner from '../components/LoadingSpinner';
 
-// Mock data to match the array in Hospitals.jsx
+// Fallback specialties
+const FALLBACK_SPECIALTIES = [
+    'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics',
+    'Oncology', 'Gastroenterology', 'Dermatology', 'General Physician'
+];
+
+// Mock data to match fallback hospitals
 const mockHospitals = [
     { id: '1', name: 'Apollo Hospitals', city: 'Chennai', beds: '500+', emergency: true, teleconsult: true, rating: 4.8, address: 'Greams Lane, Off Greams Road, Chennai' },
     { id: '2', name: 'Fortis Healthcare', city: 'Mumbai', beds: '400+', emergency: true, teleconsult: true, rating: 4.7, address: 'Mulund Goregaon Link Road, Mumbai' },
@@ -23,52 +29,119 @@ export default function HospitalDetail() {
     const [loading, setLoading] = useState(true);
     const [showContact, setShowContact] = useState(false);
 
-    // Appointment state
-    const [requestLoading, setRequestLoading] = useState(false);
-    const [requestSuccess, setRequestSuccess] = useState(false);
+    // Stepped booking flow
+    const [step, setStep] = useState(1); // 1 = specialties, 2 = doctors, 3 = booking modal
+    const [specialties, setSpecialties] = useState([]);
+    const [selectedSpecialty, setSelectedSpecialty] = useState(null);
+    const [doctors, setDoctors] = useState([]);
+    const [doctorsLoading, setDoctorsLoading] = useState(false);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
 
     useEffect(() => {
-        // Simulate fetch based on ID mapping to the mock array or from DB later
-        setLoading(true);
-        setTimeout(() => {
-            const found = mockHospitals.find(h => h.id === id || h.name.toLowerCase().replace(/\s+/g, '-') === id);
-
-            if (found) {
-                setHospital(found);
-            } else {
-                // Return a generic one if no exact match
-                setHospital({
-                    id: id,
-                    name: decodeURIComponent(id).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-                    city: 'Metro City',
-                    beds: '250+',
-                    emergency: true,
-                    teleconsult: true,
-                    rating: 4.5,
-                    address: 'Central Health District'
-                });
-            }
-            setLoading(false);
-        }, 600);
+        loadHospital();
     }, [id]);
 
-    const handleRequestAppointment = (e) => {
-        e.preventDefault();
-        setRequestLoading(true);
+    async function loadHospital() {
+        setLoading(true);
+        try {
+            // Try DB first
+            const { data, error } = await supabase
+                .from('hospitals')
+                .select('*')
+                .eq('id', id)
+                .single();
 
-        // Mock submission
-        toast.promise(
-            new Promise(resolve => setTimeout(resolve, 1500)),
-            {
-                loading: 'Submitting request...',
-                success: 'Request submitted successfully. Our team will contact you shortly.',
-                error: 'Submission failed.',
+            if (!error && data) {
+                setHospital({
+                    ...data,
+                    beds: data.beds ? `${data.beds}+` : '200+',
+                    emergency: data.emergency !== false,
+                    teleconsult: data.teleconsult || false,
+                    rating: data.rating || 4.5,
+                    address: data.address || data.city || 'India',
+                });
+                loadSpecialties(data.id, data.name);
+                setLoading(false);
+                return;
             }
-        ).then(() => {
-            setRequestLoading(false);
-            e.target.reset();
-        });
-    };
+        } catch (err) {
+            // Fall through to mock lookup
+        }
+
+        // Fallback: check mock hospitals
+        const found = mockHospitals.find(h => h.id === id || h.name.toLowerCase().replace(/\s+/g, '-') === id);
+        if (found) {
+            setHospital(found);
+        } else {
+            setHospital({
+                id: id,
+                name: decodeURIComponent(id).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                city: 'Metro City',
+                beds: '250+',
+                emergency: true,
+                teleconsult: true,
+                rating: 4.5,
+                address: 'Central Health District'
+            });
+        }
+        loadSpecialties(null, found?.name || id);
+        setLoading(false);
+    }
+
+    async function loadSpecialties(hospitalId, hospitalName) {
+        try {
+            // Try to get distinct specialties from doctors associated with this hospital
+            let query = supabase.from('doctors').select('specialty');
+            if (hospitalName) {
+                query = query.or(`hospital.ilike.%${hospitalName}%,hospital_name.ilike.%${hospitalName}%`);
+            }
+            const { data, error } = await query;
+
+            if (!error && data && data.length > 0) {
+                const unique = [...new Set(data.map(d => d.specialty).filter(Boolean))];
+                if (unique.length > 0) {
+                    setSpecialties(unique);
+                    return;
+                }
+            }
+        } catch (err) {
+            console.warn('Could not fetch specialties:', err);
+        }
+        // Fallback specialties
+        setSpecialties(FALLBACK_SPECIALTIES);
+    }
+
+    async function loadDoctors(specialty) {
+        setDoctorsLoading(true);
+        setSelectedSpecialty(specialty);
+        setStep(2);
+        try {
+            const hospitalName = hospital?.name || '';
+            let query = supabase.from('doctors').select('*')
+                .ilike('specialty', `%${specialty}%`);
+
+            const { data, error } = await query;
+
+            if (!error && data && data.length > 0) {
+                setDoctors(data);
+            } else {
+                // Show fallback doctors for the specialty
+                setDoctors([
+                    { id: `fallback-1`, full_name: `Dr. ${specialty} Specialist`, specialty, experience: 10, hospital: hospitalName, rating: 4.6, availability_status: 'available' },
+                    { id: `fallback-2`, full_name: `Dr. Senior ${specialty}`, specialty, experience: 15, hospital: hospitalName, rating: 4.8, availability_status: 'available' },
+                ]);
+            }
+        } catch (err) {
+            console.warn('Could not fetch doctors:', err);
+            setDoctors([]);
+        }
+        setDoctorsLoading(false);
+    }
+
+    function selectDoctor(doc) {
+        setSelectedDoctor(doc);
+        setStep(3);
+    }
 
     if (loading) {
         return (
@@ -93,17 +166,20 @@ export default function HospitalDetail() {
         <>
             <section className="section" style={{ paddingBottom: '1rem', paddingTop: '2rem' }}>
                 <div className="container">
-                    <Breadcrumbs items={[{ label: 'Hospitals', href: '/hospitals' }, { label: hospital?.name, href: '' }]} />
+                    <Breadcrumbs items={[
+                        { label: 'Hospitals', href: '/hospitals' },
+                        { label: hospital?.name, href: '' }
+                    ]} />
                 </div>
             </section>
 
             <section className="section" style={{ paddingTop: 0 }}>
                 <div className="container">
-                    {/* Header Card */}
+                    {/* Hospital Header Card */}
                     <div style={{ background: '#fff', borderRadius: 20, padding: '2.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', marginBottom: '2rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', md: { flexDirection: 'row' }, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem' }}>
                             <div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                     <h1 style={{ fontSize: '2rem', color: '#0F172A', margin: 0 }}>{hospital.name}</h1>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: '#FEF3C7', color: '#D97706', padding: '0.2rem 0.6rem', borderRadius: 20, fontWeight: 600, fontSize: '0.9rem' }}>
                                         <Star size={14} fill="currentColor" /> {hospital.rating}
@@ -122,12 +198,21 @@ export default function HospitalDetail() {
                                     <span style={{ background: '#E0F2FE', color: '#0284C7', padding: '0.35rem 0.85rem', borderRadius: 100, fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                         <BedDouble size={14} /> {hospital.beds} Beds
                                     </span>
+                                    {hospital.teleconsult ? (
+                                        <span style={{ background: '#F0FDF4', color: '#16A34A', padding: '0.35rem 0.85rem', borderRadius: 100, fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            <Video size={14} /> Video Call Available
+                                        </span>
+                                    ) : (
+                                        <span style={{ background: '#EFF6FF', color: '#2563EB', padding: '0.35rem 0.85rem', borderRadius: 100, fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            In-Person Only
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '300px', flexDirection: 'column' }}>
-                                <button className="btn btn-primary" onClick={() => document.getElementById('appointment-form').scrollIntoView({ behavior: 'smooth' })}>
-                                    Request Appointment
+                            <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column', minWidth: '200px' }}>
+                                <button className="btn btn-primary" onClick={() => { setStep(1); document.getElementById('booking-flow')?.scrollIntoView({ behavior: 'smooth' }); }}>
+                                    Book Appointment
                                 </button>
                                 <button className="btn btn-outline" onClick={() => setShowContact(!showContact)}>
                                     Contact Hospital
@@ -159,119 +244,178 @@ export default function HospitalDetail() {
                         )}
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem', md: { gridTemplateColumns: '2fr 1fr' } }}>
+                    {/* ─── Stepped Booking Flow ─── */}
+                    <div id="booking-flow" style={{ background: '#fff', borderRadius: 20, padding: '2.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', marginBottom: '2rem' }}>
 
-                        {/* Main Content Info */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                            <div style={{ background: '#fff', borderRadius: 20, padding: '2.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-                                <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: '#0F172A' }}>Departments & Specialties</h2>
+                        {/* Step Indicator */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+                            <StepBadge num={1} label="Select Specialty" active={step >= 1} done={step > 1} onClick={() => { setStep(1); setSelectedSpecialty(null); setSelectedDoctor(null); }} />
+                            <ChevronRight size={16} style={{ color: '#CBD5E1' }} />
+                            <StepBadge num={2} label="Select Doctor" active={step >= 2} done={step > 2} onClick={step >= 2 ? () => { setStep(2); setSelectedDoctor(null); } : undefined} />
+                            <ChevronRight size={16} style={{ color: '#CBD5E1' }} />
+                            <StepBadge num={3} label="Book Appointment" active={step >= 3} done={false} />
+                        </div>
+
+                        {/* Step 1: Select Specialty */}
+                        {step === 1 && (
+                            <div>
+                                <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#0F172A' }}>
+                                    <Stethoscope size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                                    Select a Specialty
+                                </h2>
+                                <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Choose the medical department for your appointment.</p>
+
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-                                    {['Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Oncology', 'Gastroenterology'].map(dept => (
-                                        <div key={dept} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', background: '#F8FAFC', borderRadius: 12, border: '1px solid #E2E8F0' }}>
-                                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)' }}></div>
-                                            <span style={{ fontWeight: 500, color: '#1E293B' }}>{dept}</span>
-                                        </div>
+                                    {specialties.map(spec => (
+                                        <button
+                                            key={spec}
+                                            onClick={() => loadDoctors(spec)}
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                                padding: '1.25rem', background: '#F8FAFC', borderRadius: 12,
+                                                border: '1.5px solid #E2E8F0', cursor: 'pointer',
+                                                transition: 'all 0.2s ease', textAlign: 'left',
+                                                fontWeight: 500, color: '#1E293B', fontSize: '0.95rem'
+                                            }}
+                                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = '#EFF6FF'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                                        >
+                                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0 }}></div>
+                                            {spec}
+                                            <ChevronRight size={16} style={{ marginLeft: 'auto', color: '#94A3B8' }} />
+                                        </button>
                                     ))}
                                 </div>
                             </div>
+                        )}
 
-                            <div style={{ background: '#fff', borderRadius: 20, padding: '2.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-                                <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: '#0F172A' }}>Facilities Overview</h2>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
-                                    <div style={{ display: 'flex', gap: '1rem' }}>
-                                        <div style={{ width: 44, height: 44, background: '#F0FDFA', color: '#0D9488', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <Activity size={20} />
-                                        </div>
-                                        <div>
-                                            <h4 style={{ color: '#0F172A', marginBottom: '0.25rem' }}>ICU Facilities</h4>
-                                            <p style={{ color: '#64748B', fontSize: '0.9rem', lineHeight: 1.5 }}>State-of-the-art intensive care units with advanced monitoring.</p>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '1rem' }}>
-                                        <div style={{ width: 44, height: 44, background: '#EFF6FF', color: '#3B82F6', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <Users size={20} />
-                                        </div>
-                                        <div>
-                                            <h4 style={{ color: '#0F172A', marginBottom: '0.25rem' }}>Expert Panel</h4>
-                                            <p style={{ color: '#64748B', fontSize: '0.9rem', lineHeight: 1.5 }}>Over 150+ specialized doctors and surgeons available.</p>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '1rem' }}>
-                                        <div style={{ width: 44, height: 44, background: '#FDF4FF', color: '#C026D3', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <Clock size={20} />
-                                        </div>
-                                        <div>
-                                            <h4 style={{ color: '#0F172A', marginBottom: '0.25rem' }}>24/7 Pharmacy</h4>
-                                            <p style={{ color: '#64748B', fontSize: '0.9rem', lineHeight: 1.5 }}>In-house pharmacy open round the clock for all medications.</p>
-                                        </div>
-                                    </div>
+                        {/* Step 2: Select Doctor */}
+                        {step === 2 && (
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                    <button onClick={() => { setStep(1); setSelectedSpecialty(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600, fontSize: '0.9rem' }}>
+                                        <ArrowLeft size={16} /> Back
+                                    </button>
+                                    <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#0F172A' }}>
+                                        Doctors — {selectedSpecialty}
+                                    </h2>
                                 </div>
+                                <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Select a doctor to proceed with booking.</p>
+
+                                {doctorsLoading ? (
+                                    <div style={{ textAlign: 'center', padding: '3rem', color: '#64748B' }}>
+                                        <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
+                                        Loading doctors...
+                                    </div>
+                                ) : doctors.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '3rem', color: '#64748B' }}>
+                                        <p>No doctors found for this specialty at this hospital.</p>
+                                        <button className="btn btn-outline" onClick={() => setStep(1)} style={{ marginTop: '1rem' }}>Try another specialty</button>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                                        {doctors.map(doc => (
+                                            <div
+                                                key={doc.id}
+                                                onClick={() => selectDoctor(doc)}
+                                                style={{
+                                                    padding: '1.5rem', background: '#F8FAFC', borderRadius: 16,
+                                                    border: '1.5px solid #E2E8F0', cursor: 'pointer',
+                                                    transition: 'all 0.2s ease', position: 'relative'
+                                                }}
+                                                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(59,130,246,0.15)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+                                                    <div style={{
+                                                        width: 48, height: 48, borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #3B82F6, #6366F1)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        color: '#fff', fontWeight: 700, fontSize: '1.1rem', flexShrink: 0
+                                                    }}>
+                                                        {(doc.full_name || doc.name || 'D')[0]}
+                                                    </div>
+                                                    <div>
+                                                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#0F172A' }}>
+                                                            {doc.full_name || doc.name}
+                                                        </h3>
+                                                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: '#64748B' }}>
+                                                            {doc.specialty}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                                                    {doc.experience && (
+                                                        <span style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: 6, background: '#EFF6FF', color: '#2563EB', fontWeight: 600 }}>
+                                                            {doc.experience} yrs exp
+                                                        </span>
+                                                    )}
+                                                    {doc.rating && (
+                                                        <span style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: 6, background: '#FEF3C7', color: '#D97706', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                                                            <Star size={10} fill="currentColor" /> {doc.rating}
+                                                        </span>
+                                                    )}
+                                                    {doc.availability_status === 'available' && (
+                                                        <span style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: 6, background: '#F0FDF4', color: '#16A34A', fontWeight: 600 }}>
+                                                            Available
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', fontSize: '0.85rem' }}>
+                                                    Book with this Doctor
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        </div>
-
-                        {/* Request Appointment Form */}
-                        <div id="appointment-form" style={{ background: '#fff', borderRadius: 20, padding: '2.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', height: 'fit-content' }}>
-                            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#0F172A' }}>Request Appointment</h2>
-                            <p style={{ color: '#64748B', fontSize: '0.95rem', marginBottom: '2rem' }}>Fill details and our hospital coordination team will call you back.</p>
-
-
-
-                            <form onSubmit={handleRequestAppointment}>
-                                <div className="form-group">
-                                    <label className="form-label">Consultation Type</label>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.25rem' }}>
-                                        <button
-                                            type="button"
-                                            className={`btn btn-sm ${!hospital.isTeleconsult ? 'btn-primary' : 'btn-outline'}`}
-                                            onClick={() => setHospital({ ...hospital, isTeleconsult: false })}
-                                            style={{ fontSize: '0.75rem' }}
-                                        >
-                                            🏥 Physical
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={`btn btn-sm ${hospital.isTeleconsult ? 'btn-primary' : 'btn-outline'}`}
-                                            onClick={() => setHospital({ ...hospital, isTeleconsult: true })}
-                                            style={{ fontSize: '0.75rem' }}
-                                            disabled={!hospital.teleconsult}
-                                        >
-                                            📹 Video
-                                            {!hospital.teleconsult && <span style={{ display: 'block', fontSize: '10px' }}> (N/A)</span>}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Patient Name</label>
-                                    <input type="text" className="form-control" required placeholder="Full Name" aria-label="Patient Full Name" disabled={requestLoading} />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Contact Number</label>
-                                    <input type="tel" className="form-control" required placeholder="+91 XXXXX XXXXX" aria-label="Contact Number" disabled={requestLoading} />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Select Department</label>
-                                    <select className="form-control" required defaultValue="">
-                                        <option value="" disabled>Choose department...</option>
-                                        <option value="Cardiology">Cardiology</option>
-                                        <option value="Neurology">Neurology</option>
-                                        <option value="Orthopedics">Orthopedics</option>
-                                        <option value="Pediatrics">Pediatrics</option>
-                                        <option value="General">General Physician</option>
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Preferred Date</label>
-                                    <input type="date" className="form-control" required min={new Date().toISOString().split('T')[0]} aria-label="Preferred Appointment Date" disabled={requestLoading} />
-                                </div>
-                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} disabled={requestLoading}>
-                                    {requestLoading ? <LoadingSpinner size="small" text="Submitting..." /> : `Request ${hospital.isTeleconsult ? 'Video' : 'Physical'} Appointment`}
-                                </button>
-                            </form>
-                        </div>
-
+                        )}
                     </div>
                 </div>
             </section>
+
+            {/* Step 3: BookingModal */}
+            {step === 3 && selectedDoctor && (
+                <BookingModal
+                    doctor={selectedDoctor}
+                    hospitalName={hospital?.name}
+                    onClose={() => { setStep(2); setSelectedDoctor(null); }}
+                />
+            )}
         </>
+    );
+}
+
+/* ─── Step Badge Component ─── */
+function StepBadge({ num, label, active, done, onClick }) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={!onClick}
+            style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                background: 'none', border: 'none',
+                cursor: onClick ? 'pointer' : 'default',
+                padding: 0, fontSize: '0.9rem',
+                color: active ? 'var(--primary)' : '#94A3B8',
+                fontWeight: active ? 600 : 400,
+                transition: 'color 0.2s ease'
+            }}
+        >
+            <span style={{
+                width: 28, height: 28, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.8rem', fontWeight: 700,
+                background: done ? 'var(--primary)' : active ? '#EFF6FF' : '#F1F5F9',
+                color: done ? '#fff' : active ? 'var(--primary)' : '#94A3B8',
+                border: active ? '2px solid var(--primary)' : '1.5px solid #E2E8F0',
+                transition: 'all 0.2s ease'
+            }}>
+                {done ? '✓' : num}
+            </span>
+            {label}
+        </button>
     );
 }

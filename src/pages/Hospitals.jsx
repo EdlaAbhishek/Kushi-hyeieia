@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MapPin, Navigation, ShieldCheck } from 'lucide-react'
+import { MapPin, Navigation, Video, Building2 } from 'lucide-react'
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
@@ -35,7 +35,7 @@ export default function Hospitals() {
     const [hospitals, setHospitals] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
-    const [womenFriendlyFilter, setWomenFriendlyFilter] = useState(false)
+    const [typeFilter, setTypeFilter] = useState('all') // 'all' | 'video-call' | 'normal'
 
     useEffect(() => {
         fetchHospitals()
@@ -44,7 +44,6 @@ export default function Hospitals() {
     const fetchHospitals = async () => {
         setLoading(true)
         try {
-            // Try to fetch from Supabase
             const { data, error } = await supabase
                 .from('hospitals')
                 .select('*')
@@ -52,23 +51,20 @@ export default function Hospitals() {
             if (error) throw error
 
             if (data && data.length > 0) {
-                // Map Supabase data to our display format
                 const supaHospitals = data.map(h => ({
                     id: h.id,
                     name: h.name || 'Unknown Hospital',
                     city: h.city || h.address || 'India',
                     beds: h.beds ? `${h.beds}+` : '200+',
-                    emergency: h.emergency !== false, // default true
+                    emergency: h.emergency !== false,
                     teleconsult: h.teleconsult || false,
                     fromDB: true,
                 }))
 
-                // Merge with fallback, avoid duplicates by name
                 const supaNames = new Set(supaHospitals.map(h => h.name.toLowerCase()))
                 const uniqueFallbacks = FALLBACK_HOSPITALS.filter(h => !supaNames.has(h.name.toLowerCase()))
                 setHospitals([...supaHospitals, ...uniqueFallbacks])
             } else {
-                // No DB data, use fallbacks
                 setHospitals(FALLBACK_HOSPITALS)
             }
         } catch (err) {
@@ -82,8 +78,28 @@ export default function Hospitals() {
     const filteredHospitals = hospitals.filter(h => {
         const matchesSearch = h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             h.city.toLowerCase().includes(searchQuery.toLowerCase())
-        const matchesWomen = !womenFriendlyFilter || h.women_friendly === true
-        return matchesSearch && matchesWomen
+        const matchesType =
+            typeFilter === 'all' ? true :
+            typeFilter === 'video-call' ? h.teleconsult === true :
+            typeFilter === 'normal' ? !h.teleconsult :
+            true
+        return matchesSearch && matchesType
+    })
+
+    const filterPillStyle = (active) => ({
+        padding: '0.5rem 1.25rem',
+        borderRadius: '100px',
+        border: active ? '2px solid var(--primary)' : '1.5px solid var(--border)',
+        background: active ? 'var(--primary)' : '#fff',
+        color: active ? '#fff' : 'var(--text-main)',
+        fontWeight: 600,
+        fontSize: '0.85rem',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        transition: 'all 0.2s ease',
+        boxShadow: active ? '0 2px 8px rgba(59, 130, 246, 0.25)' : 'none',
     })
 
     return (
@@ -93,7 +109,6 @@ export default function Hospitals() {
                 description={`${hospitals.length} integrated hospital partners nationwide.`}
             />
 
-            {/* ─── Hospital Directory ─── */}
             <SectionContainer>
                 <div>
                     <Breadcrumbs items={[{ label: 'Hospitals', href: '/hospitals' }]} />
@@ -103,13 +118,13 @@ export default function Hospitals() {
                             <p className="section-subtitle">Partner hospitals across India with emergency and teleconsultation availability.</p>
                         </div>
                         <InfoTooltip content={{
-                            en: { title: 'Hospital Network', helps: 'Find nearby hospitals and check their facilities.', usage: 'Search hospitals by city or name. You can see bed capacity, emergency status, and book appointments directly.' },
-                            hi: { title: 'अस्पताल नेटवर्क', helps: 'आस-पास के अस्पतालों को खोजें और उनकी सुविधाओं की जांच करें।', usage: 'शहर या नाम के आधार पर अस्पतालों की खोज करें। आप बेड क्षमता, आपातकालीन स्थिति देख सकते हैं और सीधे अपॉइंटमेंट बुक कर सकते हैं।' },
-                            te: { title: 'ఆసుపత్రి నెట్‌వర్క్', helps: 'సమీపంలోని ఆసుపత్రులను కనుగొనండి మరియు వారి సౌకర్యాలను తనిఖీ చేయండి.', usage: 'నగరం లేదా పేరు ద్వారా ఆసుపత్రుల కోసం శోధించండి. మీరు బెడ్ సామర్థ్యం, అత్యవసర స్థితిని చూడవచ్చు మరియు నేరుగా అపాయింట్‌మెంట్‌లను బుక్ చేసుకోవచ్చు.' }
+                            en: { title: 'Hospital Network', helps: 'Find nearby hospitals and check their facilities.', usage: 'Search hospitals by city or name. Filter by type: Video Call hospitals offer teleconsultation, Normal clinics are for in-person visits only.' },
+                            hi: { title: 'अस्पताल नेटवर्क', helps: 'आस-पास के अस्पतालों को खोजें और उनकी सुविधाओं की जांच करें।', usage: 'शहर या नाम के आधार पर अस्पतालों की खोज करें।' },
+                            te: { title: 'ఆసుపత్రి నెట్‌వర్క్', helps: 'సమీపంలోని ఆసుపత్రులను కనుగొనండి.', usage: 'నగరం లేదా పేరు ద్వారా ఆసుపత్రుల కోసం శోధించండి.' }
                         }} />
                     </div>
 
-                    <div className="search-bar" style={{ marginBottom: '1.5rem', position: 'relative', maxWidth: '400px' }}>
+                    <div className="search-bar" style={{ marginBottom: '1.25rem', position: 'relative', maxWidth: '400px' }}>
                         <input
                             type="text"
                             className="form-control"
@@ -119,20 +134,26 @@ export default function Hospitals() {
                         />
                     </div>
 
-                    {/* Women-Friendly Clinics Filter */}
-                    <div className="women-filter-bar">
-                        <div className="toggle-switch">
-                            <input
-                                type="checkbox"
-                                checked={womenFriendlyFilter}
-                                onChange={(e) => setWomenFriendlyFilter(e.target.checked)}
-                                id="women-filter"
-                            />
-                            <span className="toggle-slider" onClick={() => setWomenFriendlyFilter(!womenFriendlyFilter)}></span>
-                        </div>
-                        <label htmlFor="women-filter" style={{ fontSize: '0.88rem', fontWeight: 600, color: womenFriendlyFilter ? '#9D174D' : 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            <ShieldCheck size={16} /> Women-Friendly Clinics
-                        </label>
+                    {/* Type Filter Pills */}
+                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                        <button
+                            style={filterPillStyle(typeFilter === 'all')}
+                            onClick={() => setTypeFilter('all')}
+                        >
+                            All Hospitals
+                        </button>
+                        <button
+                            style={filterPillStyle(typeFilter === 'video-call')}
+                            onClick={() => setTypeFilter('video-call')}
+                        >
+                            <Video size={15} /> Video Call
+                        </button>
+                        <button
+                            style={filterPillStyle(typeFilter === 'normal')}
+                            onClick={() => setTypeFilter('normal')}
+                        >
+                            <Building2 size={15} /> Normal Clinics
+                        </button>
                     </div>
 
                     {loading ? (
@@ -148,6 +169,7 @@ export default function Hospitals() {
                                         <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Hospital</th>
                                         <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Location</th>
                                         <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Capacity</th>
+                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Type</th>
                                         <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Facilities</th>
                                         <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Action</th>
                                     </tr>
@@ -155,7 +177,7 @@ export default function Hospitals() {
                                 <tbody>
                                     {filteredHospitals.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} style={{ textAlign: 'center', padding: '3rem' }}>
+                                            <td colSpan={6} style={{ textAlign: 'center', padding: '3rem' }}>
                                                 <div className="dashboard-empty-icon" style={{ margin: '0 auto 1rem' }}>🔍</div>
                                                 <h3 style={{ marginBottom: '0.5rem', color: '#1E293B', fontSize: '1.2rem', fontWeight: 600 }}>No hospitals found</h3>
                                                 <p style={{ color: '#64748B' }}>We couldn't find any hospitals matching your search criteria.</p>
@@ -167,11 +189,28 @@ export default function Hospitals() {
                                             <tr key={hospitalId + '-' + i} style={{ borderBottom: '1px solid var(--border-light)' }}>
                                                 <td style={{ padding: '1.25rem 1rem' }}>
                                                     <strong>{h.name}</strong>
-                                                    {h.teleconsult && <div style={{ fontSize: '0.7rem', color: '#10B981', display: 'inline-block', marginLeft: '0.5rem', background: '#F0FDFA', padding: '2px 6px', borderRadius: '4px' }}>📹 Video Consult</div>}
-                                                    {h.women_friendly && <div className="privacy-badge privacy-badge--women" style={{ display: 'inline-flex', marginLeft: '0.5rem' }}><ShieldCheck size={10} /> Women-Friendly</div>}
                                                 </td>
                                                 <td style={{ padding: '1.25rem 1rem' }}>{h.city}</td>
                                                 <td style={{ padding: '1.25rem 1rem' }}>{h.beds}</td>
+                                                <td style={{ padding: '1.25rem 1rem' }}>
+                                                    {h.teleconsult ? (
+                                                        <span style={{
+                                                            fontSize: '0.72rem', padding: '0.2rem 0.6rem', borderRadius: '6px',
+                                                            background: '#F0FDF4', color: '#16A34A', fontWeight: 600,
+                                                            display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                                                        }}>
+                                                            <Video size={11} /> Video Call
+                                                        </span>
+                                                    ) : (
+                                                        <span style={{
+                                                            fontSize: '0.72rem', padding: '0.2rem 0.6rem', borderRadius: '6px',
+                                                            background: '#EFF6FF', color: '#2563EB', fontWeight: 600,
+                                                            display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                                                        }}>
+                                                            <Building2 size={11} /> Normal Clinic
+                                                        </span>
+                                                    )}
+                                                </td>
                                                 <td style={{ padding: '1.25rem 1rem' }}>
                                                     {h.emergency && <span className="status-badge status-confirmed" style={{ fontSize: '0.7rem' }}>24/7 Emergency</span>}
                                                 </td>
