@@ -53,11 +53,17 @@ export default function Hospitals() {
     const fetchHospitals = async () => {
         setLoading(true)
         try {
+            console.log('[Hospitals] Fetching from Supabase...')
             const { data, error } = await supabase
                 .from('hospitals')
                 .select('*')
 
-            if (error) throw error
+            if (error) {
+                console.error('[Hospitals] Supabase query error:', error)
+                throw error
+            }
+
+            console.log('[Hospitals] Supabase returned', data?.length, 'hospitals:', data)
 
             if (data && data.length > 0) {
                 const supaHospitals = data.map(h => ({
@@ -66,18 +72,18 @@ export default function Hospitals() {
                     city: h.city || h.address || 'India',
                     beds: h.beds ? `${h.beds}+` : '200+',
                     emergency: h.emergency !== false,
-                    teleconsult: h.teleconsult || false,
+                    teleconsult: h.teleconsult === true,
                     fromDB: true,
                 }))
 
-                const supaNames = new Set(supaHospitals.map(h => h.name.toLowerCase()))
-                const uniqueFallbacks = FALLBACK_HOSPITALS.filter(h => !supaNames.has(h.name.toLowerCase()))
-                setHospitals([...supaHospitals, ...uniqueFallbacks])
+                // Only show DB hospitals, no fallbacks mixed in
+                setHospitals(supaHospitals)
             } else {
+                console.warn('[Hospitals] No hospitals in DB, using fallback data')
                 setHospitals(FALLBACK_HOSPITALS)
             }
         } catch (err) {
-            console.warn('Could not fetch hospitals from database, using fallback data:', err.message)
+            console.warn('[Hospitals] Could not fetch from database, using fallback:', err.message)
             setHospitals(FALLBACK_HOSPITALS)
         } finally {
             setLoading(false)
