@@ -13,12 +13,9 @@ import Dashboard from './pages/Dashboard'
 import DoctorDashboard from './pages/DoctorDashboard'
 import AiChat from './pages/AiChat'
 import SymptomChecker from './pages/SymptomChecker'
-import HospitalRecommendation from './pages/HospitalRecommendation'
 import HealthWorkerMode from './pages/HealthWorkerMode'
 import AdminDashboard from './pages/AdminDashboard'
 import SecurityPolicy from './pages/SecurityPolicy'
-import Hospitals from './pages/Hospitals'
-import HospitalDetail from './pages/HospitalDetail'
 import ConsentPopup from './components/ui/ConsentPopup'
 import TeleconsultRoom from './pages/TeleconsultRoom'
 import Patients from './pages/Patients'
@@ -40,7 +37,6 @@ import HealthVault from './pages/HealthVault'
 import DoctorPatientRecords from './pages/DoctorPatientRecords'
 import AdminOverview from './pages/admin/AdminOverview'
 import AdminDoctorApps from './pages/admin/AdminDoctorApps'
-import AdminHospitals from './pages/admin/AdminHospitals'
 import AdminDoctors from './pages/admin/AdminDoctors'
 import AdminAppointments from './pages/admin/AdminAppointments'
 import AdminUsers from './pages/admin/AdminUsers'
@@ -87,13 +83,10 @@ export default function App() {
                                     <Route path="/about" element={<About />} />
                                     <Route path="/contact" element={<Contact />} />
                                     <Route path="/security" element={<SecurityPolicy />} />
-                                    <Route path="/hospitals" element={<Hospitals />} />
-                                    <Route path="/hospitals/:id" element={<HospitalDetail />} />
                                     <Route path="/teleconsult/:appointmentId" element={<TeleconsultRoom />} />
                                     <Route path="/video-call/:sessionId" element={<VideoCall />} />
                                     <Route path="/emergency" element={<Emergency />} />
                                     <Route path="/profile" element={<Profile />} />
-                                    <Route path="/doctors" element={<Navigate to="/hospitals" replace />} />
                                     <Route path="/doctors/:id" element={<DoctorDetail />} />
                                     {/* Shared between patients and doctors */}
                                     <Route path="/chat" element={<AiChat />} />
@@ -114,7 +107,6 @@ export default function App() {
                                         <Route path="symptom-checker" element={<SymptomChecker />} />
                                         <Route path="blood-donation" element={<BloodDonation />} />
                                         <Route path="appointments" element={<Dashboard activeTab="appointments" />} />
-                                        <Route path="hospital-rec" element={<HospitalRecommendation />} />
                                         <Route path="apply-doctor" element={<ApplyDoctor />} />
                                         <Route path="health-vault" element={<HealthVault />} />
                                     </Route>
@@ -133,14 +125,12 @@ export default function App() {
                                         <Route path="patients" element={<DoctorPatients />} />
                                         <Route path="patient-records" element={<DoctorPatientRecords />} />
                                         <Route path="health-worker" element={<HealthWorkerMode />} />
-                                        <Route path="hospital-rec" element={<HospitalRecommendation />} />
                                         <Route path="population-health" element={<AdminDashboard mode="population" />} />
                                         <Route path="analytics" element={<AdminDashboard mode="analytics" />} />
                                         <Route path="applications" element={<AdminDashboard mode="applications" />} />
                                     </Route>
 
                                     <Route path="/health-worker" element={<Navigate to="/doctor-dashboard/health-worker" replace />} />
-                                    <Route path="/hospital-recommendation" element={<Navigate to="/doctor-dashboard/hospital-rec" replace />} />
                                 </Route>
                             </Route>
 
@@ -149,7 +139,6 @@ export default function App() {
                                 <Route path="/admin-dashboard" element={<AdminLayout />}>
                                     <Route index element={<AdminOverview />} />
                                     <Route path="applications" element={<AdminDoctorApps />} />
-                                    <Route path="hospitals" element={<AdminHospitals />} />
                                     <Route path="doctors" element={<AdminDoctors />} />
                                     <Route path="appointments" element={<AdminAppointments />} />
                                     <Route path="users" element={<AdminUsers />} />
