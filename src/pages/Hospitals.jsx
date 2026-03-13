@@ -16,16 +16,18 @@ import ActionButton from '../components/ui/ActionButton'
 
 // Fallback hospitals when Supabase data is unavailable
 const FALLBACK_HOSPITALS = [
-    { name: 'Apollo Hospitals', city: 'Chennai', beds: '500+', emergency: true, teleconsult: true },
-    { name: 'Fortis Healthcare', city: 'Mumbai', beds: '400+', emergency: true, teleconsult: true },
-    { name: 'Max Super Speciality', city: 'New Delhi', beds: '350+', emergency: true, teleconsult: false },
-    { name: 'Narayana Health', city: 'Bangalore', beds: '300+', emergency: true, teleconsult: true },
-    { name: 'AIIMS Network', city: 'Pan-India', beds: '1000+', emergency: true, teleconsult: false },
-    { name: 'KIMS Hospital', city: 'Secunderabad', beds: '350+', emergency: true, teleconsult: true },
-    { name: 'Yashoda Hospitals', city: 'Hyderabad', beds: '400+', emergency: true, teleconsult: true },
-    { name: 'Manipal Hospitals', city: 'Bangalore', beds: '600+', emergency: true, teleconsult: true },
-    { name: 'Medanta – The Medicity', city: 'Gurugram', beds: '1250+', emergency: true, teleconsult: true },
-    { name: 'Kokilaben Dhirubhai Ambani Hospital', city: 'Mumbai', beds: '750+', emergency: true, teleconsult: true },
+    { name: 'Apollo Hospitals, Jubilee Hills', city: 'Hyderabad', beds: '500+', emergency: true, teleconsult: true },
+    { name: 'PACE Hospitals, HITEC City', city: 'Hyderabad', beds: '200+', emergency: true, teleconsult: true },
+    { name: 'CARE Hospitals, Banjara Hills', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true },
+    { name: 'Yashoda Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true },
+    { name: 'Citizens Specialty Hospital, Nallagandla', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: true },
+    { name: 'Continental Hospitals, Gachibowli', city: 'Hyderabad', beds: '750+', emergency: true, teleconsult: true },
+    { name: 'KIMS Hospitals, Secunderabad', city: 'Secunderabad', beds: '1000+', emergency: true, teleconsult: true },
+    { name: 'AIG Hospitals, Gachibowli', city: 'Hyderabad', beds: '800+', emergency: true, teleconsult: false },
+    { name: 'Rainbow Children’s Hospital', city: 'Hyderabad', beds: '150+', emergency: true, teleconsult: false },
+    { name: 'Sunshine Hospitals', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: false },
+    { name: 'Aster Prime Hospitals', city: 'Hyderabad', beds: '250+', emergency: true, teleconsult: false },
+    { name: 'Sravani Hospitals', city: 'Hyderabad', beds: '100+', emergency: true, teleconsult: false },
 ]
 
 export default function Hospitals() {

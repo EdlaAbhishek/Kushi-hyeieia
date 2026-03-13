@@ -14,11 +14,11 @@ const FALLBACK_SPECIALTIES = [
 
 // Mock data to match fallback hospitals
 const mockHospitals = [
-    { id: '1', name: 'Apollo Hospitals', city: 'Chennai', beds: '500+', emergency: true, teleconsult: true, rating: 4.8, address: 'Greams Lane, Off Greams Road, Chennai' },
-    { id: '2', name: 'Fortis Healthcare', city: 'Mumbai', beds: '400+', emergency: true, teleconsult: true, rating: 4.7, address: 'Mulund Goregaon Link Road, Mumbai' },
-    { id: '3', name: 'Max Super Speciality', city: 'New Delhi', beds: '350+', emergency: true, teleconsult: false, rating: 4.6, address: 'Press Enclave Road, Saket, New Delhi' },
-    { id: '4', name: 'Narayana Health', city: 'Bangalore', beds: '300+', emergency: true, teleconsult: true, rating: 4.8, address: 'Bommasandra Industrial Area, Bangalore' },
-    { id: '5', name: 'AIIMS Network', city: 'Pan-India', beds: '1000+', emergency: true, teleconsult: false, rating: 4.9, address: 'Ansari Nagar, New Delhi' },
+    { id: 'apollo-hospitals-jubilee-hills', name: 'Apollo Hospitals, Jubilee Hills', city: 'Hyderabad', beds: '500+', emergency: true, teleconsult: true, rating: 4.8, address: 'Film Nagar Main Road, Near Chiranjeevi Guest House, Jubilee Hills, Hyderabad - 500033' },
+    { id: 'pace-hospitals-hitec-city', name: 'PACE Hospitals, HITEC City', city: 'Hyderabad', beds: '200+', emergency: true, teleconsult: true, rating: 4.7, address: 'Metro Pillar C1772, Beside Avasa Hotel, Hitech City Road, Hyderabad – 500081' },
+    { id: 'care-hospitals-banjara-hills', name: 'CARE Hospitals, Banjara Hills', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true, rating: 4.6, address: 'Road No.1, Banjara Hills, Hyderabad – 500034' },
+    { id: 'yashoda-hospitals-secunderabad', name: 'Yashoda Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true, rating: 4.8, address: 'Alexander Road, Secunderabad – 500003' },
+    { id: 'kims-hospitals-secunderabad', name: 'KIMS Hospitals, Secunderabad', city: 'Secunderabad', beds: '1000+', emergency: true, teleconsult: true, rating: 4.9, address: '1-8-31/1, Minister Road, Secunderabad, Hyderabad - 500003' },
 ];
 
 export default function HospitalDetail() {
