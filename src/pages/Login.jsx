@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { Eye, EyeOff } from 'lucide-react'
@@ -15,7 +15,16 @@ export default function Login() {
     const [resetEmail, setResetEmail] = useState('')
     const [resetLoading, setResetLoading] = useState(false)
     const navigate = useNavigate()
-    const { login, loginWithGoogle, resetPassword } = useAuth()
+    const { login, loginWithGoogle, resetPassword, user, loading: authLoading, role: authRole } = useAuth()
+
+    useEffect(() => {
+        // Only redirect if auth has finished loading and user is confirmed
+        if (!authLoading && user && authRole) {
+            if (authRole === 'admin') navigate('/admin-dashboard', { replace: true })
+            else if (authRole === 'doctor') navigate('/doctor-dashboard', { replace: true })
+            else navigate('/dashboard', { replace: true })
+        }
+    }, [user, authLoading, authRole, navigate])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -25,8 +34,10 @@ export default function Login() {
         try {
             const user = await login(email, password)
             toast.success('Successfully logged in!')
-            const role = user?.user_metadata?.role || 'patient'
-            if (role === 'doctor') {
+            const role = user?._resolvedRole || user?.user_metadata?.role || 'patient'
+            if (role === 'admin') {
+                navigate('/admin-dashboard')
+            } else if (role === 'doctor') {
                 navigate('/doctor-dashboard')
             } else {
                 navigate('/dashboard')

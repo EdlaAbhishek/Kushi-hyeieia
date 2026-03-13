@@ -254,9 +254,11 @@ export default function Dashboard({ activeTab = 'overview' }) {
 
     const getStatusClass = (status) => {
         switch (status) {
-            case 'confirmed': return 'status-confirmed'
+            case 'confirmed':
+            case 'approved': return 'status-confirmed'
             case 'completed': return 'status-completed'
             case 'cancelled': return 'status-cancelled'
+            case 'rejected': return 'status-rejected'
             case 'pending': return 'status-pending'
             default: return 'status-pending'
         }
@@ -265,11 +267,23 @@ export default function Dashboard({ activeTab = 'overview' }) {
     const getStatusLabel = (status) => {
         switch (status) {
             case 'confirmed': return 'Confirmed'
+            case 'approved': return 'Approved'
             case 'completed': return 'Completed'
             case 'cancelled': return 'Cancelled'
+            case 'rejected': return 'Rejected'
             case 'pending': return 'Pending'
             default: return 'Pending'
         }
+    }
+
+    const handleReschedule = (appt) => {
+        // Navigate to the doctor's page within hospital context to rebook
+        navigate(`/doctors/${appt.doctor_id}`, {
+            state: {
+                fromHospital: appt.doctors?.hospital_name || appt.doctors?.hospital,
+                reschedule: true
+            }
+        });
     }
 
     const formatDate = (dateStr) => {
@@ -314,7 +328,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
                 }
                 description="Manage your appointments, health records, and upcoming tests."
                 action={
-                    <ActionButton to="/doctors" variant="primary">
+                    <ActionButton to="/hospitals" variant="primary">
                         + New Appointment
                     </ActionButton>
                 }
@@ -424,7 +438,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
                             <div className="dashboard-empty-icon">📋</div>
                             <h3>No Appointments Yet</h3>
                             <p>You haven't booked any appointments. Browse our doctor network to get started.</p>
-                            <Link to="/doctors" className="btn btn-primary" style={{ marginTop: '1.25rem' }}>
+                            <Link to="/hospitals" className="btn btn-primary" style={{ marginTop: '1.25rem' }}>
                                 Book Appointment
                             </Link>
                         </div>
@@ -489,14 +503,23 @@ export default function Dashboard({ activeTab = 'overview' }) {
                                                 </span>
                                             </div>
                                         </div>
-                                        {appt.status !== 'cancelled' && appt.status !== 'completed' && (
-                                            <ActionButton
-                                                variant="outline"
-                                                style={{ width: '100%', marginTop: 'auto', borderColor: '#EF4444', color: '#EF4444' }}
-                                                onClick={() => handleCancelAppointment(appt.id)}
-                                            >
-                                                Cancel Appointment
-                                            </ActionButton>
+                                        {appt.status !== 'cancelled' && appt.status !== 'completed' && appt.status !== 'rejected' && (
+                                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', flexWrap: 'wrap' }}>
+                                                <ActionButton
+                                                    variant="outline"
+                                                    style={{ flex: 1, borderColor: '#3B82F6', color: '#3B82F6', fontSize: '0.85rem' }}
+                                                    onClick={() => handleReschedule(appt)}
+                                                >
+                                                    Reschedule
+                                                </ActionButton>
+                                                <ActionButton
+                                                    variant="outline"
+                                                    style={{ flex: 1, borderColor: '#EF4444', color: '#EF4444', fontSize: '0.85rem' }}
+                                                    onClick={() => handleCancelAppointment(appt.id)}
+                                                >
+                                                    Cancel
+                                                </ActionButton>
+                                            </div>
                                         )}
                                     </DashboardCard>
                                 </motion.div>

@@ -22,7 +22,7 @@ export default function Home() {
     const { user, isDoctor } = useAuth()
 
     const patientServices = [
-        { icon: Calendar, title: 'Book a Consultation', desc: 'Book in-person hospital visits or secure video consultations with verified specialists.', to: '/doctors' },
+        { icon: Calendar, title: 'Book a Consultation', desc: 'Book in-person hospital visits or secure video consultations with verified specialists.', to: '/hospitals' },
         { icon: Building2, title: 'Network Hospitals', desc: 'Find 1,000+ partner hospitals with 24/7 emergency and live bed availability.', to: '/hospitals' },
         { icon: ShieldCheck, title: 'Insurance Processing', desc: 'Integrated claim processing and verification directly within the digital platform.', to: '/services' },
     ]
@@ -61,7 +61,7 @@ export default function Home() {
                                 </>
                             ) : (
                                 <>
-                                    <ActionButton to="/doctors" variant="primary">Book Appointment <ArrowRight size={16} /></ActionButton>
+                                    <ActionButton to="/hospitals" variant="primary">Book Appointment <ArrowRight size={16} /></ActionButton>
                                     <ActionButton to="/hospitals" variant="outline">Find Hospital</ActionButton>
                                 </>
                             )}
@@ -115,7 +115,7 @@ export default function Home() {
                     <div className="timeline">
                         {[
                             { num: 1, icon: UserCheck, title: 'Create Your Account', desc: 'Sign up in under a minute. Your health profile is securely stored and encrypted.' },
-                            { num: 2, icon: Stethoscope, title: 'Find the Right Doctor', desc: 'Browse verified specialists, check availability, and book an appointment instantly.' },
+                            { num: 2, icon: Stethoscope, title: 'Find the Right Hospital', desc: 'Browse partner hospitals, select a specialty, and find verified doctors instantly.' },
                             { num: 3, icon: HeartPulse, title: 'Get Treated', desc: 'Visit in-person or join a video consultation. Receive prescriptions and follow-ups digitally.' },
                         ].map((step, i) => (
                             <motion.div className="timeline-step" key={step.num} {...stagger} transition={{ duration: 0.45, delay: i * 0.15, ease: 'easeOut' }}>
@@ -148,7 +148,7 @@ export default function Home() {
                                 <li><Smartphone size={20} /><span><strong>Works Everywhere</strong> — Fully responsive on mobile, tablet, and desktop.</span></li>
                                 <li><Clock size={20} /><span><strong>Instant Booking</strong> — No phone calls. Book appointments in under 30 seconds.</span></li>
                             </ul>
-                            <ActionButton to="/doctors" variant="primary">Explore Doctors <ArrowRight size={16} /></ActionButton>
+                            <ActionButton to="/hospitals" variant="primary">Explore Hospitals <ArrowRight size={16} /></ActionButton>
                         </motion.div>
                     </div>
                 </SectionContainer>

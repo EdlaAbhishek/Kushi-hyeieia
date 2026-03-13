@@ -561,9 +561,9 @@ export default function Services() {
                                     <div style={{ padding: '0.5rem', background: '#F1F5F9', borderRadius: '6px' }}><Calendar size={18} /></div>
                                     <div><div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Lab Tests</div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Book doorstep samples</div></div>
                                 </a>
-                                <Link to="/doctors" className="service-side-link" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', textDecoration: 'none', color: 'inherit' }}>
+                                <Link to="/hospitals" className="service-side-link" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', textDecoration: 'none', color: 'inherit' }}>
                                     <div style={{ padding: '0.5rem', background: '#F1F5F9', borderRadius: '6px' }}><Info size={18} /></div>
-                                    <div><div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Doctor Network</div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>5,000+ specialists</div></div>
+                                    <div><div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Hospital Network</div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>1,000+ partner hospitals</div></div>
                                 </Link>
                                 <Link to="/hospitals" className="service-side-link" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', textDecoration: 'none', color: 'inherit' }}>
                                     <div style={{ padding: '0.5rem', background: '#F1F5F9', borderRadius: '6px' }}><Phone size={18} /></div>

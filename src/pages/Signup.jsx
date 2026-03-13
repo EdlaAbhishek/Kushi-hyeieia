@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
@@ -15,7 +15,15 @@ export default function Signup() {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
     const navigate = useNavigate()
-    const { signup, loginWithGoogle } = useAuth()
+    const { signup, loginWithGoogle, user, loading: authLoading, role: authRole } = useAuth()
+
+    useEffect(() => {
+        if (!authLoading && user && authRole) {
+            if (authRole === 'admin') navigate('/admin-dashboard', { replace: true })
+            else if (authRole === 'doctor') navigate('/doctor-dashboard', { replace: true })
+            else navigate('/dashboard', { replace: true })
+        }
+    }, [user, authLoading, authRole, navigate])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -26,18 +34,6 @@ export default function Signup() {
         try {
             const role = 'patient'
             const user = await signup({ full_name: name, email, password, role })
-
-            if (user) {
-                const { error: insertError } = await supabase.from('patients').insert([{
-                    id: user.id,
-                    full_name: name,
-                    email: email
-                }])
-                if (insertError) {
-                    console.error('Patient Insert Error:', insertError)
-                    throw insertError
-                }
-            }
 
             setLoading(false)
             setSuccess('Account created! Redirecting to dashboard...')

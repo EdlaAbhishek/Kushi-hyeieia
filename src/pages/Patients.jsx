@@ -57,7 +57,7 @@ export default function Patients() {
     }
 
     const services = [
-        { icon: Calendar, title: 'Book Appointment', desc: 'Schedule visits with leading doctors across all medical specialties through our verified network.', to: '/doctors', btnText: 'Search Doctors' },
+        { icon: Calendar, title: 'Book Appointment', desc: 'Schedule visits with leading doctors across all medical specialties through our verified network.', to: '/hospitals', btnText: 'Find Hospital' },
         { icon: Package, title: 'Medicine & Blood Locator', desc: 'Real-time inventory checks for essential medicines and nearby blood donor availability.', to: '/services', btnText: 'Locate Resources' },
         // Only show dashboard link to patients
         ...(!isDoctor ? [{ icon: FileText, title: 'Electronic Health Records', desc: 'Access your consultation history, lab reports, and prescriptions in a secure, encrypted vault.', to: '/dashboard', btnText: 'My Dashboard' }] : []),
@@ -114,7 +114,7 @@ export default function Patients() {
                             <div className="dashboard-empty-icon">🩺</div>
                             <h3>No Post-Care Instructions Yet</h3>
                             <p>Once you complete appointments, post-care instructions and follow-up details will appear here.</p>
-                            <Link to="/doctors" className="btn btn-primary" style={{ marginTop: '1.25rem' }}>Book Appointment</Link>
+                            <Link to="/hospitals" className="btn btn-primary" style={{ marginTop: '1.25rem' }}>Book Appointment</Link>
                         </div>
                     )}
 

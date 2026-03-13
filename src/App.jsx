@@ -4,6 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ProtectedRoute from './components/ProtectedRoute'
 import MainLayout from './layouts/MainLayout'
 import DashboardLayout from './layouts/DashboardLayout'
+import AdminLayout from './layouts/AdminLayout'
 import Home from './pages/Home'
 import About from './pages/About'
 import ApplyDoctor from './pages/ApplyDoctor'
@@ -16,7 +17,6 @@ import HospitalRecommendation from './pages/HospitalRecommendation'
 import HealthWorkerMode from './pages/HealthWorkerMode'
 import AdminDashboard from './pages/AdminDashboard'
 import SecurityPolicy from './pages/SecurityPolicy'
-import Doctors from './pages/Doctors'
 import Hospitals from './pages/Hospitals'
 import HospitalDetail from './pages/HospitalDetail'
 import ConsentPopup from './components/ui/ConsentPopup'
@@ -38,6 +38,12 @@ import VideoCall from './pages/VideoCall'
 import DoctorPatients from './pages/DoctorPatients'
 import HealthVault from './pages/HealthVault'
 import DoctorPatientRecords from './pages/DoctorPatientRecords'
+import AdminOverview from './pages/admin/AdminOverview'
+import AdminDoctorApps from './pages/admin/AdminDoctorApps'
+import AdminHospitals from './pages/admin/AdminHospitals'
+import AdminDoctors from './pages/admin/AdminDoctors'
+import AdminAppointments from './pages/admin/AdminAppointments'
+import AdminUsers from './pages/admin/AdminUsers'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 
@@ -87,7 +93,7 @@ export default function App() {
                                     <Route path="/video-call/:sessionId" element={<VideoCall />} />
                                     <Route path="/emergency" element={<Emergency />} />
                                     <Route path="/profile" element={<Profile />} />
-                                    <Route path="/doctors" element={<Doctors />} />
+                                    <Route path="/doctors" element={<Navigate to="/hospitals" replace />} />
                                     <Route path="/doctors/:id" element={<DoctorDetail />} />
                                     {/* Shared between patients and doctors */}
                                     <Route path="/chat" element={<AiChat />} />
@@ -135,7 +141,18 @@ export default function App() {
 
                                     <Route path="/health-worker" element={<Navigate to="/doctor-dashboard/health-worker" replace />} />
                                     <Route path="/hospital-recommendation" element={<Navigate to="/doctor-dashboard/hospital-rec" replace />} />
-                                    <Route path="/admin-dashboard" element={<Navigate to="/doctor-dashboard/population-health" replace />} />
+                                </Route>
+                            </Route>
+
+                            {/* Admin-only routes — standalone layout, no MainLayout navbar */}
+                            <Route element={<ProtectedRoute allowedRoles={['admin', 'doctor']} />}>
+                                <Route path="/admin-dashboard" element={<AdminLayout />}>
+                                    <Route index element={<AdminOverview />} />
+                                    <Route path="applications" element={<AdminDoctorApps />} />
+                                    <Route path="hospitals" element={<AdminHospitals />} />
+                                    <Route path="doctors" element={<AdminDoctors />} />
+                                    <Route path="appointments" element={<AdminAppointments />} />
+                                    <Route path="users" element={<AdminUsers />} />
                                 </Route>
                             </Route>
 
@@ -147,3 +164,4 @@ export default function App() {
         </AuthProvider>
     )
 }
+

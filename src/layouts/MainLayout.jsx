@@ -7,11 +7,11 @@ import ScrollToTop from '../components/ScrollToTop'
 export default function MainLayout() {
     const navigate = useNavigate()
     const location = useLocation()
-    const { user, role, signOut, isDoctor } = useAuth()
+    const { user, role, signOut, isDoctor, isAdmin } = useAuth()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const userName = user?.user_metadata?.full_name || user?.email || ''
 
-    const dashboardPath = isDoctor ? '/doctor-dashboard' : '/dashboard'
+    const dashboardPath = isAdmin ? '/admin-dashboard' : isDoctor ? '/doctor-dashboard' : '/dashboard'
     const isDoctorDashboardRelated = isDoctor && ['/patients', '/services'].includes(location.pathname)
 
     const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -45,23 +45,30 @@ export default function MainLayout() {
                     <nav className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
                         <NavLink to="/" end onClick={closeMenu}>Home</NavLink>
 
-                        {/* Patient nav — clean 6 items */}
+                        {/* Patient nav — hospital-first booking */}
                         {!isDoctor && (
                             <>
-                                <NavLink to="/doctors" onClick={closeMenu}>Doctors</NavLink>
-                                <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
+                                <NavLink to="/hospitals" onClick={closeMenu}>Find Hospital</NavLink>
                                 <NavLink to="/services" onClick={closeMenu}>Services</NavLink>
                                 <NavLink to="/chat" onClick={closeMenu}>AI Assistant</NavLink>
                             </>
                         )}
 
-                        {/* Doctor nav — clean */}
+                        {/* Doctor nav */}
                         {isDoctor && (
                             <>
                                 <NavLink to="/doctor-dashboard/patients" onClick={closeMenu}>My Patients</NavLink>
                                 <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
-                                <NavLink to="/doctors" onClick={closeMenu}>Doctor Network</NavLink>
                                 <NavLink to="/chat" onClick={closeMenu}>AI Assistant</NavLink>
+                                <NavLink to="/admin-dashboard" onClick={closeMenu}>Admin Panel</NavLink>
+                            </>
+                        )}
+
+                        {/* Admin-only nav */}
+                        {isAdmin && !isDoctor && (
+                            <>
+                                <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
+                                <NavLink to="/admin-dashboard" onClick={closeMenu}>Admin Panel</NavLink>
                             </>
                         )}
 
@@ -121,7 +128,7 @@ export default function MainLayout() {
                             <div>
                                 <h4 className="footer-heading">For Patients</h4>
                                 <ul className="footer-links">
-                                    <li><NavLink to="/doctors">Book Appointment</NavLink></li>
+                                    <li><NavLink to="/hospitals">Book Appointment</NavLink></li>
                                     <li><NavLink to="/services">Teleconsultation</NavLink></li>
                                     <li><NavLink to="/dashboard">Health Records</NavLink></li>
                                 </ul>

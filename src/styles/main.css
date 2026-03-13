@@ -1651,6 +1651,12 @@ select.form-control {
     border: 1px solid #CBD5E1;
 }
 
+.status-rejected {
+    background: #FEF2F2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
 /* ------------ AI Chat Page ------------ */
 .chat-container {
     max-width: 800px;
@@ -3354,6 +3360,52 @@ select.form-control {
     top: 60px;
     height: calc(100vh - 60px);
     overflow-y: auto;
+}
+
+/* Admin Sidebar Theme */
+.admin-sidebar {
+    background: #1E1B4B;
+    border-right: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.admin-sidebar .sidebar-header h3 {
+    color: #E0E7FF;
+}
+
+.admin-sidebar .sidebar-section-title {
+    color: rgba(199, 210, 254, 0.5);
+}
+
+.admin-sidebar .sidebar-link {
+    color: #C7D2FE;
+}
+
+.admin-sidebar .sidebar-link:hover {
+    background: rgba(99, 102, 241, 0.15);
+    color: #E0E7FF;
+}
+
+.admin-sidebar .sidebar-link.active {
+    background: rgba(99, 102, 241, 0.25);
+    color: #fff;
+    border-left-color: #818CF8;
+}
+
+.admin-sidebar .sidebar-toggle {
+    color: #A5B4FC;
+}
+
+.admin-sidebar .sidebar-toggle:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+/* Table responsive utility */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
 }
 
 .dashboard-sidebar.collapsed {

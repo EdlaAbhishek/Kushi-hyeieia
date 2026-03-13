@@ -319,10 +319,25 @@ export default function DoctorDashboard() {
 
     const getStatusClass = (s) => {
         switch (s) {
-            case 'confirmed': return 'status-confirmed'
+            case 'confirmed':
+            case 'approved': return 'status-confirmed'
             case 'completed': return 'status-completed'
             case 'cancelled': return 'status-cancelled'
+            case 'rejected': return 'status-rejected'
+            case 'pending': return 'status-pending'
             default: return 'status-pending'
+        }
+    }
+
+    const getStatusLabel = (s) => {
+        switch (s) {
+            case 'confirmed': return 'Confirmed'
+            case 'approved': return 'Approved'
+            case 'completed': return 'Completed'
+            case 'cancelled': return 'Cancelled'
+            case 'rejected': return 'Rejected'
+            case 'pending': return 'Pending'
+            default: return 'Pending'
         }
     }
 
@@ -514,7 +529,7 @@ export default function DoctorDashboard() {
                                         <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Patient</th>
                                         <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Date</th>
                                         <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Time</th>
-                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Urgency / Type</th>
+                                        <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Reason / Type</th>
                                         <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Status</th>
                                         <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Notes</th>
                                         <th style={{ padding: '0.85rem 1rem', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>Actions</th>
@@ -532,6 +547,19 @@ export default function DoctorDashboard() {
                                                 <td style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>{formatTime(appt.appointment_time)}</td>
                                                 <td style={{ padding: '0.75rem 1rem', verticalAlign: 'middle' }}>
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                                        {appt.reason && (
+                                                            <span style={{
+                                                                fontSize: '0.82rem',
+                                                                color: '#374151',
+                                                                lineHeight: 1.4,
+                                                                maxWidth: '180px',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap'
+                                                            }} title={appt.reason}>
+                                                                {appt.reason.slice(0, 40)}{appt.reason.length > 40 ? '...' : ''}
+                                                            </span>
+                                                        )}
                                                         {appt.urgency && (
                                                             <span style={{
                                                                 fontSize: '0.75rem',
@@ -553,7 +581,7 @@ export default function DoctorDashboard() {
                                                 </td>
                                                 <td style={{ padding: '0.75rem 1rem', verticalAlign: 'middle' }}>
                                                     <span className={`status-badge ${getStatusClass(appt.status)}`}>
-                                                        {(appt.status || 'pending').charAt(0).toUpperCase() + (appt.status || 'pending').slice(1)}
+                                                        {getStatusLabel(appt.status)}
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: '0.75rem 1rem', verticalAlign: 'middle' }}>
@@ -577,22 +605,23 @@ export default function DoctorDashboard() {
                                                             <>
                                                                 <ActionButton
                                                                     variant="primary"
-                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem' }}
+                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', background: '#059669', borderColor: '#059669' }}
                                                                     disabled={updatingId === appt.id}
-                                                                    onClick={() => handleUpdateStatus(appt.id, 'confirmed')}
+                                                                    onClick={() => handleUpdateStatus(appt.id, 'approved')}
                                                                 >
-                                                                    Confirm
+                                                                    ✓ Approve
                                                                 </ActionButton>
                                                                 <ActionButton
                                                                     variant="outline"
-                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', color: 'var(--primary)', borderColor: 'var(--primary)' }}
-                                                                    onClick={() => toast.success(`AI suggests slot: Today at ${appt.urgency === 'Emergency' ? 'Immediately' : '2:30 PM'} based on urgency.`)}
+                                                                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', borderColor: '#DC2626', color: '#DC2626' }}
+                                                                    disabled={updatingId === appt.id}
+                                                                    onClick={() => handleUpdateStatus(appt.id, 'rejected')}
                                                                 >
-                                                                    Suggest Slot
+                                                                    ✗ Reject
                                                                 </ActionButton>
                                                             </>
                                                         )}
-                                                        {appt.status === 'confirmed' && (
+                                                        {(appt.status === 'confirmed' || appt.status === 'approved') && (
                                                             <>
                                                                 <ActionButton
                                                                     variant="primary"
@@ -613,7 +642,7 @@ export default function DoctorDashboard() {
                                                                 )}
                                                             </>
                                                         )}
-                                                        {(appt.status === 'pending' || appt.status === 'confirmed') && (
+                                                        {(appt.status === 'pending' || appt.status === 'confirmed' || appt.status === 'approved') && (
                                                             <ActionButton
                                                                 variant="outline"
                                                                 style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', borderColor: 'var(--emergency)', color: 'var(--emergency)' }}

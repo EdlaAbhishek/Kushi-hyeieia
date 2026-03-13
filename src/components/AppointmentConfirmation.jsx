@@ -12,7 +12,7 @@ export default function AppointmentConfirmation() {
             setBookingDetails(JSON.parse(data));
         } else {
             // Default or redirect if no data
-            navigate('/doctors');
+            navigate('/hospitals');
         }
     }, [navigate]);
 
@@ -25,10 +25,25 @@ export default function AppointmentConfirmation() {
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <CheckCircle size={64} color="#10B981" />
                     </div>
-                    <h1 className="section-title" style={{ marginBottom: '0.5rem' }}>Appointment Confirmed!</h1>
-                    <p style={{ color: '#64748B', marginBottom: '2rem' }}>
-                        Your appointment has been successfully scheduled. We have sent a confirmation email to your registered address.
+                    <h1 className="section-title" style={{ marginBottom: '0.5rem' }}>Appointment Request Submitted!</h1>
+                    <p style={{ color: '#64748B', marginBottom: '1rem' }}>
+                        Your appointment request has been submitted successfully. The doctor will review and approve your request.
                     </p>
+                    <div style={{
+                        background: '#FFFBEB',
+                        border: '1px solid #FDE68A',
+                        borderRadius: 10,
+                        padding: '0.75rem 1rem',
+                        marginBottom: '2rem',
+                        fontSize: '0.9rem',
+                        color: '#92400E',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem'
+                    }}>
+                        ⏳ Status: <strong>Pending Doctor Approval</strong>
+                    </div>
 
                     <div style={{ background: '#F8FAFC', borderRadius: 12, padding: '1.5rem', textAlign: 'left', marginBottom: '2rem' }}>
                         <h3 style={{ fontSize: '1.1rem', marginBottom: '1.2rem', color: '#1E293B', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem' }}>
@@ -72,8 +87,8 @@ export default function AppointmentConfirmation() {
                         <button className="btn btn-outline" onClick={() => navigate('/dashboard')}>
                             Go to Dashboard
                         </button>
-                        <button className="btn btn-primary" onClick={() => navigate('/doctors')}>
-                            Browse More Doctors <ArrowRight size={18} />
+                        <button className="btn btn-primary" onClick={() => navigate('/hospitals')}>
+                            Browse Hospitals <ArrowRight size={18} />
                         </button>
                     </div>
                 </div>

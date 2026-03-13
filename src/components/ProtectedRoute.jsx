@@ -8,7 +8,8 @@ export default function ProtectedRoute({ allowedRoles }) {
     if (loading) {
         return (
             <div className="auth-page">
-                <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+                <div className="loading-spinner"></div>
+                <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>Loading your dashboard...</p>
             </div>
         )
     }
@@ -19,9 +20,10 @@ export default function ProtectedRoute({ allowedRoles }) {
     if (allowedRoles && allowedRoles.length > 0) {
         const effectiveRole = role || user?.user_metadata?.role || 'patient'
         if (!allowedRoles.includes(effectiveRole)) {
-            // STOP infinite loop: only redirect if not already on the target route
-            const targetPath = effectiveRole === 'doctor' ? '/doctor-dashboard' : '/dashboard'
-            if (location.pathname !== targetPath) {
+            // Redirect to the correct dashboard for this user's role
+            const targetPath = effectiveRole === 'admin' ? '/admin-dashboard' : effectiveRole === 'doctor' ? '/doctor-dashboard' : '/dashboard'
+            // Prevent infinite loop: only redirect if not already on a sub-path of the target
+            if (!location.pathname.startsWith(targetPath)) {
                 return <Navigate to={targetPath} replace />
             }
         }

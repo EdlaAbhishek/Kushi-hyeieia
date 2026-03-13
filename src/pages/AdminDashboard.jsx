@@ -7,6 +7,8 @@ import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
 import DashboardCard from '../components/ui/DashboardCard'
 import InfoTooltip from '../components/ui/InfoTooltip'
+import ActionButton from '../components/ui/ActionButton'
+import { toast } from 'react-hot-toast'
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#6366F1', '#8B5CF6']
 const TRIAGE_COLORS = ['#34D399', '#FBBF24', '#F87171']
@@ -180,6 +182,73 @@ export default function AdminDashboard({ mode = 'population' }) {
         )
     }
 
+    // ── AI Verification helper ──
+    const runAiVerification = async (app) => {
+        try {
+            // Update status to verifying
+            await supabase.from('doctor_applications')
+                .update({ ai_verification_status: 'verifying' })
+                .eq('id', app.id)
+
+            // Call AI endpoint to verify credentials
+            const prompt = `Verify this doctor application for a healthcare platform. Check if the details are reasonable and consistent:
+- Name: ${app.full_name}
+- Specialty: ${app.specialization}
+- License: ${app.license_number}
+- Experience: ${app.experience_years} years
+- Hospital: ${app.hospital_affiliation || 'N/A'}
+- Qualification: ${app.qualification || 'N/A'}
+
+Respond with VERIFIED if the details look legitimate (valid license format, reasonable experience for specialty, etc), or FLAGGED if something looks suspicious. Add a one-line explanation.`
+
+            const response = await fetch('/api/ai-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: prompt, role: 'system' })
+            })
+
+            let aiResult = 'pending'
+            let aiNotes = 'AI verification unavailable — manual review required.'
+
+            if (response.ok) {
+                const data = await response.json()
+                const reply = (data.reply || data.message || '').toUpperCase()
+                aiResult = reply.includes('VERIFIED') ? 'verified' : reply.includes('FLAGGED') ? 'flagged' : 'pending'
+                aiNotes = data.reply || data.message || 'No response from AI.'
+            }
+
+            await supabase.from('doctor_applications')
+                .update({ ai_verification_status: aiResult, ai_verification_notes: aiNotes })
+                .eq('id', app.id)
+
+            toast.success(`AI Verification: ${aiResult.toUpperCase()}`)
+            fetchApplications()
+        } catch (err) {
+            console.error('AI Verification error:', err)
+            toast.error('AI verification failed. You can still approve manually.')
+            await supabase.from('doctor_applications')
+                .update({ ai_verification_status: 'error', ai_verification_notes: err.message })
+                .eq('id', app.id)
+            fetchApplications()
+        }
+    }
+
+    const getAiStatusBadge = (status) => {
+        const styles = {
+            verified: { bg: '#F0FDF4', color: '#166534', border: '#BBF7D0', label: '✓ AI Verified' },
+            flagged: { bg: '#FEF2F2', color: '#991B1B', border: '#FECACA', label: '⚠ AI Flagged' },
+            verifying: { bg: '#FFF7ED', color: '#9A3412', border: '#FED7AA', label: '⏳ Verifying...' },
+            error: { bg: '#F1F5F9', color: '#475569', border: '#CBD5E1', label: '❌ Error' },
+            pending: { bg: '#FFFBEB', color: '#92400E', border: '#FDE68A', label: '🔄 Pending AI' }
+        }
+        const s = styles[status] || styles.pending
+        return (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '0.2rem 0.6rem', borderRadius: 999, fontSize: '0.72rem', fontWeight: 600 }}>
+                {s.label}
+            </span>
+        )
+    }
+
     // ── Doctor Applications Review View ──
     if (mode === 'applications') {
         return (
@@ -191,12 +260,12 @@ export default function AdminDashboard({ mode = 'population' }) {
                             Doctor Applications
                             <InfoTooltip content={{
                                 title: "Doctor Applications",
-                                description: "Review credentials submitted by healthcare professionals seeking doctor role access.",
-                                usage: "Verify the license number against the official registry before approving."
+                                description: "Review credentials submitted by healthcare professionals. AI verification checks license validity automatically.",
+                                usage: "Click 'AI Verify' to run an automated credential check, then approve or reject. Approved doctors are automatically linked to their hospital."
                             }} />
                         </span>
                     }
-                    description="Review and manage pending medical professional applications."
+                    description="Review, AI-verify, and manage pending medical professional applications."
                 />
 
                 <SectionContainer>
@@ -208,49 +277,137 @@ export default function AdminDashboard({ mode = 'population' }) {
                                 <p style={{ color: '#64748B' }}>New "Become a Doctor" submissions will appear here for your review.</p>
                             </DashboardCard>
                         ) : (
-                            <div style={{ display: 'grid', gap: '1rem' }}>
+                            <div style={{ display: 'grid', gap: '1.25rem' }}>
                                 {applications.map(app => (
-                                    <DashboardCard key={app.id} style={{ padding: '1.5rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                                    <DashboardCard key={app.id} style={{ padding: '1.75rem' }}>
+                                        {/* Header row */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
                                             <div>
-                                                <h3 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>{app.full_name}</h3>
-                                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', color: '#64748B', fontSize: '0.9rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                                    <h3 style={{ fontSize: '1.15rem', margin: 0, color: '#1E293B' }}>{app.full_name}</h3>
+                                                    {getAiStatusBadge(app.ai_verification_status)}
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', color: '#475569', fontSize: '0.88rem' }}>
                                                     <span><strong>Specialty:</strong> {app.specialization}</span>
-                                                    <span><strong>Experience:</strong> {app.experience_years} years</span>
-                                                    <span><strong>License:</strong> {app.license_number}</span>
-                                                </div>
-                                                <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#94A3B8' }}>
-                                                    Applied on {new Date(app.created_at).toLocaleDateString()} at {new Date(app.created_at).toLocaleTimeString()}
+                                                    {app.qualification && <span><strong>Qualification:</strong> {app.qualification}</span>}
+                                                    <span><strong>Experience:</strong> {app.experience_years} yrs</span>
+                                                    <span><strong>License:</strong> <code style={{ background: '#F1F5F9', padding: '0.15rem 0.4rem', borderRadius: 4, fontSize: '0.82rem' }}>{app.license_number}</code></span>
                                                 </div>
                                             </div>
-                                            <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                                <ActionButton variant="outline" style={{ fontSize: '0.8rem', color: '#EF4444', borderColor: '#FECACA' }} onClick={() => {
-                                                    if(window.confirm("Are you sure you want to reject this application? This will permanently delete it.")) {
-                                                       supabase.from('doctor_applications').delete().eq('id', app.id).then(() => fetchApplications());
-                                                    }
-                                                }}>
-                                                    Reject
-                                                </ActionButton>
-                                                <ActionButton variant="primary" style={{ fontSize: '0.8rem' }} onClick={async () => {
-                                                    try {
-                                                        const { error } = await supabase.rpc('approve_doctor_application', { app_id: app.id })
-                                                        if (error) {
-                                                            if (error.message.includes('Could not find the function')) {
-                                                                toast.error("Function not found! You must run the setup SQL in the Supabase Dashboard first.");
-                                                                return;
-                                                            }
-                                                            throw error;
+                                            <div style={{ fontSize: '0.8rem', color: '#94A3B8', textAlign: 'right', minWidth: '130px' }}>
+                                                {new Date(app.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                <br />
+                                                {new Date(app.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
+                                        </div>
+
+                                        {/* Details grid */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', padding: '1rem', background: '#F8FAFC', borderRadius: 10, marginBottom: '1rem' }}>
+                                            {app.hospital_affiliation && (
+                                                <div style={{ fontSize: '0.85rem' }}>
+                                                    <strong style={{ color: '#64748B', display: 'block', marginBottom: '0.15rem' }}>🏥 Hospital</strong>
+                                                    <span style={{ color: '#1E293B' }}>{app.hospital_affiliation}</span>
+                                                </div>
+                                            )}
+                                            {app.clinic_name && (
+                                                <div style={{ fontSize: '0.85rem' }}>
+                                                    <strong style={{ color: '#64748B', display: 'block', marginBottom: '0.15rem' }}>🏨 Clinic</strong>
+                                                    <span style={{ color: '#1E293B' }}>{app.clinic_name}</span>
+                                                </div>
+                                            )}
+                                            {app.clinic_address && (
+                                                <div style={{ fontSize: '0.85rem' }}>
+                                                    <strong style={{ color: '#64748B', display: 'block', marginBottom: '0.15rem' }}>📍 Clinic Address</strong>
+                                                    <span style={{ color: '#1E293B' }}>{app.clinic_address}</span>
+                                                </div>
+                                            )}
+                                            {app.available_timings && (
+                                                <div style={{ fontSize: '0.85rem' }}>
+                                                    <strong style={{ color: '#64748B', display: 'block', marginBottom: '0.15rem' }}>🕐 Timings</strong>
+                                                    <span style={{ color: '#1E293B' }}>{app.available_timings}</span>
+                                                </div>
+                                            )}
+                                            {app.available_days && (
+                                                <div style={{ fontSize: '0.85rem' }}>
+                                                    <strong style={{ color: '#64748B', display: 'block', marginBottom: '0.15rem' }}>📅 Available Days</strong>
+                                                    <span style={{ color: '#1E293B' }}>{app.available_days}</span>
+                                                </div>
+                                            )}
+                                            {app.consultation_fee && (
+                                                <div style={{ fontSize: '0.85rem' }}>
+                                                    <strong style={{ color: '#64748B', display: 'block', marginBottom: '0.15rem' }}>💰 Fee</strong>
+                                                    <span style={{ color: '#1E293B' }}>₹{app.consultation_fee}</span>
+                                                </div>
+                                            )}
+                                            {app.practice_type && (
+                                                <div style={{ fontSize: '0.85rem' }}>
+                                                    <strong style={{ color: '#64748B', display: 'block', marginBottom: '0.15rem' }}>📋 Practice Type</strong>
+                                                    <span style={{ color: '#1E293B', textTransform: 'capitalize' }}>{app.practice_type}</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Bio */}
+                                        {app.bio && (
+                                            <div style={{ padding: '0.75rem 1rem', background: '#F0F9FF', borderRadius: 8, marginBottom: '1rem', fontSize: '0.85rem', color: '#0C4A6E', borderLeft: '3px solid #0EA5E9' }}>
+                                                <strong>Bio:</strong> {app.bio}
+                                            </div>
+                                        )}
+
+                                        {/* AI Verification Notes */}
+                                        {app.ai_verification_notes && app.ai_verification_status !== 'pending' && (
+                                            <div style={{
+                                                padding: '0.75rem 1rem',
+                                                background: app.ai_verification_status === 'verified' ? '#F0FDF4' : app.ai_verification_status === 'flagged' ? '#FEF2F2' : '#F8FAFC',
+                                                borderRadius: 8,
+                                                marginBottom: '1rem',
+                                                fontSize: '0.82rem',
+                                                color: '#475569',
+                                                borderLeft: `3px solid ${app.ai_verification_status === 'verified' ? '#10B981' : app.ai_verification_status === 'flagged' ? '#EF4444' : '#94A3B8'}`
+                                            }}>
+                                                <strong>🤖 AI Notes:</strong> {app.ai_verification_notes}
+                                            </div>
+                                        )}
+
+                                        {/* Action buttons */}
+                                        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                                            <ActionButton
+                                                variant="outline"
+                                                style={{ fontSize: '0.82rem', color: '#0369A1', borderColor: '#BAE6FD' }}
+                                                onClick={() => runAiVerification(app)}
+                                                disabled={app.ai_verification_status === 'verifying'}
+                                            >
+                                                🤖 {app.ai_verification_status === 'verifying' ? 'Verifying...' : 'AI Verify'}
+                                            </ActionButton>
+                                            <ActionButton variant="outline" style={{ fontSize: '0.82rem', color: '#EF4444', borderColor: '#FECACA' }} onClick={() => {
+                                                if (window.confirm("Are you sure you want to reject this application? This will permanently delete it.")) {
+                                                    supabase.from('doctor_applications').delete().eq('id', app.id).then(() => {
+                                                        toast.success('Application rejected.')
+                                                        fetchApplications()
+                                                    });
+                                                }
+                                            }}>
+                                                ✗ Reject
+                                            </ActionButton>
+                                            <ActionButton variant="primary" style={{ fontSize: '0.82rem' }} onClick={async () => {
+                                                try {
+                                                    const { error } = await supabase.rpc('approve_doctor_application', { app_id: app.id })
+                                                    if (error) {
+                                                        if (error.message.includes('Could not find the function')) {
+                                                            toast.error("RPC function not found! Run the migration SQL in Supabase first.");
+                                                            return;
                                                         }
-                                                        toast.success(`Successfully approved ${app.full_name}! They are now a doctor.`);
-                                                        fetchApplications();
-                                                    } catch (err) {
-                                                        console.error("RPC Error:", err);
-                                                        toast.error("Approval failed: " + err.message);
+                                                        throw error;
                                                     }
-                                                }}>
-                                                    Approve Doctor
-                                                </ActionButton>
-                                            </div>
+                                                    toast.success(`✅ Approved ${app.full_name}! They are now a doctor${app.hospital_affiliation ? ` at ${app.hospital_affiliation}` : ''}.`);
+                                                    fetchApplications();
+                                                } catch (err) {
+                                                    console.error("RPC Error:", err);
+                                                    toast.error("Approval failed: " + err.message);
+                                                }
+                                            }}>
+                                                ✓ Approve & Link to Hospital
+                                            </ActionButton>
                                         </div>
                                     </DashboardCard>
                                 ))}
