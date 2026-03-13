@@ -12,12 +12,15 @@ const FALLBACK_SPECIALTIES = [
     'Oncology', 'Gastroenterology', 'Dermatology', 'General Physician'
 ];
 
-// Mock data to match fallback hospitals
+// Mock data to match fallback hospitals (real data from CSV)
 const mockHospitals = [
     { id: 'apollo-hospitals-jubilee-hills', name: 'Apollo Hospitals, Jubilee Hills', city: 'Hyderabad', beds: '500+', emergency: true, teleconsult: true, rating: 4.8, address: 'Film Nagar Main Road, Near Chiranjeevi Guest House, Jubilee Hills, Hyderabad - 500033' },
-    { id: 'pace-hospitals-hitec-city', name: 'PACE Hospitals, HITEC City', city: 'Hyderabad', beds: '200+', emergency: true, teleconsult: true, rating: 4.7, address: 'Metro Pillar C1772, Beside Avasa Hotel, Hitech City Road, Hyderabad – 500081' },
+    { id: 'apollo-hospitals-secunderabad', name: 'Apollo Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true, rating: 4.7, address: 'Secunderabad (DRDO branch reference), Hyderabad' },
+    { id: 'pace-hospitals-hitec-city', name: 'PACE Hospitals, HITEC City', city: 'Hyderabad', beds: '250+', emergency: true, teleconsult: true, rating: 4.7, address: 'Metro Pillar C1772, Beside Avasa Hotel, Hitech City Road, Hyderabad – 500081' },
     { id: 'care-hospitals-banjara-hills', name: 'CARE Hospitals, Banjara Hills', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true, rating: 4.6, address: 'Road No.1, Banjara Hills, Hyderabad – 500034' },
     { id: 'yashoda-hospitals-secunderabad', name: 'Yashoda Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true, rating: 4.8, address: 'Alexander Road, Secunderabad – 500003' },
+    { id: 'citizens-specialty-hospital', name: 'Citizens Specialty Hospital, Nallagandla', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: true, rating: 4.7, address: '1-100/1/CCH, Citizens Hospital Rd, Nallagandla, Hyderabad - 500019' },
+    { id: 'continental-hospitals-gachibowli', name: 'Continental Hospitals, Gachibowli', city: 'Hyderabad', beds: '750+', emergency: true, teleconsult: true, rating: 4.6, address: 'Plot No 3, Road No.2, Financial District, Gachibowli, Hyderabad – 500032' },
     { id: 'kims-hospitals-secunderabad', name: 'KIMS Hospitals, Secunderabad', city: 'Secunderabad', beds: '1000+', emergency: true, teleconsult: true, rating: 4.9, address: '1-8-31/1, Minister Road, Secunderabad, Hyderabad - 500003' },
 ];
 

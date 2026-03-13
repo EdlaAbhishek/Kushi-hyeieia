@@ -14,21 +14,28 @@ import SectionContainer from '../components/ui/SectionContainer'
 import DataTable from '../components/ui/DataTable'
 import ActionButton from '../components/ui/ActionButton'
 
-// Fallback hospitals when Supabase data is unavailable
+// Fallback hospitals when Supabase data is unavailable (real data from CSV)
 const FALLBACK_HOSPITALS = [
     { name: 'Apollo Hospitals, Jubilee Hills', city: 'Hyderabad', beds: '500+', emergency: true, teleconsult: true },
-    { name: 'PACE Hospitals, HITEC City', city: 'Hyderabad', beds: '200+', emergency: true, teleconsult: true },
+    { name: 'Apollo Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true },
+    { name: 'PACE Hospitals, HITEC City', city: 'Hyderabad', beds: '250+', emergency: true, teleconsult: true },
+    { name: 'PACE Hospitals, Madinaguda', city: 'Hyderabad', beds: '200+', emergency: true, teleconsult: false },
     { name: 'CARE Hospitals, Banjara Hills', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true },
     { name: 'Yashoda Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true },
+    { name: 'Yashoda Hospitals, Somajiguda', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true },
+    { name: 'Yashoda Hospitals, Malakpet', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: true },
+    { name: 'Yashoda Hospitals, Hitech City', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true },
     { name: 'Citizens Specialty Hospital, Nallagandla', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: true },
     { name: 'Continental Hospitals, Gachibowli', city: 'Hyderabad', beds: '750+', emergency: true, teleconsult: true },
+    { name: 'Sravani Hospitals, Hyderabad', city: 'Hyderabad', beds: '100+', emergency: true, teleconsult: false },
     { name: 'KIMS Hospitals, Secunderabad', city: 'Secunderabad', beds: '1000+', emergency: true, teleconsult: true },
     { name: 'AIG Hospitals, Gachibowli', city: 'Hyderabad', beds: '800+', emergency: true, teleconsult: false },
-    { name: 'Rainbow Children’s Hospital', city: 'Hyderabad', beds: '150+', emergency: true, teleconsult: false },
+    { name: "Rainbow Children's Hospital", city: 'Hyderabad', beds: '150+', emergency: true, teleconsult: false },
     { name: 'Sunshine Hospitals', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: false },
     { name: 'Aster Prime Hospitals', city: 'Hyderabad', beds: '250+', emergency: true, teleconsult: false },
-    { name: 'Sravani Hospitals', city: 'Hyderabad', beds: '100+', emergency: true, teleconsult: false },
+    { name: 'Apollo TeleHealth Services', city: 'Hyderabad', beds: '0', emergency: false, teleconsult: true },
 ]
+
 
 export default function Hospitals() {
     const { user, isDoctor } = useAuth()
