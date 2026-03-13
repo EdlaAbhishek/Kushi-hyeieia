@@ -247,13 +247,14 @@ export default function HospitalDetail() {
                     {/* ─── Stepped Booking Flow ─── */}
                     <div id="booking-flow" style={{ background: '#fff', borderRadius: 20, padding: '2.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', marginBottom: '2rem' }}>
 
-                        {/* Step Indicator */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-                            <StepBadge num={1} label="Select Specialty" active={step >= 1} done={step > 1} onClick={() => { setStep(1); setSelectedSpecialty(null); setSelectedDoctor(null); }} />
-                            <ChevronRight size={16} style={{ color: '#CBD5E1' }} />
-                            <StepBadge num={2} label="Select Doctor" active={step >= 2} done={step > 2} onClick={step >= 2 ? () => { setStep(2); setSelectedDoctor(null); } : undefined} />
-                            <ChevronRight size={16} style={{ color: '#CBD5E1' }} />
-                            <StepBadge num={3} label="Book Appointment" active={step >= 3} done={false} />
+                        {/* Booking Flow Header */}
+                        <div style={{
+                            display: 'flex', gap: '2rem', padding: '1rem 0',
+                            borderBottom: '1px solid #E2E8F0', marginBottom: '2rem',
+                            overflowX: 'auto', whiteSpace: 'nowrap'
+                        }}>
+                            <StepBadge num={1} label="Select Specialty" active={step === 1} done={step > 1} onClick={step > 1 ? () => setStep(1) : undefined} />
+                            <StepBadge num={2} label="Choose Doctor" active={step === 2} done={step > 2} />
                         </div>
 
                         {/* Step 1: Select Specialty */}
@@ -363,7 +364,19 @@ export default function HospitalDetail() {
                                                     )}
                                                 </div>
 
-                                                <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', fontSize: '0.85rem' }}>
+                                                <button 
+                                                    className="btn btn-primary" 
+                                                    style={{ width: '100%', marginTop: '1rem', fontSize: '0.85rem' }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/doctors/${doc.id}`, {
+                                                            state: { 
+                                                                fromHospital: hospital?.name,
+                                                                hospitalId: id 
+                                                            }
+                                                        });
+                                                    }}
+                                                >
                                                     Book with this Doctor
                                                 </button>
                                             </div>
@@ -375,15 +388,6 @@ export default function HospitalDetail() {
                     </div>
                 </div>
             </section>
-
-            {/* Step 3: BookingModal */}
-            {step === 3 && selectedDoctor && (
-                <BookingModal
-                    doctor={selectedDoctor}
-                    hospitalName={hospital?.name}
-                    onClose={() => { setStep(2); setSelectedDoctor(null); }}
-                />
-            )}
         </>
     );
 }
