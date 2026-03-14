@@ -32,7 +32,13 @@ function apiPlugin() {
             // Load env vars before setting up routes
             loadAllEnv()
 
-            server.middlewares.use('/api/analyze-prescription', async (req, res) => {
+            // Generic handler for ALL /api/* routes
+            server.middlewares.use(async (req, res, next) => {
+                if (!req.url.startsWith('/api/')) return next()
+
+                const routeName = req.url.replace('/api/', '').split('?')[0]
+                const handlerPath = `./api/${routeName}.js`
+
                 if (req.method !== 'POST') {
                     res.statusCode = 405
                     res.setHeader('Content-Type', 'application/json')
@@ -40,8 +46,30 @@ function apiPlugin() {
                     return
                 }
 
+                // Collect request body
+                let bodyChunks = []
+                req.on('data', chunk => { bodyChunks.push(chunk) })
+                await new Promise(resolve => req.on('end', resolve))
+                
+                const rawBody = Buffer.concat(bodyChunks)
+                
+                // If it's a JSON request or empty, trying parsing as JSON
+                const contentType = req.headers['content-type'] || '';
+                if (contentType.includes('application/json') || rawBody.length === 0) {
+                    try { 
+                        req.body = rawBody.length > 0 ? JSON.parse(rawBody.toString()) : {} 
+                    } catch { 
+                        req.body = {} 
+                    }
+                } else {
+                    // It's likely an image or streaming transfer (octet-stream), pass the raw Buffer
+                    req.body = rawBody
+                }
+
                 try {
-                    const { default: handler } = await import('./api/analyze-prescription.js')
+                    // Use Vite's ssrLoadModule for proper ESM resolution in dev server
+                    const module = await server.ssrLoadModule(handlerPath)
+                    const handler = module.default
 
                     const vercelRes = {
                         status(code) {
@@ -65,7 +93,7 @@ function apiPlugin() {
 
                     await handler(req, vercelRes)
                 } catch (err) {
-                    console.error('API handler error:', err)
+                    console.error(`API handler error [${routeName}]:`, err)
                     res.statusCode = 500
                     res.setHeader('Content-Type', 'application/json')
                     res.end(JSON.stringify({ error: 'Server error: ' + err.message }))
