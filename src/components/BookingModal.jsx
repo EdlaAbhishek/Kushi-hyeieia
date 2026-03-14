@@ -119,15 +119,20 @@ export default function BookingModal({ doctor, onClose, hospitalName }) {
             const appointmentData = {
                 doctor_id: doctor.id,
                 patient_id: user.id,
+                hospital_id: doctor.hospital_id || null,
                 appointment_date: bookingDate,
                 appointment_time: bookingTime,
                 appointment_type: appointmentType === 'telehealth' ? 'teleconsultation' : 'in_person',
+                type: appointmentType === 'telehealth' ? 'telehealth' : 'in-person',
                 status: 'pending',
                 patient_name: fullName.trim(),
                 patient_phone: phoneNumber.trim(),
                 patient_email: email.trim(),
                 patient_address: address.trim(),
                 reason: reasonForVisit.trim(),
+                symptoms: reasonForVisit.trim(),
+                doctor_name: doctor.full_name || '',
+                hospital_name: hospitalName || doctor.hospital_name || '',
             };
 
             // Save to Supabase
@@ -158,7 +163,7 @@ export default function BookingModal({ doctor, onClose, hospitalName }) {
             localStorage.setItem('latest_booking', JSON.stringify({
                 ...appointmentData,
                 doctor_name: doctor.full_name,
-                doctor_hospital: hospitalName || doctor.hospital,
+                doctor_hospital: hospitalName || doctor.hospital_name,
                 doctor_specialty: doctor.specialty
             }));
 
@@ -183,10 +188,10 @@ export default function BookingModal({ doctor, onClose, hospitalName }) {
                     <h2 className="modal-title">Request Appointment</h2>
                     <p className="modal-subtitle">
                         Consulting with <strong>{doctor?.full_name}</strong>
-                        {(hospitalName || doctor?.hospital) && (
+                        {(hospitalName || doctor?.hospital_name) && (
                             <span style={{ display: 'block', fontSize: '0.85rem', color: '#64748B', marginTop: '0.25rem' }}>
                                 <MapPin size={14} style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />
-                                {hospitalName || doctor?.hospital}
+                                {hospitalName || doctor?.hospital_name}
                             </span>
                         )}
                     </p>

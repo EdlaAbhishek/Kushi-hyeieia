@@ -68,7 +68,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
                 if (doctorIds.length > 0) {
                     const { data: doctorData } = await supabase
                         .from('doctors')
-                        .select('id, full_name, specialty, hospital, hospital_name, profile_photo')
+                        .select('id, full_name, specialty, hospital_name, profile_photo')
                         .in('id', doctorIds)
                     if (doctorData) {
                         doctorData.forEach(d => { doctorMap[d.id] = d })
@@ -280,7 +280,7 @@ export default function Dashboard({ activeTab = 'overview' }) {
         // Navigate to the doctor's page within hospital context to rebook
         navigate(`/doctors/${appt.doctor_id}`, {
             state: {
-                fromHospital: appt.doctors?.hospital_name || appt.doctors?.hospital,
+                fromHospital: appt.doctors?.hospital_name,
                 reschedule: true
             }
         });

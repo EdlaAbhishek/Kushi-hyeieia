@@ -33,14 +33,14 @@ export default function AdminDoctors() {
         const docName = (d.name || d.full_name || '').toLowerCase()
         return docName.includes(q) ||
                (d.specialty || '').toLowerCase().includes(q) ||
-               (d.hospital || d.hospital_name || '').toLowerCase().includes(q)
+               (d.hospital_name || '').toLowerCase().includes(q)
     })
 
     const openEdit = (doc) => {
         setEditDoc(doc)
         setForm({
             name: doc.name || doc.full_name || '', specialty: doc.specialty || '', experience: doc.experience || '',
-            hospital: doc.hospital || doc.hospital_name || '', bio: doc.bio || '',
+            hospital: doc.hospital_name || '', bio: doc.bio || '',
             available_timings: doc.available_timings || '', consultation_fee: doc.consultation_fee || ''
         })
     }
@@ -113,7 +113,7 @@ export default function AdminDoctors() {
                                         <tr key={doc.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
                                             <td style={{ padding: '1rem' }}><strong>{doc.name || doc.full_name || '—'}</strong></td>
                                             <td style={{ padding: '1rem' }}>{doc.specialty || '—'}</td>
-                                            <td style={{ padding: '1rem' }}>{doc.hospital || doc.hospital_name || '—'}</td>
+                                            <td style={{ padding: '1rem' }}>{doc.hospital_name || '—'}</td>
                                             <td style={{ padding: '1rem' }}>{doc.experience ? `${doc.experience} yrs` : '—'}</td>
                                             <td style={{ padding: '1rem' }}>
                                                 {doc.is_approved ? (

@@ -65,7 +65,7 @@ export default function DoctorDetail() {
     const mockRating = "4.8";
     const mockReviews = "124";
     const experience = doctor.experience || "12 Years";
-    const hospitalDisplay = fromHospital || doctor.hospital || doctor.hospital_name || 'Khushi Hygieia Networks';
+    const hospitalDisplay = fromHospital || doctor.hospital_name || 'Khushi Hygieia Networks';
     const mockBio = `Dr. ${doctor.full_name} is an experienced specialist in ${doctor.specialty || 'General Medicine'} with a history of providing excellent patient care at ${hospitalDisplay}. Committed to staying updated with the latest medical advancements and delivering compassionate, comprehensive treatment.`;
 
     // Build breadcrumbs based on navigation context

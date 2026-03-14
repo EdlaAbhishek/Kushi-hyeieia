@@ -108,7 +108,7 @@ export default function HealthVault() {
                 ...perm,
                 doctor_name: doctorMap[perm.doctor_id]?.full_name || 'Unknown Doctor',
                 doctor_specialty: doctorMap[perm.doctor_id]?.specialty || '',
-                doctor_hospital: doctorMap[perm.doctor_id]?.hospital || '—'
+                doctor_hospital: doctorMap[perm.doctor_id]?.hospital_name || '—'
             }))
 
             setPermissions(enriched)
