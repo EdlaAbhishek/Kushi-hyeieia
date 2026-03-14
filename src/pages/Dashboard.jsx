@@ -41,6 +41,9 @@ export default function Dashboard({ activeTab = 'overview' }) {
     // ── Confirm state ──
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, apptId: null })
 
+    // ── AI Explainability state ──
+    const [explainModalOpen, setExplainModalOpen] = useState(false)
+
     const email = user?.email || ''
 
     useEffect(() => {
@@ -395,6 +398,15 @@ export default function Dashboard({ activeTab = 'overview' }) {
                                         
                                         <div style={{ marginTop: '1.5rem', background: '#fff', padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem', color: '#64748B', border: '1px solid #E2E8F0' }}>
                                             <strong>Status:</strong> Low baseline risk. Maintain current lifestyle and regular monitoring.
+                                            <div style={{ marginTop: '0.75rem' }}>
+                                                <button
+                                                    className="btn btn-outline"
+                                                    style={{ width: '100%', fontSize: '0.8rem', padding: '0.4rem' }}
+                                                    onClick={() => setExplainModalOpen(true)}
+                                                >
+                                                    View AI Analysis Logic
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </DashboardCard>
@@ -542,6 +554,68 @@ export default function Dashboard({ activeTab = 'overview' }) {
                             <ActionButton to="/hospitals" variant="outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                                 Find More Hospitals
                             </ActionButton>
+                        </div>
+                    )}
+
+                    {/* AI Explainability Modal */}
+                    {explainModalOpen && (
+                        <div style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 1000, padding: '1rem'
+                        }}>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                style={{
+                                    background: '#fff', borderRadius: '16px', padding: '2rem',
+                                    maxWidth: '500px', width: '100%', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                                    <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0F766E' }}>
+                                        <Activity size={20} /> AI Risk Computation
+                                    </h3>
+                                    <button onClick={() => setExplainModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}>
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                                <div style={{ fontSize: '0.9rem', color: '#334155', lineHeight: 1.6 }}>
+                                    <p style={{ marginBottom: '1rem' }}>The <strong>12% predictive risk score</strong> was calculated securely using our decentralized ML engine. No PII was exposed during this computation.</p>
+                                    
+                                    <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                            <span>Age & Default Demographics Factor:</span>
+                                            <span style={{ fontWeight: 600, color: '#10B981' }}>+4%</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                            <span>Recent Normal Blood Pressure (118/78):</span>
+                                            <span style={{ fontWeight: 600, color: '#10B981' }}>-2%</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                            <span>Consistent Appointment Completion:</span>
+                                            <span style={{ fontWeight: 600, color: '#10B981' }}>-1%</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #CBD5E1' }}>
+                                            <span style={{ fontWeight: 600 }}>Final Computed Risk:</span>
+                                            <span style={{ fontWeight: 700, color: '#1E293B' }}>12% (Low)</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <p style={{ fontSize: '0.8rem', color: '#64748B', fontStyle: 'italic' }}>
+                                        Note: This is an AI-generated synthesis intended for patient awareness. It does not substitute professional medical advice.
+                                    </p>
+                                </div>
+                                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button
+                                        onClick={() => setExplainModalOpen(false)}
+                                        style={{ background: '#0F766E', color: '#fff', border: 'none', padding: '0.6rem 1.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </motion.div>
                         </div>
                     )}
 

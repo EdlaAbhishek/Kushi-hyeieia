@@ -6,18 +6,6 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
-// Fallback hospital data (matches Hospitals.jsx mock data)
-const mockHospitals = [
-    { id: 'apollo-hospitals-jubilee-hills', name: 'Apollo Hospitals, Jubilee Hills', city: 'Hyderabad', beds: '500+', emergency: true, teleconsult: true, rating: 4.8, address: 'Film Nagar Main Road, Near Chiranjeevi Guest House, Jubilee Hills, Hyderabad - 500033', phone: '040-23607777' },
-    { id: 'apollo-hospitals-secunderabad', name: 'Apollo Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true, rating: 4.7, address: 'Secunderabad (DRDO branch reference), Hyderabad', phone: '040-27201066' },
-    { id: 'pace-hospitals-hitec-city', name: 'PACE Hospitals, HITEC City', city: 'Hyderabad', beds: '250+', emergency: true, teleconsult: true, rating: 4.7, address: 'Metro Pillar C1772, Beside Avasa Hotel, Hitech City Road, Hyderabad – 500081', phone: '040-44440000' },
-    { id: 'care-hospitals-banjara-hills', name: 'CARE Hospitals, Banjara Hills', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true, rating: 4.6, address: 'Road No.1, Banjara Hills, Hyderabad – 500034', phone: '040-30418888' },
-    { id: 'yashoda-hospitals-secunderabad', name: 'Yashoda Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true, rating: 4.8, address: 'Alexander Road, Secunderabad – 500003', phone: '040-45674567' },
-    { id: 'citizens-specialty-hospital', name: 'Citizens Specialty Hospital, Nallagandla', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: true, rating: 4.7, address: '1-100/1/CCH, Citizens Hospital Rd, Nallagandla, Hyderabad - 500019', phone: '040-67171717' },
-    { id: 'continental-hospitals-gachibowli', name: 'Continental Hospitals, Gachibowli', city: 'Hyderabad', beds: '750+', emergency: true, teleconsult: true, rating: 4.6, address: 'Plot No 3, Road No.2, Financial District, Gachibowli, Hyderabad – 500032', phone: '040-67000000' },
-    { id: 'kims-hospitals-secunderabad', name: 'KIMS Hospitals, Secunderabad', city: 'Secunderabad', beds: '1000+', emergency: true, teleconsult: true, rating: 4.9, address: '1-8-31/1, Minister Road, Secunderabad, Hyderabad - 500003', phone: '040-44885000' },
-];
-
 export default function HospitalDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -60,27 +48,7 @@ export default function HospitalDetail() {
                 return;
             }
         } catch (err) {
-            // Fall through to mock lookup
-        }
-
-        // Fallback: check mock hospitals
-        const found = mockHospitals.find(h => h.id === id || h.name.toLowerCase().replace(/\s+/g, '-') === id);
-        if (found) {
-            setHospital(found);
-            loadDoctors(found.name);
-        } else {
-            const fallback = {
-                id: id,
-                name: decodeURIComponent(id).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-                city: 'Metro City',
-                beds: '250+',
-                emergency: true,
-                teleconsult: true,
-                rating: 4.5,
-                address: 'Central Health District'
-            };
-            setHospital(fallback);
-            loadDoctors(fallback.name);
+            console.error('Error fetching hospital:', err);
         }
         setLoading(false);
     }
@@ -191,33 +159,31 @@ export default function HospitalDetail() {
             <section className="section" style={{ paddingTop: 0, paddingBottom: '1rem' }}>
                 <div className="container">
                     <div style={{
-                        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                        borderRadius: 20,
+                        background: '#fff',
+                        borderRadius: 16,
                         overflow: 'hidden',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
                         border: '1px solid #E2E8F0'
                     }}>
-                        {/* Gradient banner */}
+                        {/* Clean solid header */}
                         <div style={{
-                            background: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 50%, #0A3069 100%)',
-                            padding: '2rem 2.5rem 1.5rem',
+                            background: '#0369A1',
+                            padding: '2.5rem 2.5rem 2rem',
                             color: '#fff',
                             position: 'relative',
-                            overflow: 'hidden'
+                            borderBottom: '4px solid #0F766E'
                         }}>
-                            {/* Decorative circles */}
-                            <div style={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }}></div>
-                            <div style={{ position: 'absolute', bottom: -60, right: 100, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }}></div>
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem', position: 'relative', zIndex: 1 }}>
                                 <div style={{ flex: 1, minWidth: '280px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                                         <div style={{
-                                            width: 56, height: 56, borderRadius: 16,
-                                            background: 'rgba(255,255,255,0.15)',
-                                            backdropFilter: 'blur(10px)',
+                                            width: 56, height: 56, borderRadius: 12,
+                                            background: '#F8FAFC',
+                                            color: '#0369A1',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            flexShrink: 0
+                                            flexShrink: 0,
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                         }}>
                                             <Building2 size={28} />
                                         </div>
@@ -233,35 +199,35 @@ export default function HospitalDetail() {
                                     </div>
 
                                     {/* Rating & Stats Row */}
-                                    <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                                    <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
                                         <div style={{
-                                            display: 'flex', alignItems: 'center', gap: '0.4rem',
-                                            background: 'rgba(255,255,255,0.15)', padding: '0.4rem 0.85rem',
-                                            borderRadius: 100, fontSize: '0.9rem', fontWeight: 700
+                                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                            background: '#0F766E', padding: '0.5rem 1rem',
+                                            borderRadius: 8, fontSize: '0.95rem', fontWeight: 600,
+                                            color: '#fff'
                                         }}>
-                                            <Star size={16} fill="#FBBF24" color="#FBBF24" /> {hospital.rating}
+                                            <Star size={18} fill="#FBBF24" color="#FBBF24" /> {hospital.rating}
                                         </div>
                                         {hospital.phone && (
                                             <div style={{
-                                                display: 'flex', alignItems: 'center', gap: '0.4rem',
-                                                background: 'rgba(255,255,255,0.1)', padding: '0.4rem 0.85rem',
-                                                borderRadius: 100, fontSize: '0.85rem', fontWeight: 600
+                                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                background: 'rgba(255, 255, 255, 0.15)', padding: '0.5rem 1rem',
+                                                borderRadius: 8, fontSize: '0.95rem', fontWeight: 500
                                             }}>
-                                                <Phone size={14} /> {hospital.phone}
+                                                <Phone size={16} /> {hospital.phone}
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignSelf: 'center' }}>
+                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignSelf: 'center' }}>
                                     <button
                                         className="btn"
                                         style={{
-                                            background: '#fff', color: '#1565C0', fontWeight: 700,
-                                            padding: '0.75rem 1.5rem', borderRadius: 12,
+                                            background: '#fff', color: '#0369A1', fontWeight: 600,
+                                            padding: '0.75rem 1.5rem', borderRadius: 8,
                                             border: 'none', cursor: 'pointer',
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                            transition: 'all 0.2s'
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                         }}
                                         onClick={() => document.getElementById('doctors-section')?.scrollIntoView({ behavior: 'smooth' })}
                                     >
@@ -270,10 +236,9 @@ export default function HospitalDetail() {
                                     <button
                                         className="btn"
                                         style={{
-                                            background: 'rgba(255,255,255,0.15)', color: '#fff', fontWeight: 600,
-                                            padding: '0.75rem 1.5rem', borderRadius: 12,
-                                            border: '1.5px solid rgba(255,255,255,0.3)', cursor: 'pointer',
-                                            backdropFilter: 'blur(10px)', transition: 'all 0.2s'
+                                            background: 'transparent', color: '#fff', fontWeight: 600,
+                                            padding: '0.75rem 1.5rem', borderRadius: 8,
+                                            border: '2px solid rgba(255, 255, 255, 0.8)', cursor: 'pointer'
                                         }}
                                         onClick={() => setShowContact(!showContact)}
                                     >
@@ -285,7 +250,7 @@ export default function HospitalDetail() {
 
                         {/* Contact panel (collapsible) */}
                         {showContact && (
-                            <div style={{ padding: '1.5rem 2.5rem', background: '#F0F7FF', borderBottom: '1px solid #E2E8F0', display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
+                            <div style={{ padding: '1.5rem 2.5rem', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                     <div style={{ width: 44, height: 44, background: '#DBEAFE', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1565C0' }}>
                                         <Phone size={20} />
@@ -317,14 +282,14 @@ export default function HospitalDetail() {
                         )}
 
                         {/* Facilities Tags */}
-                        <div style={{ padding: '1.25rem 2.5rem', display: 'flex', gap: '0.65rem', flexWrap: 'wrap', borderBottom: '1px solid #F1F5F9' }}>
+                        <div style={{ padding: '1.25rem 2.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', borderBottom: '1px solid #E2E8F0', background: '#fff' }}>
                             {facilities.map((f, i) => (
                                 <span key={i} style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                                    padding: '0.4rem 0.85rem', borderRadius: 100,
-                                    fontSize: '0.82rem', fontWeight: 600,
-                                    background: f.bg, color: f.color,
-                                    transition: 'transform 0.2s'
+                                    display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                                    padding: '0.5rem 1rem', borderRadius: 6,
+                                    fontSize: '0.85rem', fontWeight: 500,
+                                    border: '1px solid #E2E8F0',
+                                    background: '#F8FAFC', color: '#1F2937'
                                 }}>
                                     {f.icon} {f.label}
                                 </span>
@@ -358,13 +323,13 @@ export default function HospitalDetail() {
             </section>
 
             {/* ═══════ Doctors Section ═══════ */}
-            <section id="doctors-section" className="section" style={{ paddingTop: '0.5rem' }}>
+            <section id="doctors-section" className="section" style={{ paddingTop: '1rem', paddingBottom: '3rem' }}>
                 <div className="container">
                     <div style={{
                         background: '#fff',
-                        borderRadius: 20,
-                        padding: '2rem 2.5rem 2.5rem',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                        borderRadius: 16,
+                        padding: '2rem 2.5rem',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
                         border: '1px solid #E2E8F0'
                     }}>
                         {/* Section Header */}
@@ -389,15 +354,14 @@ export default function HospitalDetail() {
                                     <button
                                         onClick={() => setSelectedSpecialty(null)}
                                         style={{
-                                            background: !selectedSpecialty ? 'var(--primary)' : '#fff',
-                                            color: !selectedSpecialty ? '#fff' : '#334155',
-                                            border: `1.5px solid ${!selectedSpecialty ? 'var(--primary)' : '#CBD5E1'}`,
-                                            padding: '0.45rem 1rem',
-                                            borderRadius: 100,
-                                            fontSize: '0.82rem',
-                                            fontWeight: 600,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s'
+                                            background: !selectedSpecialty ? '#0369A1' : '#F8FAFC',
+                                            color: !selectedSpecialty ? '#fff' : '#475569',
+                                            border: `1px solid ${!selectedSpecialty ? '#0369A1' : '#E2E8F0'}`,
+                                            padding: '0.5rem 1rem',
+                                            borderRadius: 6,
+                                            fontSize: '0.85rem',
+                                            fontWeight: 500,
+                                            cursor: 'pointer'
                                         }}
                                     >
                                         All ({doctors.length})
@@ -409,15 +373,14 @@ export default function HospitalDetail() {
                                                 key={spec}
                                                 onClick={() => setSelectedSpecialty(prev => prev === spec ? null : spec)}
                                                 style={{
-                                                    background: selectedSpecialty === spec ? 'var(--primary)' : '#fff',
-                                                    color: selectedSpecialty === spec ? '#fff' : '#334155',
-                                                    border: `1.5px solid ${selectedSpecialty === spec ? 'var(--primary)' : '#CBD5E1'}`,
-                                                    padding: '0.45rem 1rem',
-                                                    borderRadius: 100,
-                                                    fontSize: '0.82rem',
-                                                    fontWeight: 600,
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s'
+                                                    background: selectedSpecialty === spec ? '#0369A1' : '#F8FAFC',
+                                                    color: selectedSpecialty === spec ? '#fff' : '#475569',
+                                                    border: `1px solid ${selectedSpecialty === spec ? '#0369A1' : '#E2E8F0'}`,
+                                                    padding: '0.5rem 1rem',
+                                                    borderRadius: 6,
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 500,
+                                                    cursor: 'pointer'
                                                 }}
                                             >
                                                 {spec} ({count})
@@ -566,8 +529,8 @@ export default function HospitalDetail() {
                                             </div>
 
                                             <button
-                                                className="btn btn-primary"
-                                                style={{ width: '100%', marginTop: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem' }}
+                                                className="btn"
+                                                style={{ width: '100%', marginTop: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', background: '#0F766E', color: '#fff', border: 'none', padding: '0.6rem 1rem', borderRadius: 6, fontWeight: 500 }}
                                                 onClick={() => navigate(`/doctors/${doc.id}`, {
                                                     state: {
                                                         fromHospital: hospital?.name,
@@ -593,15 +556,14 @@ export default function HospitalDetail() {
 function StatCard({ icon, value, label, bg }) {
     return (
         <div style={{
-            display: 'flex', alignItems: 'center', gap: '0.85rem',
-            padding: '1rem 1.25rem', background: bg, borderRadius: 14,
-            border: '1px solid rgba(0,0,0,0.04)'
+            display: 'flex', alignItems: 'center', gap: '1rem',
+            padding: '1.25rem 1.5rem', background: '#fff', borderRadius: 8,
+            border: '1px solid #E2E8F0'
         }}>
             <div style={{
-                width: 42, height: 42, borderRadius: 12,
-                background: '#fff', display: 'flex',
+                width: 44, height: 44, borderRadius: 8,
+                background: '#F8FAFC', display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                 flexShrink: 0
             }}>
                 {icon}

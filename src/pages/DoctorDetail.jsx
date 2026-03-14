@@ -62,11 +62,9 @@ export default function DoctorDetail() {
     }
 
     // Generate contextual data
-    const mockRating = "4.8";
-    const mockReviews = "124";
-    const experience = doctor.experience || "12 Years";
+    const experience = doctor.experience || "Not Specified";
     const hospitalDisplay = fromHospital || doctor.hospital_name || 'Khushi Hygieia Networks';
-    const mockBio = `Dr. ${doctor.full_name} is an experienced specialist in ${doctor.specialty || 'General Medicine'} with a history of providing excellent patient care at ${hospitalDisplay}. Committed to staying updated with the latest medical advancements and delivering compassionate, comprehensive treatment.`;
+    const generatedBio = `Dr. ${doctor.full_name} is a specialist in ${doctor.specialty || 'General Medicine'} consulting at ${hospitalDisplay}. Committed to staying updated with the latest medical advancements and delivering compassionate, comprehensive treatment.`;
 
     // Build breadcrumbs based on navigation context
     const breadcrumbItems = [];
@@ -160,9 +158,9 @@ export default function DoctorDetail() {
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', fontWeight: 700, color: '#0F172A', fontSize: '1.1rem' }}>
-                                            <Star size={16} color="#F59E0B" fill="#F59E0B" /> {mockRating}
+                                            <Star size={16} color="#CBD5E1" fill="#CBD5E1" /> N/A
                                         </div>
-                                        <div style={{ fontSize: '0.8rem', color: '#64748B' }}>{mockReviews} Reviews</div>
+                                        <div style={{ fontSize: '0.8rem', color: '#64748B' }}>No Ratings</div>
                                     </div>
                                     <div style={{ width: 1, background: '#E2E8F0' }}></div>
                                     <div style={{ textAlign: 'center' }}>
@@ -200,7 +198,7 @@ export default function DoctorDetail() {
                                     {doctor.verified && <ShieldCheck size={20} color="#10B981" />}
                                 </h2>
                                 <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '2rem' }}>
-                                    {mockBio}
+                                    {generatedBio}
                                 </p>
 
                                 {/* Specialization Info */}

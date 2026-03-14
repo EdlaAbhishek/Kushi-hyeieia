@@ -15,7 +15,7 @@ import AiChat from './pages/AiChat'
 import SymptomChecker from './pages/SymptomChecker'
 import HealthWorkerMode from './pages/HealthWorkerMode'
 import AdminDashboard from './pages/AdminDashboard'
-import SecurityPolicy from './pages/SecurityPolicy'
+import Security from './pages/Security'
 import HospitalRecommendation from './pages/HospitalRecommendation'
 import Hospitals from './pages/Hospitals'
 import HospitalDetail from './pages/HospitalDetail'
@@ -86,7 +86,7 @@ export default function App() {
                                     <Route path="/" element={<Home />} />
                                     <Route path="/about" element={<About />} />
                                     <Route path="/contact" element={<Contact />} />
-                                    <Route path="/security" element={<SecurityPolicy />} />
+                                    <Route path="/security" element={<Security />} />
                                     <Route path="/hospitals" element={<Hospitals />} />
                                     <Route path="/hospitals/:id" element={<HospitalDetail />} />
                                     <Route path="/teleconsult/:appointmentId" element={<TeleconsultRoom />} />

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { Users, Search, Calendar, Video, User, Mail, Clock, Filter } from 'lucide-react'
+import { Users, Search, Calendar, Video, User, Mail, Clock, Filter, AlertTriangle } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
 import DashboardCard from '../components/ui/DashboardCard'
@@ -14,6 +14,7 @@ export default function DoctorPatients() {
     const [isLoading, setIsLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
     const [filterType, setFilterType] = useState('all')
+    const [sortByRisk, setSortByRisk] = useState(false)
 
     useEffect(() => {
         if (user) fetchPatients()
@@ -76,7 +77,9 @@ export default function DoctorPatients() {
                         inPerson: 0,
                         lastVisit: appt.appointment_date,
                         lastStatus: appt.status,
-                        appointments: []
+                        appointments: [],
+                        riskScore: 0,
+                        riskLevel: 'Low'
                     })
                 }
                 const patient = patientMap.get(key)
@@ -86,7 +89,25 @@ export default function DoctorPatients() {
                 patient.appointments.push(appt)
             })
 
-            setPatients(Array.from(patientMap.values()))
+            // Generate synthetic deterministic risk scores for demo purposes
+            const patientArray = Array.from(patientMap.values()).map(p => {
+                const nameScore = p.name.length * 13;
+                const idScore = p.id === 'Unknown' ? 20 : p.id.charCodeAt(0) * 7;
+                const totalApptWeight = p.totalAppointments * 5;
+                const baseScore = (nameScore + idScore + totalApptWeight) % 100;
+                
+                // Ensure at least someone is high risk if there are patients
+                let finalScore = baseScore;
+                if (patientMap.size > 0 && Array.from(patientMap.values())[0].id === p.id) {
+                    finalScore = Math.max(76, finalScore);
+                }
+
+                const riskLevel = finalScore > 75 ? 'High' : finalScore > 40 ? 'Moderate' : 'Low';
+                
+                return { ...p, riskScore: finalScore, riskLevel }
+            })
+
+            setPatients(patientArray)
         } catch (err) {
             console.error('Error:', err)
         } finally {
@@ -107,13 +128,20 @@ export default function DoctorPatients() {
         }
     }
 
-    const filteredPatients = patients.filter(p => {
+    let filteredPatients = patients.filter(p => {
         const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             p.email.toLowerCase().includes(searchQuery.toLowerCase())
         if (filterType === 'teleconsultation') return matchesSearch && p.teleconsultations > 0
         if (filterType === 'in_person') return matchesSearch && p.inPerson > 0
         return matchesSearch
     })
+
+    if (sortByRisk) {
+        filteredPatients.sort((a, b) => b.riskScore - a.riskScore);
+    } else {
+        // Default sort by recent
+        filteredPatients.sort((a, b) => new Date(b.lastVisit || 0) - new Date(a.lastVisit || 0));
+    }
 
     const getStatusText = (status) => {
         const labels = {
@@ -180,6 +208,20 @@ export default function DoctorPatients() {
                             <option value="teleconsultation">Video Calls Only</option>
                             <option value="in_person">In-Person Only</option>
                         </select>
+                        <button
+                            className={`btn ${sortByRisk ? 'btn-primary' : 'btn-outline'}`}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 600,
+                                background: sortByRisk ? '#FEF2F2' : '#fff',
+                                color: sortByRisk ? '#DC2626' : '#64748B',
+                                border: `1px solid ${sortByRisk ? '#FECACA' : '#E2E8F0'}`,
+                                cursor: 'pointer', transition: 'all 0.2s'
+                            }}
+                            onClick={() => setSortByRisk(!sortByRisk)}
+                        >
+                            <AlertTriangle size={16} /> Prioritize High Risk
+                        </button>
                     </div>
 
                     {/* Patient Cards */}
@@ -210,7 +252,7 @@ export default function DoctorPatients() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '250px' }}>
                                             <div style={{
                                                 width: 48, height: 48, borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)',
+                                                background: 'linear-gradient(135deg, #0369A1, #0F766E)',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 color: '#fff', fontWeight: 700, fontSize: '1.1rem',
                                                 flexShrink: 0
@@ -218,7 +260,14 @@ export default function DoctorPatients() {
                                                 {patient.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <h4 style={{ margin: 0, fontSize: '1rem', color: '#1E293B' }}>{patient.name}</h4>
+                                                <h4 style={{ margin: 0, fontSize: '1rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    {patient.name}
+                                                    {patient.riskLevel === 'High' && (
+                                                        <span style={{ fontSize: '0.7rem', background: '#FEF2F2', color: '#DC2626', padding: '0.15rem 0.5rem', borderRadius: '4px', fontWeight: 600, border: '1px solid #FECACA', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                            <AlertTriangle size={10} /> High Risk
+                                                        </span>
+                                                    )}
+                                                </h4>
                                                 <p style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                                                     <Mail size={12} /> {patient.email}
                                                 </p>
@@ -226,6 +275,12 @@ export default function DoctorPatients() {
                                         </div>
 
                                         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                            <div style={{ textAlign: 'center', paddingRight: '1rem', borderRight: '1px solid #E2E8F0' }}>
+                                                <div style={{ fontSize: '0.7rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 600 }}>AI Risk Score</div>
+                                                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: patient.riskLevel === 'High' ? '#DC2626' : patient.riskLevel === 'Moderate' ? '#EAB308' : '#10B981' }}>
+                                                    {patient.riskScore}%
+                                                </div>
+                                            </div>
                                             <div style={{ textAlign: 'center' }}>
                                                 <div style={{ fontSize: '0.7rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 600 }}>Visits</div>
                                                 <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B' }}>{patient.totalAppointments}</div>

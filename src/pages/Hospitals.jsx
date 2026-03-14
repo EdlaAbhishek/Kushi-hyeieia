@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MapPin, Navigation, Video, Building2 } from 'lucide-react'
+import { MapPin, Navigation, Video, Building2, Search } from 'lucide-react'
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
@@ -13,29 +13,6 @@ import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
 import DataTable from '../components/ui/DataTable'
 import ActionButton from '../components/ui/ActionButton'
-
-// Fallback hospitals when Supabase data is unavailable (real data from CSV)
-const FALLBACK_HOSPITALS = [
-    { name: 'Apollo Hospitals, Jubilee Hills', city: 'Hyderabad', beds: '500+', emergency: true, teleconsult: true },
-    { name: 'Apollo Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true },
-    { name: 'PACE Hospitals, HITEC City', city: 'Hyderabad', beds: '250+', emergency: true, teleconsult: true },
-    { name: 'PACE Hospitals, Madinaguda', city: 'Hyderabad', beds: '200+', emergency: true, teleconsult: false },
-    { name: 'CARE Hospitals, Banjara Hills', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true },
-    { name: 'Yashoda Hospitals, Secunderabad', city: 'Secunderabad', beds: '400+', emergency: true, teleconsult: true },
-    { name: 'Yashoda Hospitals, Somajiguda', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true },
-    { name: 'Yashoda Hospitals, Malakpet', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: true },
-    { name: 'Yashoda Hospitals, Hitech City', city: 'Hyderabad', beds: '350+', emergency: true, teleconsult: true },
-    { name: 'Citizens Specialty Hospital, Nallagandla', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: true },
-    { name: 'Continental Hospitals, Gachibowli', city: 'Hyderabad', beds: '750+', emergency: true, teleconsult: true },
-    { name: 'Sravani Hospitals, Hyderabad', city: 'Hyderabad', beds: '100+', emergency: true, teleconsult: false },
-    { name: 'KIMS Hospitals, Secunderabad', city: 'Secunderabad', beds: '1000+', emergency: true, teleconsult: true },
-    { name: 'AIG Hospitals, Gachibowli', city: 'Hyderabad', beds: '800+', emergency: true, teleconsult: false },
-    { name: "Rainbow Children's Hospital", city: 'Hyderabad', beds: '150+', emergency: true, teleconsult: false },
-    { name: 'Sunshine Hospitals', city: 'Hyderabad', beds: '300+', emergency: true, teleconsult: false },
-    { name: 'Aster Prime Hospitals', city: 'Hyderabad', beds: '250+', emergency: true, teleconsult: false },
-    { name: 'Apollo TeleHealth Services', city: 'Hyderabad', beds: '0', emergency: false, teleconsult: true },
-]
-
 
 export default function Hospitals() {
     const { user, isDoctor } = useAuth()
@@ -79,12 +56,12 @@ export default function Hospitals() {
                 // Only show DB hospitals, no fallbacks mixed in
                 setHospitals(supaHospitals)
             } else {
-                console.warn('[Hospitals] No hospitals in DB, using fallback data')
-                setHospitals(FALLBACK_HOSPITALS)
+                console.warn('[Hospitals] No hospitals in DB')
+                setHospitals([])
             }
         } catch (err) {
-            console.warn('[Hospitals] Could not fetch from database, using fallback:', err.message)
-            setHospitals(FALLBACK_HOSPITALS)
+            console.warn('[Hospitals] Could not fetch from database:', err.message)
+            setHospitals([])
         } finally {
             setLoading(false)
         }
@@ -102,19 +79,18 @@ export default function Hospitals() {
     })
 
     const filterPillStyle = (active) => ({
-        padding: '0.5rem 1.25rem',
-        borderRadius: '100px',
-        border: active ? '2px solid var(--primary)' : '1.5px solid var(--border)',
-        background: active ? 'var(--primary)' : '#fff',
-        color: active ? '#fff' : 'var(--text-main)',
-        fontWeight: 600,
-        fontSize: '0.85rem',
+        padding: '0.6rem 1.25rem',
+        borderRadius: '8px',
+        border: `1px solid ${active ? '#0369A1' : '#E2E8F0'}`,
+        background: active ? '#0369A1' : '#F8FAFC',
+        color: active ? '#fff' : '#475569',
+        fontWeight: 500,
+        fontSize: '0.9rem',
         cursor: 'pointer',
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '0.4rem',
-        transition: 'all 0.2s ease',
-        boxShadow: active ? '0 2px 8px rgba(59, 130, 246, 0.25)' : 'none',
+        gap: '0.5rem',
+        transition: 'all 0.15s ease',
     })
 
     return (
@@ -139,13 +115,15 @@ export default function Hospitals() {
                         }} />
                     </div>
 
-                    <div className="search-bar" style={{ marginBottom: '1.25rem', position: 'relative', maxWidth: '400px' }}>
+                    <div className="search-bar" style={{ marginBottom: '1.5rem', position: 'relative', maxWidth: '450px' }}>
+                        <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                         <input
                             type="text"
                             className="form-control"
                             placeholder="Enter location or hospital name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{ paddingLeft: '2.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0.75rem 1rem 0.75rem 2.75rem' }}
                         />
                     </div>
 
@@ -180,13 +158,13 @@ export default function Hospitals() {
                         <div className="table-responsive">
                             <DataTable>
                                 <thead>
-                                    <tr style={{ borderBottom: '2px solid var(--border)' }}>
-                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Hospital</th>
-                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Location</th>
-                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Capacity</th>
-                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Type</th>
-                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Facilities</th>
-                                        <th style={{ padding: '1rem', textTransform: 'uppercase', fontSize: '0.85rem', color: 'var(--text-main)' }}>Action</th>
+                                    <tr style={{ borderBottom: '2px solid #E2E8F0', background: '#F8FAFC' }}>
+                                        <th style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', fontWeight: 600, color: '#334155', textAlign: 'left' }}>Hospital</th>
+                                        <th style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', fontWeight: 600, color: '#334155', textAlign: 'left' }}>Location</th>
+                                        <th style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', fontWeight: 600, color: '#334155', textAlign: 'left' }}>Capacity</th>
+                                        <th style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', fontWeight: 600, color: '#334155', textAlign: 'left' }}>Type</th>
+                                        <th style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', fontWeight: 600, color: '#334155', textAlign: 'left' }}>Facilities</th>
+                                        <th style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', fontWeight: 600, color: '#334155', textAlign: 'right' }}>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -201,42 +179,46 @@ export default function Hospitals() {
                                     ) : filteredHospitals.map((h, i) => {
                                         const hospitalId = h.id || h.name.toLowerCase().replace(/\s+/g, '-');
                                         return (
-                                            <tr key={hospitalId + '-' + i} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                                                <td style={{ padding: '1.25rem 1rem' }}>
-                                                    <strong>{h.name}</strong>
+                                            <tr key={hospitalId + '-' + i} style={{ borderBottom: '1px solid #E2E8F0', transition: 'background 0.2s' }}>
+                                                <td style={{ padding: '1.25rem' }}>
+                                                    <div style={{ fontWeight: 600, color: '#0F172A', fontSize: '1rem' }}>{h.name}</div>
                                                 </td>
-                                                <td style={{ padding: '1.25rem 1rem' }}>{h.city}</td>
-                                                <td style={{ padding: '1.25rem 1rem' }}>{h.beds}</td>
-                                                <td style={{ padding: '1.25rem 1rem' }}>
+                                                <td style={{ padding: '1.25rem', color: '#475569' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                        <MapPin size={14} color="#94A3B8" /> {h.city}
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '1.25rem', color: '#475569' }}>{h.beds}</td>
+                                                <td style={{ padding: '1.25rem' }}>
                                                     {h.teleconsult ? (
                                                         <span style={{
-                                                            fontSize: '0.72rem', padding: '0.2rem 0.6rem', borderRadius: '6px',
-                                                            background: '#F0FDF4', color: '#16A34A', fontWeight: 600,
-                                                            display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                                                            fontSize: '0.8rem', padding: '0.35rem 0.75rem', borderRadius: '6px',
+                                                            background: '#F0FDF4', color: '#16A34A', fontWeight: 500,
+                                                            display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #BBF7D0'
                                                         }}>
-                                                            <Video size={11} /> Video Call
+                                                            <Video size={14} /> Video Call
                                                         </span>
                                                     ) : (
                                                         <span style={{
-                                                            fontSize: '0.72rem', padding: '0.2rem 0.6rem', borderRadius: '6px',
-                                                            background: '#EFF6FF', color: '#2563EB', fontWeight: 600,
-                                                            display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                                                            fontSize: '0.8rem', padding: '0.35rem 0.75rem', borderRadius: '6px',
+                                                            background: '#F8FAFC', color: '#475569', fontWeight: 500,
+                                                            display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #E2E8F0'
                                                         }}>
-                                                            <Building2 size={11} /> Normal Clinic
+                                                            <Building2 size={14} /> In-Person
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td style={{ padding: '1.25rem 1rem' }}>
-                                                    {h.emergency && <span className="status-badge status-confirmed" style={{ fontSize: '0.7rem' }}>24/7 Emergency</span>}
+                                                <td style={{ padding: '1.25rem' }}>
+                                                    {h.emergency && <span style={{ fontSize: '0.8rem', color: '#DC2626', fontWeight: 500, background: '#FEF2F2', padding: '0.35rem 0.75rem', borderRadius: '6px', border: '1px solid #FECACA' }}>24/7 Emergency</span>}
                                                 </td>
-                                                <td style={{ padding: '1.25rem 1rem' }}>
-                                                    <ActionButton
-                                                        variant="primary"
-                                                        size="sm"
+                                                <td style={{ padding: '1.25rem', textAlign: 'right' }}>
+                                                    <button
+                                                        className="btn"
+                                                        style={{ background: '#0F766E', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', fontWeight: 500, fontSize: '0.85rem' }}
                                                         onClick={() => navigate(`/hospitals/${hospitalId}`)}
                                                     >
                                                         {isDoctor ? 'View Details' : 'Book Appointment'}
-                                                    </ActionButton>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         );
