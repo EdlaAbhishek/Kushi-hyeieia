@@ -13,6 +13,11 @@ DO $$ BEGIN
         ALTER TABLE public.appointments ADD COLUMN appointment_time VARCHAR(10);
     END IF;
 
+    -- hospital_id: stores the reference to the hospital
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='hospital_id') THEN
+        ALTER TABLE public.appointments ADD COLUMN hospital_id UUID REFERENCES public.hospitals(id) ON DELETE SET NULL;
+    END IF;
+
     -- appointment_type: stores the type string used by frontend (teleconsultation, in_person)
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='appointment_type') THEN
         ALTER TABLE public.appointments ADD COLUMN appointment_type VARCHAR(30) DEFAULT 'in_person';
@@ -51,6 +56,41 @@ DO $$ BEGIN
     -- hospital_name: denormalized hospital name for admin views
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='hospital_name') THEN
         ALTER TABLE public.appointments ADD COLUMN hospital_name VARCHAR(200);
+    END IF;
+
+    -- symptoms: Patient's symptoms/reason 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='symptoms') THEN
+        ALTER TABLE public.appointments ADD COLUMN symptoms TEXT;
+    END IF;
+
+    -- notes: Doctor's or patient's notes
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='notes') THEN
+        ALTER TABLE public.appointments ADD COLUMN notes TEXT;
+    END IF;
+
+    -- type: Consultation type (telehealth/in-person)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='type') THEN
+        ALTER TABLE public.appointments ADD COLUMN type VARCHAR(20) DEFAULT 'in-person';
+    END IF;
+
+    -- status: Current progress of the appointment
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='status') THEN
+        ALTER TABLE public.appointments ADD COLUMN status VARCHAR(20) DEFAULT 'pending';
+    END IF;
+
+    -- urgency: Priority of the appointment
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='urgency') THEN
+        ALTER TABLE public.appointments ADD COLUMN urgency VARCHAR(20) DEFAULT 'Routine';
+    END IF;
+
+    -- scheduled_at: Timestamp of the booking slot
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='scheduled_at') THEN
+        ALTER TABLE public.appointments ADD COLUMN scheduled_at TIMESTAMPTZ;
+    END IF;
+
+    -- appointment_date: Date of the booking slot
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='appointment_date') THEN
+        ALTER TABLE public.appointments ADD COLUMN appointment_date DATE;
     END IF;
 END $$;
 
@@ -112,3 +152,6 @@ CREATE INDEX IF NOT EXISTS idx_appointments_time ON public.appointments(appointm
 -- =====================================================================
 -- DONE! The appointments table now matches the frontend code.
 -- =====================================================================
+
+-- 7. Force PostgREST to clear its schema cache
+NOTIFY pgrst, 'reload schema';
