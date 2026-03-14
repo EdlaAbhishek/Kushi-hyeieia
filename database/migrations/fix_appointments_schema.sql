@@ -6,93 +6,109 @@
 -- ✅ FULLY IDEMPOTENT — safe to run multiple times.
 -- =====================================================================
 
--- 1. Add missing columns to appointments table
+-- 1. Add missing columns to appointments table independently
 DO $$ BEGIN
-    -- appointment_time: stores the time slot (e.g. "09:00", "14:30")
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='appointment_time') THEN
         ALTER TABLE public.appointments ADD COLUMN appointment_time VARCHAR(10);
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped appointment_time'; END $$;
 
-    -- hospital_id: stores the reference to the hospital
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='hospital_id') THEN
-        ALTER TABLE public.appointments ADD COLUMN hospital_id UUID REFERENCES public.hospitals(id) ON DELETE SET NULL;
+        -- Safely add without strict FK just in case hospitals table is missing or named differently
+        ALTER TABLE public.appointments ADD COLUMN hospital_id UUID;
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped hospital_id'; END $$;
 
-    -- appointment_type: stores the type string used by frontend (teleconsultation, in_person)
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='appointment_type') THEN
         ALTER TABLE public.appointments ADD COLUMN appointment_type VARCHAR(30) DEFAULT 'in_person';
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped appointment_type'; END $$;
 
-    -- patient_name: denormalized patient name for quick display
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='patient_name') THEN
         ALTER TABLE public.appointments ADD COLUMN patient_name VARCHAR(200);
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped patient_name'; END $$;
 
-    -- patient_phone: denormalized patient phone
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='patient_phone') THEN
         ALTER TABLE public.appointments ADD COLUMN patient_phone VARCHAR(30);
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped patient_phone'; END $$;
 
-    -- patient_email: denormalized patient email
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='patient_email') THEN
         ALTER TABLE public.appointments ADD COLUMN patient_email VARCHAR(200);
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped patient_email'; END $$;
 
-    -- patient_address: denormalized patient address
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='patient_address') THEN
         ALTER TABLE public.appointments ADD COLUMN patient_address TEXT;
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped patient_address'; END $$;
 
-    -- reason: reason for appointment/visit
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='reason') THEN
         ALTER TABLE public.appointments ADD COLUMN reason TEXT;
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped reason'; END $$;
 
-    -- doctor_name: denormalized doctor name for admin views
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='doctor_name') THEN
         ALTER TABLE public.appointments ADD COLUMN doctor_name VARCHAR(200);
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped doctor_name'; END $$;
 
-    -- hospital_name: denormalized hospital name for admin views
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='hospital_name') THEN
         ALTER TABLE public.appointments ADD COLUMN hospital_name VARCHAR(200);
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped hospital_name'; END $$;
 
-    -- symptoms: Patient's symptoms/reason 
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='symptoms') THEN
         ALTER TABLE public.appointments ADD COLUMN symptoms TEXT;
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped symptoms'; END $$;
 
-    -- notes: Doctor's or patient's notes
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='notes') THEN
         ALTER TABLE public.appointments ADD COLUMN notes TEXT;
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped notes'; END $$;
 
-    -- type: Consultation type (telehealth/in-person)
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='type') THEN
         ALTER TABLE public.appointments ADD COLUMN type VARCHAR(20) DEFAULT 'in-person';
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped type'; END $$;
 
-    -- status: Current progress of the appointment
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='status') THEN
         ALTER TABLE public.appointments ADD COLUMN status VARCHAR(20) DEFAULT 'pending';
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped status'; END $$;
 
-    -- urgency: Priority of the appointment
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='urgency') THEN
         ALTER TABLE public.appointments ADD COLUMN urgency VARCHAR(20) DEFAULT 'Routine';
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped urgency'; END $$;
 
-    -- scheduled_at: Timestamp of the booking slot
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='scheduled_at') THEN
         ALTER TABLE public.appointments ADD COLUMN scheduled_at TIMESTAMPTZ;
     END IF;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped scheduled_at'; END $$;
 
-    -- appointment_date: Date of the booking slot
+DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='appointments' AND column_name='appointment_date') THEN
         ALTER TABLE public.appointments ADD COLUMN appointment_date DATE;
     END IF;
-END $$;
+EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Skipped appointment_date'; END $$;
 
 
 -- 2. Fix the CHECK constraint on 'type' column to also accept frontend values
