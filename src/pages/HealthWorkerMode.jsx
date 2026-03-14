@@ -23,6 +23,49 @@ export default function HealthWorkerMode() {
     const [isOfflineMode, setIsOfflineMode] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [language, setLanguage] = useState('en')
+    const [recentVitals, setRecentVitals] = useState([])
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+
+    // Fetch history when patient identifier changes
+    useEffect(() => {
+        const fetchHistory = async () => {
+            if (isOfflineMode) return
+            
+            // Need at least phone or name to search
+            if (!patientData.patient_phone && patientData.patient_name.length < 3) {
+                setRecentVitals([])
+                return
+            }
+
+            setIsLoadingHistory(true)
+            try {
+                let query = supabase
+                    .from('vitals')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5)
+
+                if (patientData.patient_phone) {
+                    query = query.eq('patient_phone', patientData.patient_phone)
+                } else {
+                    query = query.ilike('patient_name', `${patientData.patient_name}%`)
+                }
+
+                const { data, error } = await query
+
+                if (!error && data) {
+                    setRecentVitals(data)
+                }
+            } catch (err) {
+                console.error("Error fetching vitals history:", err)
+            } finally {
+                setIsLoadingHistory(false)
+            }
+        }
+
+        const timer = setTimeout(fetchHistory, 800) // debounce search
+        return () => clearTimeout(timer)
+    }, [patientData.patient_phone, patientData.patient_name, isOfflineMode])
 
     const handleChange = (e) => {
         setPatientData({ ...patientData, [e.target.name]: e.target.value })
@@ -75,7 +118,8 @@ export default function HealthWorkerMode() {
         "Saved offline. Will sync when connected.": { hi: "ऑफ़लाइन सहेजा गया। कनेक्ट होने पर सिंक हो जाएगा।", te: "ఆఫ్‌లైన్‌లో సేవ్ చేయబడింది. కనెక్ట్ అయినప్పుడు సమకాలీకరించబడుతుంది.", bn: "অফলাইনে সংরক্ষিত। সংযুক্ত হলে সিঙ্ক হবে।", mr: "ऑफलाइन जतन केले. कनेक्ट झाल्यावर सिंक होईल.", ta: "ஆஃப்லைனில் சேமிக்கப்பட்டது. இணைக்கப்படும்போது ஒத்திசைக்கப்படும்." },
         "Patient vitals saved successfully to central database.": { hi: "मरीज़ के वाइटल्स मुख्य डेटाबेस में सफलतापूर्वक सहेजे गए।", te: "రోగి ప్రాణాధార వివరాలు కేంద్ర డేటాబేస్‌లో విజయవంతంగా సేవ్ చేయబడ్డాయి.", bn: "রোগীর ভাইটালগুলি মূল ডাটাবেসে সফলভাবে সংরক্ষিত হয়েছে।", mr: "रुग्णाचे जीवनविषयक केंद्रीय डेटाबेसमध्ये यशस्वीरित्या जतन केले.", ta: "நோயாளியின் முக்கிய தகவல்கள் மைய தரவுத்தளத்தில் வெற்றிகரமாக சேமிக்கப்பட்டன." },
         "records waiting to sync": { hi: "रिकॉर्ड सिंक होने की प्रतीक्षा में", te: "రికార్డులు సింక్ కోసం వేచి ఉన్నాయి", bn: "সিঙ্ক করার জন্য অপেক্ষমাণ রেকর্ড", mr: "सिंक होण्याच्या प्रतीक्षेत असलेले रेकॉर्ड", ta: "ஒத்திசைக்க காத்திருக்கும் பதிவுகள்" },
-        "Sync Now": { hi: "अभी सिंक करें", te: "ఇప్పుడే సింక్ చేయండి", bn: "এখনই সিঙ্ক করুন", mr: "आता सिंक करा", ta: "இப்போது ஒத்திசைக்கவும்" }
+        "Sync Now": { hi: "अभी सिंक करें", te: "ఇప్పుడే సింక్ చేయండి", bn: "এখনই সিঙ্ক করুন", mr: "आता सिंक करा", ta: "இப்போது ஒத்திசைக்கவும்" },
+        "Previous Vitals History": { hi: "पिछला वाइटल्स इतिहास", te: "గత ప్రాణాధార వివరాల చరిత్ర", bn: "পূর্ববর্তী ভাইটালস ইতিহাস", mr: "मागील जीवनविषयक इतिहास", ta: "முந்தைய முக்கிய தகவல்கள் வரலாறு" }
     }
 
     const t = (enText) => {
@@ -274,6 +318,45 @@ export default function HealthWorkerMode() {
                             </ActionButton>
                         </div>
                     </form>
+
+                    {/* Vitals History Section */}
+                    {recentVitals.length > 0 && (
+                        <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
+                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Activity size={18} color="var(--primary)" />
+                                {t("Previous Vitals History")}
+                                {isLoadingHistory && <span className="loading-spinner" style={{ width: 14, height: 14, marginLeft: '0.5rem', borderWidth: 2 }}></span>}
+                            </h3>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ background: 'var(--bg-secondary)' }}>
+                                            <th style={{ padding: '0.75rem 1rem', borderBottom: '2px solid var(--border)' }}>Date</th>
+                                            <th style={{ padding: '0.75rem 1rem', borderBottom: '2px solid var(--border)' }}>BP</th>
+                                            <th style={{ padding: '0.75rem 1rem', borderBottom: '2px solid var(--border)' }}>Heart Rate</th>
+                                            <th style={{ padding: '0.75rem 1rem', borderBottom: '2px solid var(--border)' }}>SpO2</th>
+                                            <th style={{ padding: '0.75rem 1rem', borderBottom: '2px solid var(--border)' }}>Temp</th>
+                                            <th style={{ padding: '0.75rem 1rem', borderBottom: '2px solid var(--border)' }}>Glucose</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentVitals.map((v) => (
+                                            <tr key={v.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
+                                                    {new Date(v.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>{v.blood_pressure || '-'}</td>
+                                                <td style={{ padding: '0.75rem 1rem' }}>{v.heart_rate ? `${v.heart_rate} bpm` : '-'}</td>
+                                                <td style={{ padding: '0.75rem 1rem' }}>{v.spo2 ? `${v.spo2}%` : '-'}</td>
+                                                <td style={{ padding: '0.75rem 1rem' }}>{v.temperature ? `${v.temperature}°F` : '-'}</td>
+                                                <td style={{ padding: '0.75rem 1rem' }}>{v.blood_glucose ? `${v.blood_glucose} mg/dL` : '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </DashboardCard>
 
                 {/* Sync Queue Banner (Mock) */}
