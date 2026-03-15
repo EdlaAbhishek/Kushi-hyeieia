@@ -79,10 +79,47 @@ export default function Dashboard({ activeTab = 'overview' }) {
                 }
 
                 // Merge doctor info onto appointments
-                const appointmentsWithDoctors = (data || []).map(appt => ({
+                let appointmentsWithDoctors = (data || []).map(appt => ({
                     ...appt,
                     doctors: doctorMap[appt.doctor_id] || null
                 }))
+
+                // IF THIS IS THE DEMO PATIENT AND DB MIGRATION FAILED/WAS EMPTY, INJECT DEMO DATA CATCH-ALL
+                if (appointmentsWithDoctors.length === 0 && user?.email === 'patient.demo@khushi.in') {
+                    appointmentsWithDoctors = [
+                        {
+                            id: 'demo-appt-1',
+                            patient_id: user.id,
+                            doctor_id: 'demo-doc-1',
+                            appointment_date: new Date(Date.now() + 86400000).toISOString(),
+                            appointment_time: '10:00',
+                            appointment_type: 'in-person',
+                            status: 'confirmed',
+                            reason: 'Routine Checkup',
+                            doctors: {
+                                full_name: 'Dr. Meera Reddy',
+                                specialty: 'General Medicine',
+                                hospital_name: 'Apollo Hospitals Jubilee Hills'
+                            }
+                        },
+                        {
+                            id: 'demo-appt-2',
+                            patient_id: user.id,
+                            doctor_id: 'demo-doc-1',
+                            appointment_date: new Date(Date.now() - 86400000 * 5).toISOString(),
+                            appointment_time: '14:30',
+                            appointment_type: 'telehealth',
+                            status: 'completed',
+                            reason: 'Follow up for fever',
+                            doctors: {
+                                full_name: 'Dr. Meera Reddy',
+                                specialty: 'General Medicine',
+                                hospital_name: 'Apollo Hospitals Jubilee Hills'
+                            }
+                        }
+                    ]
+                }
+
                 setAppointments(appointmentsWithDoctors)
             } catch (err) {
                 console.error('Appointments fetch error:', err.message)
