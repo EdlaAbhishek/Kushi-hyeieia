@@ -19,26 +19,13 @@ export default function AiChat() {
     // ─── VOICE STATE ──────────────────────────────────────────────────
     const [isListening, setIsListening] = useState(false)
     const [isSpeaking, setIsSpeaking] = useState(false)
-    const [speechSupported, setSpeechSupported] = useState(false)
-    const [ttsSupported, setTtsSupported] = useState(false)
-    const recognitionRef = useRef(null)
-    const synthRef = useRef(null)
+    const [speechSupported] = useState(true) // Cloud API always supported via HTTP
+    const [ttsSupported] = useState(true)
 
-    // ─── DETECT BROWSER SUPPORT ───────────────────────────────────────
-    useEffect(() => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-        if (SpeechRecognition) {
-            setSpeechSupported(true)
-            const recognition = new SpeechRecognition()
-            recognition.continuous = false
-            recognition.interimResults = false
-            recognitionRef.current = recognition
-        }
-        if (window.speechSynthesis) {
-            setTtsSupported(true)
-            synthRef.current = window.speechSynthesis
-        }
-    }, [])
+    const mediaRecorderRef = useRef(null)
+    const audioChunksRef = useRef([])
+    const audioPlayerRef = useRef(null)
+    const ttsCacheRef = useRef({}) // Cache generated audio
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -52,51 +39,84 @@ export default function AiChat() {
 
     // ─── LANGUAGE MAP ─────────────────────────────────────────────────
     const langConfig = {
-        en: { label: 'English', speechLang: 'en-IN', ttsLang: 'en' },
-        hi: { label: 'हिंदी', speechLang: 'hi-IN', ttsLang: 'hi' },
-        te: { label: 'తెలుగు', speechLang: 'te-IN', ttsLang: 'te' }
+        en: { label: 'English', speechLang: 'en-IN', voiceName: 'en-IN-Neural2-A' },
+        hi: { label: 'हिंदी', speechLang: 'hi-IN', voiceName: 'hi-IN-Neural2-A' },
+        te: { label: 'తెలుగు', speechLang: 'te-IN', voiceName: 'te-IN-Standard-A' } // Fallback to Standard-A since Neural2 might not be fully available in te-IN
     }
 
-    // ─── VOICE INPUT ──────────────────────────────────────────────────
-    const startListening = useCallback(() => {
-        if (!recognitionRef.current) return
-
-        const recognition = recognitionRef.current
-        recognition.lang = langConfig[language]?.speechLang || 'en-IN'
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript
-            setInput(prev => prev ? prev + ' ' + transcript : transcript)
-            setIsListening(false)
-        }
-
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error)
-            if (event.error === 'not-allowed') {
-                toast.error('Microphone access denied. Please allow microphone permissions.', { position: 'bottom-center' })
-            } else if (event.error !== 'aborted') {
-                toast.error('Voice input failed. Please try again or type your message.', { position: 'bottom-center' })
-            }
-            setIsListening(false)
-        }
-
-        recognition.onend = () => {
-            setIsListening(false)
-        }
-
+    // ─── VOICE INPUT (Google Cloud STT) ───────────────────────────────
+    const startListening = useCallback(async () => {
         try {
-            recognition.start()
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            const mediaRecorder = new MediaRecorder(stream)
+            mediaRecorderRef.current = mediaRecorder
+            audioChunksRef.current = []
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data)
+                }
+            }
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+                audioChunksRef.current = []
+                
+                // Convert blob to base64
+                const reader = new FileReader()
+                reader.readAsDataURL(audioBlob)
+                reader.onloadend = async () => {
+                    const base64Audio = reader.result.split(',')[1]
+                    try {
+                        const apiKey = import.meta.env.VITE_GOOGLE_CLOUD_API_KEY
+                        if (!apiKey) {
+                            toast.error('Google Cloud API Key is missing in .env', { position: 'bottom-center' })
+                            return
+                        }
+                        
+                        const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                config: {
+                                    encoding: 'WEBM_OPUS',
+                                    languageCode: langConfig[language]?.speechLang || 'en-IN'
+                                },
+                                audio: { content: base64Audio }
+                            })
+                        })
+                        
+                        const data = await response.json()
+                        if (data.results && data.results.length > 0) {
+                            const transcript = data.results[0].alternatives[0].transcript
+                            setInput(prev => prev ? prev + ' ' + transcript : transcript)
+                        } else if (data.error) {
+                            console.error('Google STT Error:', data.error)
+                            toast.error(data.error.message || 'Voice input failed. Please try again.', { position: 'bottom-center' })
+                        }
+                    } catch (error) {
+                        console.error('STT API Error:', error)
+                        toast.error('Network error during voice recognition.', { position: 'bottom-center' })
+                    }
+                }
+                
+                // Stop all tracks
+                stream.getTracks().forEach(track => track.stop())
+            }
+
+            mediaRecorder.start()
             setIsListening(true)
         } catch (err) {
-            console.error('Failed to start recognition:', err)
-            toast.error('Voice input unavailable. Please type your message.', { position: 'bottom-center' })
+            console.error('Microphone error:', err)
+            toast.error('Microphone access denied or unavailable.', { position: 'bottom-center' })
             setIsListening(false)
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [language])
 
     const stopListening = useCallback(() => {
-        if (recognitionRef.current) {
-            recognitionRef.current.stop()
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop()
         }
         setIsListening(false)
     }, [])
@@ -109,13 +129,16 @@ export default function AiChat() {
         }
     }, [isListening, startListening, stopListening])
 
-    // ─── TEXT-TO-SPEECH ───────────────────────────────────────────────
-    const speakText = useCallback((text) => {
-        if (!synthRef.current) return
+    // ─── TEXT-TO-SPEECH (Google Cloud TTS) ────────────────────────────
+    const stopSpeaking = useCallback(() => {
+        if (audioPlayerRef.current) {
+            audioPlayerRef.current.pause()
+            audioPlayerRef.current.currentTime = 0
+        }
+        setIsSpeaking(false)
+    }, [])
 
-        // Cancel any ongoing speech
-        synthRef.current.cancel()
-
+    const speakText = useCallback(async (text) => {
         // Clean markdown formatting from text
         const cleanText = text
             .replace(/[_*#`~]/g, '')
@@ -124,35 +147,71 @@ export default function AiChat() {
 
         if (!cleanText) return
 
-        const utterance = new SpeechSynthesisUtterance(cleanText)
+        stopSpeaking() // Cancel any ongoing speech
 
-        // Try to find a matching voice
-        const voices = synthRef.current.getVoices()
-        const targetLang = langConfig[language]?.speechLang || 'en-IN'
-        const matchingVoice = voices.find(v => v.lang === targetLang) ||
-            voices.find(v => v.lang.startsWith(language)) ||
-            voices.find(v => v.lang.startsWith('en'))
+        const cacheKey = `${language}-${cleanText}`
+        let base64Audio = ttsCacheRef.current[cacheKey]
 
-        if (matchingVoice) {
-            utterance.voice = matchingVoice
+        if (!base64Audio) {
+            try {
+                const apiKey = import.meta.env.VITE_GOOGLE_CLOUD_API_KEY
+                if (!apiKey) {
+                    console.warn('Google Cloud API Key is missing in .env. TTS disabled.')
+                    return
+                }
+
+                setIsSpeaking(true) // Set early to show loading state
+                const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: { text: cleanText },
+                        voice: { 
+                            languageCode: langConfig[language]?.speechLang || 'en-IN', 
+                            name: langConfig[language]?.voiceName || 'en-IN-Neural2-A' 
+                        },
+                        audioConfig: { 
+                            audioEncoding: 'MP3',
+                            speakingRate: 0.95,
+                            pitch: 0.5
+                        }
+                    })
+                })
+
+                const data = await response.json()
+                if (data.error) {
+                    console.error('Google TTS Error:', data.error)
+                    setIsSpeaking(false)
+                    return
+                }
+
+                base64Audio = data.audioContent
+                ttsCacheRef.current[cacheKey] = base64Audio // Cache it
+            } catch (error) {
+                console.error('TTS API error:', error)
+                setIsSpeaking(false)
+                return
+            }
         }
-        utterance.lang = targetLang
-        utterance.rate = 0.95
-        utterance.pitch = 1
 
-        utterance.onstart = () => setIsSpeaking(true)
-        utterance.onend = () => setIsSpeaking(false)
-        utterance.onerror = () => setIsSpeaking(false)
+        if (base64Audio) {
+            const audioUrl = `data:audio/mp3;base64,${base64Audio}`
+            const audio = new Audio(audioUrl)
+            audioPlayerRef.current = audio
 
-        synthRef.current.speak(utterance)
-    }, [language])
+            audio.onended = () => setIsSpeaking(false)
+            audio.onerror = () => setIsSpeaking(false)
+            audio.onplay = () => setIsSpeaking(true)
 
-    const stopSpeaking = useCallback(() => {
-        if (synthRef.current) {
-            synthRef.current.cancel()
+            try {
+                await audio.play()
+            } catch (err) {
+                console.error('Audio play error:', err)
+                setIsSpeaking(false)
+            }
         }
-        setIsSpeaking(false)
-    }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [language, stopSpeaking])
 
     // ─── SEND MESSAGE ─────────────────────────────────────────────────
     const handleSend = async (e) => {

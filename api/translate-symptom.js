@@ -62,11 +62,10 @@ export default async function handler(req, res) {
 
 Rules:
 - Keep the EXACT same JSON structure and field names in English
-- Translate ONLY the field VALUES into ${langName}
-- Keep medical/scientific condition names in their original English form — do NOT translate condition names
-- Translate "explanation", "medicalExplanation", "explainability", and "preliminaryCarePlan" values into ${langName}
-- Keep "triage" values as-is ("Emergency", "Urgent", "Routine")
-- Keep "probability" values as-is ("High", "Medium", "Low")
+- Translate ALL field VALUES into ${langName}
+- This includes medical/scientific condition names, "explanation", "medicalExplanation", "explainability", and "preliminaryCarePlan"
+- Translate "triage" values (e.g., "Emergency" -> "आपातकाल", "Routine" -> "सामान्य")
+- Translate "probability" values (e.g., "High" -> "उच्च", "Low" -> "कम")
 - Keep "confidenceScore" as-is (number)
 
 Input JSON to translate:
@@ -96,7 +95,12 @@ Return the translated JSON with the same structure.`
         console.error('Symptom Translation Error:', error)
         const is429 = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('Too Many Requests') || error?.message?.includes('RESOURCE_EXHAUSTED')
         if (is429) {
-            return res.status(429).json({ error: 'Translation service is temporarily busy. Please wait a moment and try again.' })
+            console.warn('Gemini Rate Limit Exceeded: Returning fallback un-translated response for symptoms.');
+             // Just return the original content so the UI doesn't crash on 429
+             return res.status(200).json({
+                ...content,
+                medicalExplanation: `${content.medicalExplanation || ''} (English - Mock Translation Limit Reach)`,
+            });
         }
         return res.status(500).json({ error: error.message || 'Translation failed' })
     }

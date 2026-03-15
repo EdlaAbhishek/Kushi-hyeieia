@@ -100,7 +100,12 @@ Return the translated JSON with the same structure.`
         console.error('Translation Error:', error)
         const is429 = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('Too Many Requests') || error?.message?.includes('RESOURCE_EXHAUSTED')
         if (is429) {
-            return res.status(429).json({ error: 'Translation service is temporarily busy. Please wait a moment and try again.' })
+            console.warn('Gemini Rate Limit Exceeded: Returning fallback un-translated response for prescription.');
+            // Just return the original content so the UI doesn't crash on 429
+            return res.status(200).json({
+                ...content,
+                documentType: `${content.documentType || 'Prescription'} (English - Mock Translation Limit Reach)`,
+            });
         }
         return res.status(500).json({ error: error.message || 'Translation failed' })
     }
