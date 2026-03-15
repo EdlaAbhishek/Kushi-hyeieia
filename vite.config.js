@@ -58,11 +58,14 @@ function apiPlugin() {
                 if (contentType.includes('application/json') || rawBody.length === 0) {
                     try { 
                         req.body = rawBody.length > 0 ? JSON.parse(rawBody.toString()) : {} 
-                    } catch { 
+                        console.log(`[Vite API] Parsed JSON body successfully for ${req.url}`);
+                    } catch (e) { 
+                        console.error(`[Vite API] JSON Parse Error for ${req.url}:`, e);
                         req.body = {} 
                     }
                 } else {
                     // It's likely an image or streaming transfer (octet-stream), pass the raw Buffer
+                    console.log(`[Vite API] Passed raw Buffer for ${req.url}`);
                     req.body = rawBody
                 }
 

@@ -97,6 +97,10 @@ export default function Services() {
             })
             if (response.ok) {
                 const translated = await response.json()
+                // Ensure document_type exists so the UI can render it.
+                if (!translated.document_type) {
+                    translated.document_type = translated.documentType || result.document_type || 'Prescription';
+                }
                 setScanResult(translated)
             } else {
                 // If translation fails, show original with a warning

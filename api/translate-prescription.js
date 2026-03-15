@@ -90,6 +90,14 @@ Return the translated JSON with the same structure.`
                 clean = clean.slice(firstBrace, lastBrace + 1)
             }
             parsed = JSON.parse(clean)
+            
+            // Critical Fix: Services.jsx strictly checks for `result.document_type` to display the UI. 
+            // If the AI somehow returns `documentType` instead of `document_type`, map it back so the UI doesn't crash.
+            if (!parsed.document_type && parsed.documentType) {
+                parsed.document_type = parsed.documentType;
+            } else if (!parsed.document_type && content.document_type) {
+                parsed.document_type = content.document_type;
+            }
         } catch (e) {
             console.error('Translation parse error:', e)
             return res.status(500).json({ error: 'Failed to parse translated response.' })
@@ -104,7 +112,7 @@ Return the translated JSON with the same structure.`
             // Just return the original content so the UI doesn't crash on 429
             return res.status(200).json({
                 ...content,
-                documentType: `${content.documentType || 'Prescription'} (English - Mock Translation Limit Reach)`,
+                document_type: `${content.document_type || content.documentType || 'Prescription'} (Mock - Translation Limit Reached)`,
             });
         }
         return res.status(500).json({ error: error.message || 'Translation failed' })
