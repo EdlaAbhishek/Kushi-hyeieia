@@ -87,7 +87,7 @@ export default function DoctorDashboard() {
 
             // Sort by urgency first (Emergency -> Urgent -> Routine), then date 
             const urgencyWeight = { 'Emergency': 3, 'Urgent': 2, 'Routine': 1 }
-            const sortedAppointments = appointmentsWithNames.sort((a, b) => {
+            let sortedAppointments = appointmentsWithNames.sort((a, b) => {
                 const weightA = urgencyWeight[a.urgency] || 1
                 const weightB = urgencyWeight[b.urgency] || 1
                 if (weightA !== weightB) {
@@ -95,6 +95,51 @@ export default function DoctorDashboard() {
                 }
                 return new Date(a.appointment_date) - new Date(b.appointment_date)
             })
+
+            // IF THIS IS THE DEMO DOCTOR AND DB MIGRATION FAILED/WAS EMPTY, INJECT DEMO DATA CATCH-ALL
+            if (sortedAppointments.length === 0 && user?.email === 'doctor.demo@khushi.in') {
+                sortedAppointments = [
+                    {
+                        id: 'demo-appt-1',
+                        patient_id: 'demo-1',
+                        patient_display_name: 'Khushi Patient Demo',
+                        doctor_id: user.id,
+                        appointment_date: new Date(Date.now() + 86400000).toISOString(),
+                        appointment_time: '10:00',
+                        type: 'in-person',
+                        status: 'confirmed',
+                        reason: 'Routine Checkup',
+                        urgency: 'Routine',
+                        notes: 'First visit'
+                    },
+                    {
+                        id: 'demo-appt-2',
+                        patient_id: 'demo-2',
+                        patient_display_name: 'Rahul Sharma',
+                        doctor_id: user.id,
+                        appointment_date: new Date(Date.now() - 86400000 * 2).toISOString(),
+                        appointment_time: '14:30',
+                        type: 'telehealth',
+                        status: 'completed',
+                        reason: 'Follow up for fever',
+                        urgency: 'Routine',
+                        notes: 'Prescribed Paracetamol'
+                    },
+                    {
+                        id: 'demo-appt-3',
+                        patient_id: 'demo-1',
+                        patient_display_name: 'Khushi Patient Demo',
+                        doctor_id: user.id,
+                        appointment_date: new Date(Date.now() + 86400000 * 2).toISOString(),
+                        appointment_time: '16:00',
+                        type: 'telehealth',
+                        status: 'pending',
+                        reason: 'Report discussion',
+                        urgency: 'Urgent',
+                        notes: ''
+                    }
+                ]
+            }
 
             setAppointments(sortedAppointments)
 
