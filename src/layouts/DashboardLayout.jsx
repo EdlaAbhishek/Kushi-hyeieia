@@ -21,14 +21,6 @@ export default function DashboardLayout() {
                 { label: 'Health Worker Mode', path: '/doctor-dashboard/health-worker', icon: HeartPulse },
                 { label: 'Smart Hospital REC', path: '/doctor-dashboard/hospital-rec', icon: Hospital },
             ]
-        },
-        {
-            title: 'Administration',
-            items: [
-                { label: 'Population Health', path: '/doctor-dashboard/population-health', icon: BarChart3 },
-                { label: 'System Analytics', path: '/doctor-dashboard/analytics', icon: Activity },
-                { label: 'Doctor Applications', path: '/doctor-dashboard/applications', icon: Users },
-            ]
         }
     ] : [
         {

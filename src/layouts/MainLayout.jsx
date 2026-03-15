@@ -60,7 +60,6 @@ export default function MainLayout() {
                                 <NavLink to="/doctor-dashboard/patients" onClick={closeMenu}>My Patients</NavLink>
                                 <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
                                 <NavLink to="/chat" onClick={closeMenu}>AI Assistant</NavLink>
-                                <NavLink to="/admin-dashboard" onClick={closeMenu}>Admin Panel</NavLink>
                             </>
                         )}
 
