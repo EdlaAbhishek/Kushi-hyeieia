@@ -5,6 +5,8 @@ import { Video, Calendar, ShieldCheck, Stethoscope, HeartPulse, Clock, ArrowRigh
 import SectionContainer from '../components/ui/SectionContainer'
 import ActionButton from '../components/ui/ActionButton'
 
+import heroImage from '../assets/hero-banner.png'
+
 const fadeUp = {
     initial: { opacity: 0, y: 20 },
     whileInView: { opacity: 1, y: 0 },
@@ -73,7 +75,7 @@ export default function Home() {
                         </div>
                     </motion.div>
                     <motion.div className="hero-img-wrap" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.15 }}>
-                        <img src="/assets/hero.png" alt="Family consulting healthcare provider online using Khushi Hygieia app" loading="lazy" />
+                        <img src={heroImage} alt="Family consulting healthcare provider online using Khushi Hygieia app" loading="lazy" />
                     </motion.div>
                 </div>
             </section>
