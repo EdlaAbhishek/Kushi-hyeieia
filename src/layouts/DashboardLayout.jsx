@@ -47,7 +47,7 @@ export default function DashboardLayout() {
 
     return (
         <div className="dashboard-layout">
-            <aside className={`dashboard-sidebar ${collapsed ? 'collapsed' : ''}`}>
+            <aside className={`dashboard-sidebar ${collapsed ? 'collapsed' : ''} ${isDoctor ? 'doctor-sidebar' : 'patient-sidebar'}`}>
                 <div className="sidebar-header">
                     {!collapsed && <h3>Dashboard</h3>}
                     <button

@@ -3362,6 +3362,47 @@ select.form-control {
     overflow-y: auto;
 }
 
+/* Doctor Sidebar Theme */
+.doctor-sidebar {
+    background: #0F172A;
+    border-right: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.doctor-sidebar .sidebar-header h3 {
+    color: #F8FAFC;
+}
+
+.doctor-sidebar .sidebar-section-title {
+    color: rgba(148, 163, 184, 0.7);
+}
+
+.doctor-sidebar .sidebar-link {
+    color: #CBD5E1;
+}
+
+.doctor-sidebar .sidebar-link:hover {
+    background: rgba(56, 189, 248, 0.1);
+    color: #F0F9FF;
+}
+
+.doctor-sidebar .sidebar-link.active {
+    background: rgba(56, 189, 248, 0.2);
+    color: #fff;
+    border-left-color: #38BDF8;
+}
+
+.doctor-sidebar .sidebar-toggle {
+    background: #1E293B;
+    border-color: #334155;
+    color: #94A3B8;
+}
+
+.doctor-sidebar .sidebar-toggle:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: #38BDF8;
+    color: #38BDF8;
+}
+
 /* Admin Sidebar Theme */
 .admin-sidebar {
     background: #1E1B4B;
