@@ -146,6 +146,15 @@ export default function Login() {
                     </button>
                 </form>
 
+                <div className="demo-accounts-box" style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '0.75rem', fontWeight: 600 }}>Quick Demo Access</p>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button type="button" onClick={() => { setEmail('patient.demo@khushi.in'); setPassword('Demo@1234'); }} className="btn" style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem', backgroundColor: '#E0F2FE', color: '#0369A1', border: 'none' }}>Patient Demo</button>
+                        <button type="button" onClick={() => { setEmail('doctor.demo@khushi.in'); setPassword('Demo@1234'); }} className="btn" style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem', backgroundColor: '#DCFCE7', color: '#15803D', border: 'none' }}>Doctor Demo</button>
+                        <button type="button" onClick={() => { setEmail('admin.demo@khushi.in'); setPassword('Demo@1234'); }} className="btn" style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem', backgroundColor: '#F3E8FF', color: '#7E22CE', border: 'none' }}>Admin Demo</button>
+                    </div>
+                </div>
+
                 <div className="auth-divider" style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', color: '#94A3B8', fontSize: '0.85rem' }}>
                     <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }}></div>
                     <span style={{ padding: '0 1rem' }}>Or</span>
