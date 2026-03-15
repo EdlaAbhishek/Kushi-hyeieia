@@ -4,7 +4,16 @@ Professional, enterprise-grade healthcare platform connecting patients, doctors,
 
 ---
 
-## Project Structure
+## 🔑 Demo Accounts
+For quick testing without signing up, you can use these pre-configured demo accounts. The password for all accounts is: `password123`
+
+| Role | Email |
+| :--- | :--- |
+| **Patient** | `sam@test.com` |
+| **Doctor** | `doctor1@demo.com` |
+| **Admin**  | `admin@hygieia.com` |
+
+---
 
 ```
 /

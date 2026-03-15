@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../services/supabase'
 import { Save, Wifi, WifiOff, Users, Activity, Languages } from 'lucide-react'
 import { toast } from 'react-hot-toast'

@@ -22,9 +22,9 @@ export default function Home() {
     const { user, isDoctor } = useAuth()
 
     const patientServices = [
-        { icon: Calendar, title: 'Book a Consultation', desc: 'Book in-person hospital visits or secure video consultations with verified specialists.', to: '/hospitals' },
-        { icon: Building2, title: 'Network Hospitals', desc: 'Find 1,000+ partner hospitals with 24/7 emergency and live bed availability.', to: '/hospitals' },
-        { icon: ShieldCheck, title: 'Insurance Processing', desc: 'Integrated claim processing and verification directly within the digital platform.', to: '/services' },
+        { icon: HeartPulse, title: 'AI Symptom Checker', desc: 'Describe your symptoms and our AI instantly evaluates potential conditions and triage levels.', to: '/symptom-checker' },
+        { icon: ShieldCheck, title: 'Prescription Scanner (Health Vault)', desc: 'Upload any prescription (PDF/Image). Our AI reads it and translates all medicines and instructions into your regional language.', to: '/health-vault' },
+        { icon: Building2, title: 'AI Chat Assistant', desc: 'Have general health queries? Chat with our dedicated AI healthcare assistant anytime.', to: '/ai-chat' },
     ]
 
     const doctorServices = [
@@ -43,15 +43,15 @@ export default function Home() {
                     <motion.div className="hero-content" {...fadeUp}>
                         <div className="hero-badge">
                             <HeartPulse size={14} />
-                            <span>Trusted by 50,000+ patients across India</span>
+                            <span>Powered by Advanced AI Technology</span>
                         </div>
                         <h1 className="hero-title">
-                            {isDoctor ? 'Doctor Command Center' : 'Healthcare for Every Indian'}
+                            {isDoctor ? 'Doctor Command Center' : 'Your Personal AI Health Assistant'}
                         </h1>
                         <p className="hero-subtitle">
                             {isDoctor
                                 ? 'Manage your appointments, teleconsultations, and patient care from one clinical dashboard.'
-                                : 'Connecting patients, doctors, and hospitals through AI-powered healthcare solutions accessible across India.'}
+                                : 'Instantly analyze symptoms, decode medical prescriptions into your native language, and chat with a smart healthcare AI.'}
                         </p>
                         <div className="hero-actions">
                             {isDoctor ? (
@@ -61,15 +61,15 @@ export default function Home() {
                                 </>
                             ) : (
                                 <>
-                                    <ActionButton to="/hospitals" variant="primary">Book Appointment <ArrowRight size={16} /></ActionButton>
-                                    <ActionButton to="/hospitals" variant="outline">Find Hospital</ActionButton>
+                                    <ActionButton to="/health-vault" variant="primary">Scan Prescription <ArrowRight size={16} /></ActionButton>
+                                    <ActionButton to="/symptom-checker" variant="outline">Check Symptoms</ActionButton>
                                 </>
                             )}
                         </div>
                         <div className="hero-stats">
-                            <div className="stat-item"><h4>50K+</h4><p>Active Users</p></div>
-                            <div className="stat-item"><h4>1K+</h4><p>Partner Hospitals</p></div>
-                            <div className="stat-item"><h4>5K+</h4><p>Verified Doctors</p></div>
+                            <div className="stat-item"><h4>AI</h4><p>Driven Insights</p></div>
+                            <div className="stat-item"><h4>3</h4><p>Languages</p></div>
+                            <div className="stat-item"><h4>24/7</h4><p>Instant Support</p></div>
                         </div>
                     </motion.div>
                     <motion.div className="hero-img-wrap" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.15 }}>
@@ -82,12 +82,12 @@ export default function Home() {
             <SectionContainer>
                 <motion.div className="section-header" {...fadeUp}>
                     <h2 className="section-title">
-                        {isDoctor ? 'Clinical Tools' : 'Comprehensive Medical Services'}
+                        {isDoctor ? 'Clinical Tools' : 'Core AI Capabilities'}
                     </h2>
                     <p className="section-subtitle">
                         {isDoctor
                             ? 'Quick access to your practice management tools.'
-                            : 'Delivering enterprise-grade healthcare infrastructure directly to patients.'}
+                            : 'Experience the future of healthcare with our cutting-edge AI features.'}
                     </p>
                 </motion.div>
                 <div style={{ maxWidth: '720px' }}>
@@ -109,14 +109,14 @@ export default function Home() {
             {!isDoctor && (
                 <SectionContainer className="bg-surface">
                     <motion.div className="section-header" {...fadeUp}>
-                        <h2 className="section-title">How It Works</h2>
-                        <p className="section-subtitle">Get started in three simple steps — no paperwork, no waiting.</p>
+                        <h2 className="section-title">Seamless Patient Experience</h2>
+                        <p className="section-subtitle">Empowering you with AI tools before you even step into a clinic.</p>
                     </motion.div>
                     <div className="timeline">
                         {[
-                            { num: 1, icon: UserCheck, title: 'Create Your Account', desc: 'Sign up in under a minute. Your health profile is securely stored and encrypted.' },
-                            { num: 2, icon: Stethoscope, title: 'Find the Right Hospital', desc: 'Browse partner hospitals, select a specialty, and find verified doctors instantly.' },
-                            { num: 3, icon: HeartPulse, title: 'Get Treated', desc: 'Visit in-person or join a video consultation. Receive prescriptions and follow-ups digitally.' },
+                            { num: 1, icon: HeartPulse, title: 'Analyze Symptoms', desc: 'Use our AI Symptom Checker to get immediate insights and triage recommendations based on your symptoms.' },
+                            { num: 2, icon: Calendar, title: 'Book an Appointment', desc: 'Need a doctor? Find top specialists in our network and book a hospital visit or video consultation seamlessly.' },
+                            { num: 3, icon: ShieldCheck, title: 'Scan & Translate Prescriptions', desc: 'After your visit, upload your prescription. We extract the text and translate all instructions into your regional language (Hindi, Telugu, English).' },
                         ].map((step, i) => (
                             <motion.div className="timeline-step" key={step.num} {...stagger} transition={{ duration: 0.45, delay: i * 0.15, ease: 'easeOut' }}>
                                 <div className="timeline-number">{step.num}</div>
@@ -134,21 +134,21 @@ export default function Home() {
                     <div className="grid-2" style={{ gap: '4rem' }}>
                         <motion.div className="feature-visual" {...fadeUp}>
                             <div className="feature-grid-visual">
-                                <div className="fv-card fv-blue"><Building2 size={24} /><span>1000+ Hospitals</span></div>
-                                <div className="fv-card fv-teal"><Stethoscope size={24} /><span>5000+ Doctors</span></div>
-                                <div className="fv-card fv-amber"><Clock size={24} /><span>24/7 Support</span></div>
-                                <div className="fv-card fv-rose"><ShieldCheck size={24} /><span>100% Secure</span></div>
+                                <div className="fv-card fv-blue"><ShieldCheck size={24} /><span>AI Translator</span></div>
+                                <div className="fv-card fv-teal"><HeartPulse size={24} /><span>Symptom Checker</span></div>
+                                <div className="fv-card fv-amber"><Stethoscope size={24} /><span>Virtual Assistant</span></div>
+                                <div className="fv-card fv-rose"><Building2 size={24} /><span>Hospital Network</span></div>
                             </div>
                         </motion.div>
                         <motion.div className="split-content" {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>
-                            <h3 style={{ fontSize: '1.65rem', letterSpacing: '-0.03em' }}>Why 50,000+ patients choose Khushi Hygieia</h3>
-                            <p>We are not just another healthcare app. We provide a complete healthcare ecosystem — from finding the right doctor to processing your insurance claim, all under one roof.</p>
+                            <h3 style={{ fontSize: '1.65rem', letterSpacing: '-0.03em' }}>A Smarter Way to Manage Health</h3>
+                            <p>We combine advanced artificial intelligence with a robust hospital network to provide a complete, end-to-end healthcare ecosystem tailored for regional inclusivity.</p>
                             <ul className="split-list">
-                                <li><ShieldCheck size={20} /><span><strong>Verified Specialists</strong> — Every doctor is credential-checked and hospital-affiliated.</span></li>
-                                <li><Smartphone size={20} /><span><strong>Works Everywhere</strong> — Fully responsive on mobile, tablet, and desktop.</span></li>
-                                <li><Clock size={20} /><span><strong>Instant Booking</strong> — No phone calls. Book appointments in under 30 seconds.</span></li>
+                                <li><ShieldCheck size={20} /><span><strong>Native Language Support</strong> — Break the medical jargon barrier with instant translations to Hindi and Telugu.</span></li>
+                                <li><Smartphone size={20} /><span><strong>AI Precision</strong> — Smart OCR and GenAI models read and analyze your documents instantly.</span></li>
+                                <li><Clock size={20} /><span><strong>All-In-One Platform</strong> — AI insights, telemedicine, and physical bookings in a single place.</span></li>
                             </ul>
-                            <ActionButton to="/hospitals" variant="primary">Explore Hospitals <ArrowRight size={16} /></ActionButton>
+                            <ActionButton to="/health-vault" variant="primary">Try the Scanner <ArrowRight size={16} /></ActionButton>
                         </motion.div>
                     </div>
                 </SectionContainer>

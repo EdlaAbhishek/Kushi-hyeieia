@@ -22,7 +22,7 @@ export default function Login() {
         if (!authLoading && user && authRole) {
             if (authRole === 'admin') navigate('/admin-dashboard', { replace: true })
             else if (authRole === 'doctor') navigate('/doctor-dashboard', { replace: true })
-            else navigate('/dashboard', { replace: true })
+            else navigate('/', { replace: true })
         }
     }, [user, authLoading, authRole, navigate])
 
@@ -40,7 +40,7 @@ export default function Login() {
             } else if (role === 'doctor') {
                 navigate('/doctor-dashboard')
             } else {
-                navigate('/dashboard')
+                navigate('/')
             }
         } catch (err) {
             setError(err.message || 'Login failed')

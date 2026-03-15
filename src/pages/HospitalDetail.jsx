@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock, Activity, Users, Star, BedDouble, Stethoscope, ChevronRight, Video, Building2, ShieldCheck, Award, Search, X, ArrowRight, BadgeCheck, Heart, Thermometer } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { MapPin, Phone, Mail, Clock, Activity, Users, Star, BedDouble, Stethoscope, ChevronRight, Video, Building2, ShieldCheck, Award, Search, X, ArrowRight, BadgeCheck, Heart, Thermometer, AlertCircle } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { toast } from 'react-hot-toast';
@@ -9,6 +9,8 @@ import { motion } from 'framer-motion';
 export default function HospitalDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const urgentContext = location.state || {};
 
     const [hospital, setHospital] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -154,6 +156,36 @@ export default function HospitalDetail() {
                     ]} />
                 </div>
             </section>
+
+            {/* ─── URGENT TRIAGE BANNER ─── */}
+            {urgentContext.urgent && (
+                <section className="section" style={{ paddingTop: 0, paddingBottom: 0 }}>
+                    <div className="container">
+                        <div style={{
+                            background: urgentContext.triage === 'Emergency'
+                                ? 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)'
+                                : 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+                            border: `2px solid ${urgentContext.triage === 'Emergency' ? '#EF4444' : '#F59E0B'}`,
+                            borderRadius: '12px',
+                            padding: '1.25rem 1.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1rem'
+                        }}>
+                            <AlertCircle size={22} color={urgentContext.triage === 'Emergency' ? '#B91C1C' : '#92400E'} style={{ flexShrink: 0 }} />
+                            <div>
+                                <h4 style={{ margin: '0 0 0.15rem', fontSize: '0.95rem', fontWeight: 700, color: urgentContext.triage === 'Emergency' ? '#B91C1C' : '#92400E' }}>
+                                    {urgentContext.triage} Triage — Select a doctor below to book your urgent appointment
+                                </h4>
+                                <p style={{ margin: 0, fontSize: '0.82rem', color: urgentContext.triage === 'Emergency' ? '#991B1B' : '#78350F' }}>
+                                    Your symptoms and patient info will be pre-filled in the booking form.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
 
             {/* ═══════ Hospital Hero Card ═══════ */}
             <section className="section" style={{ paddingTop: 0, paddingBottom: '1rem' }}>
@@ -531,10 +563,11 @@ export default function HospitalDetail() {
                                             <button
                                                 className="btn"
                                                 style={{ width: '100%', marginTop: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', background: '#0F766E', color: '#fff', border: 'none', padding: '0.6rem 1rem', borderRadius: 6, fontWeight: 500 }}
-                                                onClick={() => navigate(`/doctors/${doc.id}`, {
+                                            onClick={() => navigate(`/doctors/${doc.id}`, {
                                                     state: {
                                                         fromHospital: hospital?.name,
-                                                        hospitalId: id
+                                                        hospitalId: id,
+                                                        ...(urgentContext.urgent ? urgentContext : {})
                                                     }
                                                 })}
                                             >

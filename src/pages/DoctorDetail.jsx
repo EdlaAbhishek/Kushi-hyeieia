@@ -17,9 +17,10 @@ export default function DoctorDetail() {
     const [error, setError] = useState(null);
     const [showBooking, setShowBooking] = useState(false);
 
-    // Hospital context passed from HospitalDetail page
+    // Hospital and urgent context passed from HospitalDetail page
     const fromHospital = location.state?.fromHospital || null;
     const hospitalId = location.state?.hospitalId || null;
+    const urgentContext = (location.state?.urgent) ? location.state : null;
 
     useEffect(() => {
         async function fetchDoctor() {
@@ -176,7 +177,8 @@ export default function DoctorDetail() {
                                         style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', padding: '0.85rem' }}
                                         onClick={() => setShowBooking(true)}
                                     >
-                                        <CalendarDays size={18} /> Book Appointment
+                                    <CalendarDays size={18} />
+                                    {urgentContext ? '🚨 Book Urgent Appointment' : 'Book Appointment'}
                                     </button>
                                 )}
                             </div>
@@ -289,6 +291,7 @@ export default function DoctorDetail() {
                     doctor={doctor}
                     onClose={() => setShowBooking(false)}
                     hospitalName={hospitalDisplay}
+                    urgentContext={urgentContext}
                 />
             )}
         </>

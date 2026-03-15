@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
-import { AlertCircle, CheckCircle, Activity, Info, AlertTriangle, Stethoscope } from 'lucide-react'
+import { AlertCircle, CheckCircle, Activity, Info, AlertTriangle, Stethoscope, Languages, Loader2, Phone, Calendar } from 'lucide-react'
 import InfoTooltip from '../components/ui/InfoTooltip'
+import { toast } from 'react-hot-toast'
 
 export default function SymptomChecker() {
     const { user } = useAuth()
+    const navigate = useNavigate()
 
     const [formData, setFormData] = useState({
         age: user?.user_metadata?.age || '',
@@ -19,17 +22,58 @@ export default function SymptomChecker() {
 
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState(null)
+    const [originalResult, setOriginalResult] = useState(null)
     const [error, setError] = useState('')
+    const [language, setLanguage] = useState('en')
+    const [translating, setTranslating] = useState(false)
 
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
     }
 
+    // ─── TRANSLATION ──────────────────────────────────────────────────
+    const translateResult = useCallback(async (resultData, lang) => {
+        if (lang === 'en') {
+            setResult(resultData)
+            return
+        }
+        setTranslating(true)
+        try {
+            const response = await fetch('/api/translate-symptom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: resultData, targetLanguage: lang })
+            })
+            if (response.ok) {
+                const translated = await response.json()
+                setResult(translated)
+            } else {
+                toast.error('Translation failed. Showing results in English.', { position: 'bottom-center' })
+                setResult(resultData)
+            }
+        } catch (err) {
+            console.error('Translation error:', err)
+            toast.error('Translation failed. Showing results in English.', { position: 'bottom-center' })
+            setResult(resultData)
+        } finally {
+            setTranslating(false)
+        }
+    }, [])
+
+    const handleLangChange = async (newLang) => {
+        setLanguage(newLang)
+        if (originalResult) {
+            await translateResult(originalResult, newLang)
+        }
+    }
+
+    // ─── ANALYZE SYMPTOMS ─────────────────────────────────────────────
     const analyzeSymptoms = async (e) => {
         e.preventDefault()
         setError('')
         setResult(null)
+        setOriginalResult(null)
         setLoading(true)
 
         try {
@@ -44,7 +88,8 @@ export default function SymptomChecker() {
                     bloodPressureSys: formData.bloodPressureSys,
                     bloodPressureDia: formData.bloodPressureDia,
                     heartRate: formData.heartRate,
-                    spo2: formData.spo2
+                    spo2: formData.spo2,
+                    language
                 })
             })
 
@@ -59,21 +104,42 @@ export default function SymptomChecker() {
                 throw new Error('Invalid response schema from AI.')
             }
 
+            setOriginalResult(jsonResult)
             setResult(jsonResult)
 
         } catch (err) {
             console.error('AI Triage Error:', err)
-            setError(err.message)
+            let friendlyMsg = err.message
+            if (err.message?.includes('429') || err.message?.includes('Too Many') || err.message?.includes('temporarily busy')) {
+                friendlyMsg = 'The AI service is temporarily busy due to high demand. Please wait a few seconds and try again.'
+            }
+            setError(friendlyMsg)
         } finally {
             setLoading(false)
         }
     }
 
+    // ─── EMERGENCY BOOKING ────────────────────────────────────────────
+    const handleUrgentBooking = () => {
+        navigate('/hospitals', {
+            state: {
+                urgent: true,
+                symptoms: formData.symptoms,
+                triage: result?.triage,
+                patientAge: formData.age,
+                patientGender: formData.gender,
+                confidenceScore: result?.confidenceScore,
+                possibleConditions: result?.possibleConditions?.map(c => c.condition).join(', ')
+            }
+        })
+    }
+
+    // ─── HELPERS ──────────────────────────────────────────────────────
     const getTriageColor = (triage) => {
         switch (triage?.toLowerCase()) {
-            case 'emergency': return '#EF4444' // Red
-            case 'urgent': return '#F59E0B' // Yellow
-            case 'routine': return '#10B981' // Green
+            case 'emergency': return '#EF4444'
+            case 'urgent': return '#F59E0B'
+            case 'routine': return '#10B981'
             default: return '#6B7280'
         }
     }
@@ -84,6 +150,24 @@ export default function SymptomChecker() {
             case 'urgent': return <Activity size={24} />
             case 'routine': return <CheckCircle size={24} />
             default: return <Info size={24} />
+        }
+    }
+
+    const getProbabilityColor = (probability) => {
+        switch (probability) {
+            case 'High': return { bg: '#FEE2E2', text: '#991B1B', bar: '#EF4444' }
+            case 'Medium': return { bg: '#FEF3C7', text: '#92400E', bar: '#F59E0B' }
+            case 'Low': return { bg: '#D1FAE5', text: '#065F46', bar: '#10B981' }
+            default: return { bg: '#F1F5F9', text: '#475569', bar: '#94A3B8' }
+        }
+    }
+
+    const getProbabilityWidth = (probability) => {
+        switch (probability) {
+            case 'High': return '85%'
+            case 'Medium': return '55%'
+            case 'Low': return '30%'
+            default: return '40%'
         }
     }
 
@@ -197,7 +281,22 @@ export default function SymptomChecker() {
 
                         {/* RESULT PANEL */}
                         <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-card)' }}>
-                            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 600 }}>Triage Results</h2>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600 }}>Triage Results</h2>
+                                {result && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: '#F1F5F9', borderRadius: '6px', padding: '0.25rem 0.5rem' }}>
+                                            <Languages size={14} color="#64748B" />
+                                            <select value={language} onChange={(e) => handleLangChange(e.target.value)} disabled={translating} style={{ border: 'none', background: 'transparent', fontSize: '0.8rem', color: '#334155', cursor: translating ? 'wait' : 'pointer', outline: 'none' }}>
+                                                <option value="en">English</option>
+                                                <option value="hi">हिंदी</option>
+                                                <option value="te">తెలుగు</option>
+                                            </select>
+                                        </div>
+                                        {translating && <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} color="var(--primary)" />}
+                                    </div>
+                                )}
+                            </div>
 
                             {!result && !loading && (
                                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-light)', textAlign: 'center', flexDirection: 'column', gap: '1rem' }}>
@@ -240,6 +339,141 @@ export default function SymptomChecker() {
                                             </span>
                                         </div>
                                     </div>
+
+                                    {/* ─── EMERGENCY TRIAGE ACTION PANEL ─── */}
+                                    {(result.triage === 'Emergency' || result.triage === 'Urgent') && (
+                                        <div style={{
+                                            background: result.triage === 'Emergency'
+                                                ? 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)'
+                                                : 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+                                            border: `2px solid ${result.triage === 'Emergency' ? '#EF4444' : '#F59E0B'}`,
+                                            borderRadius: '12px',
+                                            padding: '1.5rem',
+                                            marginBottom: '1.5rem'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                                                <Phone size={20} color={result.triage === 'Emergency' ? '#B91C1C' : '#92400E'} />
+                                                <h4 style={{
+                                                    margin: 0,
+                                                    fontSize: '1.05rem',
+                                                    fontWeight: 700,
+                                                    color: result.triage === 'Emergency' ? '#B91C1C' : '#92400E'
+                                                }}>
+                                                    {result.triage === 'Emergency'
+                                                        ? '🚨 Immediate Medical Attention Recommended'
+                                                        : '⚠️ Prompt Medical Consultation Advised'}
+                                                </h4>
+                                            </div>
+                                            <p style={{
+                                                fontSize: '0.88rem',
+                                                color: result.triage === 'Emergency' ? '#991B1B' : '#78350F',
+                                                margin: '0 0 1rem 0',
+                                                lineHeight: 1.5
+                                            }}>
+                                                {result.triage === 'Emergency'
+                                                    ? 'Based on your symptoms, this appears to be a high-risk situation. Please seek emergency care immediately. If this is life-threatening, call 108 (Indian Emergency) now.'
+                                                    : 'Your symptoms suggest a condition that should be evaluated by a doctor soon. We recommend booking an appointment at the earliest convenience.'}
+                                            </p>
+                                            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                                <button
+                                                    className="btn btn-primary"
+                                                    onClick={handleUrgentBooking}
+                                                    style={{
+                                                        background: result.triage === 'Emergency' ? '#DC2626' : '#D97706',
+                                                        border: 'none',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.5rem',
+                                                        fontWeight: 600,
+                                                        padding: '0.6rem 1.25rem'
+                                                    }}
+                                                >
+                                                    <Calendar size={16} />
+                                                    Book Urgent Appointment
+                                                </button>
+                                                {result.triage === 'Emergency' && (
+                                                    <a
+                                                        href="tel:108"
+                                                        className="btn btn-outline"
+                                                        style={{
+                                                            borderColor: '#B91C1C',
+                                                            color: '#B91C1C',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '0.5rem',
+                                                            fontWeight: 600,
+                                                            padding: '0.6rem 1.25rem',
+                                                            textDecoration: 'none'
+                                                        }}
+                                                    >
+                                                        <Phone size={16} />
+                                                        Call 108 Emergency
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* ─── POSSIBLE CONDITIONS ─── */}
+                                    {result.possibleConditions && result.possibleConditions.length > 0 && (
+                                        <div style={{ marginBottom: '1.5rem' }}>
+                                            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Stethoscope size={18} style={{ color: 'var(--primary)' }} /> Possible Conditions
+                                            </h4>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                {result.possibleConditions.map((cond, idx) => {
+                                                    const probColor = getProbabilityColor(cond.probability)
+                                                    return (
+                                                        <div key={idx} style={{
+                                                            padding: '1rem',
+                                                            border: '1px solid var(--border-color)',
+                                                            borderRadius: '10px',
+                                                            background: '#fff'
+                                                        }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                                                <strong style={{ fontSize: '0.95rem', color: '#0F172A' }}>{cond.condition}</strong>
+                                                                <span style={{
+                                                                    background: probColor.bg,
+                                                                    color: probColor.text,
+                                                                    fontSize: '0.7rem',
+                                                                    padding: '0.15rem 0.5rem',
+                                                                    borderRadius: '999px',
+                                                                    fontWeight: 600
+                                                                }}>
+                                                                    {cond.probability} Probability
+                                                                </span>
+                                                            </div>
+                                                            {/* Probability Bar */}
+                                                            <div style={{ height: '6px', background: '#F1F5F9', borderRadius: '3px', marginBottom: '0.6rem', overflow: 'hidden' }}>
+                                                                <div style={{
+                                                                    height: '100%',
+                                                                    width: getProbabilityWidth(cond.probability),
+                                                                    background: probColor.bar,
+                                                                    borderRadius: '3px',
+                                                                    transition: 'width 0.8s ease'
+                                                                }} />
+                                                            </div>
+                                                            <p style={{ fontSize: '0.85rem', color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                                                                {cond.explanation}
+                                                            </p>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* ─── MEDICAL EXPLANATION ─── */}
+                                    {result.medicalExplanation && (
+                                        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
+                                            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Info size={16} /> Medical Assessment
+                                            </h4>
+                                            <p style={{ fontSize: '0.88rem', color: '#0C4A6E', margin: 0, lineHeight: 1.6 }}>
+                                                {result.medicalExplanation}
+                                            </p>
+                                        </div>
+                                    )}
 
                                     {/* Explainability Panel */}
                                     <div style={{ marginBottom: '1.5rem' }}>

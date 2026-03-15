@@ -4,9 +4,9 @@ import { useAuth } from '../services/AuthContext';
 import { supabase } from '../services/supabase';
 import { toast } from 'react-hot-toast';
 import LoadingSpinner from './LoadingSpinner';
-import { MapPin, Calendar, Clock, User, Phone, Mail, FileText, Home } from 'lucide-react';
+import { MapPin, Calendar, Clock, User, Phone, Mail, FileText, Home, AlertCircle } from 'lucide-react';
 
-export default function BookingModal({ doctor, onClose, hospitalName }) {
+export default function BookingModal({ doctor, onClose, hospitalName, urgentContext }) {
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -49,6 +49,15 @@ export default function BookingModal({ doctor, onClose, hospitalName }) {
             setPhoneNumber(metadata.phone || metadata.phone_number || '');
         }
     }, [user]);
+
+    // Pre-fill reason with symptoms from urgent triage context
+    useEffect(() => {
+        if (urgentContext?.symptoms && !reasonForVisit) {
+            const prefix = urgentContext.triage ? `[${urgentContext.triage} Triage] ` : '';
+            const conditions = urgentContext.possibleConditions ? ` | Possible: ${urgentContext.possibleConditions}` : '';
+            setReasonForVisit(`${prefix}${urgentContext.symptoms}${conditions}`);
+        }
+    }, [urgentContext]);
 
     // Fetch already booked slots for the selected date + doctor
     useEffect(() => {
@@ -133,6 +142,12 @@ export default function BookingModal({ doctor, onClose, hospitalName }) {
                 symptoms: reasonForVisit.trim(),
                 doctor_name: doctor.full_name || '',
                 hospital_name: hospitalName || doctor.hospital_name || '',
+                ...(urgentContext?.urgent ? {
+                    priority: 'urgent',
+                    triage_level: urgentContext.triage || 'Urgent',
+                    patient_age: urgentContext.patientAge || null,
+                    patient_gender: urgentContext.patientGender || null
+                } : {})
             };
 
             // Save to Supabase
@@ -144,8 +159,8 @@ export default function BookingModal({ doctor, onClose, hospitalName }) {
                 try {
                     await supabase.from('notifications').insert([{
                         user_id: doctor.id,
-                        message: `New appointment request from ${fullName.trim()} for ${bookingDate} at ${formatSlotDisplay(bookingTime)} — Reason: ${reasonForVisit.trim().slice(0, 50)}`,
-                        type: 'appointment_created',
+                        message: `${urgentContext?.urgent ? '🚨 URGENT: ' : ''}New appointment request from ${fullName.trim()} for ${bookingDate} at ${formatSlotDisplay(bookingTime)} — Reason: ${reasonForVisit.trim().slice(0, 50)}`,
+                        type: urgentContext?.urgent ? 'urgent_appointment' : 'appointment_created',
                         read_status: false
                     }]);
                 } catch (notifErr) {
@@ -195,6 +210,28 @@ export default function BookingModal({ doctor, onClose, hospitalName }) {
                             </span>
                         )}
                     </p>
+                    {/* ─── URGENT PRIORITY BADGE ─── */}
+                    {urgentContext?.urgent && (
+                        <div style={{
+                            marginTop: '0.75rem',
+                            padding: '0.75rem 1rem',
+                            background: urgentContext.triage === 'Emergency'
+                                ? 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)'
+                                : 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+                            border: `1.5px solid ${urgentContext.triage === 'Emergency' ? '#EF4444' : '#F59E0B'}`,
+                            borderRadius: '10px',
+                            fontSize: '0.85rem',
+                            color: urgentContext.triage === 'Emergency' ? '#991B1B' : '#92400E',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                            <span>
+                                <strong>{urgentContext.triage} Priority</strong> — This appointment is flagged as urgent based on your triage assessment.
+                            </span>
+                        </div>
+                    )}
                     <div style={{ marginTop: '0.75rem' }}>
                         {(() => {
                             const statusColors = {

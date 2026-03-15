@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes, Languages, FileText } from 'lucide-react'
+import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes, Languages, FileText, Loader2 } from 'lucide-react'
 import { useAuth } from '../services/AuthContext'
 import InfoTooltip from '../components/ui/InfoTooltip'
 import { toast } from 'react-hot-toast'
@@ -10,6 +10,30 @@ import PageHeader from '../components/ui/PageHeader'
 import SectionContainer from '../components/ui/SectionContainer'
 import DashboardCard from '../components/ui/DashboardCard'
 import ActionButton from '../components/ui/ActionButton'
+
+// ─── Helper: Extract text from PDF using pdfjs-dist ─────────────────
+async function extractTextFromPDF(file) {
+    const pdfjsLib = await import('pdfjs-dist')
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+    const arrayBuffer = await file.arrayBuffer()
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+    let fullText = ''
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        const pageText = content.items.map(item => item.str).join(' ')
+        fullText += pageText + '\n'
+    }
+    return fullText.trim()
+}
+
+// ─── Helper: Extract text from DOCX using mammoth ───────────────────
+async function extractTextFromDOCX(file) {
+    const mammoth = await import('mammoth')
+    const arrayBuffer = await file.arrayBuffer()
+    const result = await mammoth.extractRawText({ arrayBuffer })
+    return result.value.trim()
+}
 
 export default function Services() {
     const { user, isDoctor } = useAuth()
@@ -21,193 +45,93 @@ export default function Services() {
     const [file, setFile] = useState(null)
     const [scanning, setScanning] = useState(false)
     const [scanResult, setScanResult] = useState(null)
+    const [originalResult, setOriginalResult] = useState(null) // English result for re-translation
     const [scanLang, setScanLang] = useState('en')
+    const [translating, setTranslating] = useState(false)
     const fileInputRef = useRef(null)
 
-    // ─── SCAN RESULT TRANSLATIONS ────────────────────────────────────
+    // ─── UI LABELS (static, minimal — kept for UI chrome only) ───────
     const scanLabels = {
         en: {
             analysisComplete: 'Analysis Complete',
             scanAnother: 'Scan Another',
-            dosage: 'Dosage',
-            frequency: 'Frequency',
-            duration: 'Duration',
-            notes: 'Notes',
-            aiNotes: 'AI Notes',
             disclaimer: '⚠️ AI analysis may contain errors. Always follow the doctor\'s prescription.',
             processing: 'Analyzing Prescription...',
-            processBtn: 'Process Image',
+            processBtn: 'Analyze Document',
             dropText: 'Drop your prescription here or click to browse',
-            fileInfo: 'Supports JPG, PNG (Max 5MB)',
-            medicineType: 'Type',
-            purpose: 'Purpose',
-            correctedFrom: 'OCR Corrected from',
-            unverifiedMsg: 'Drug information unavailable but detected in prescription.',
-            verified: 'Verified',
-            unverified: 'Unverified'
+            fileInfo: 'Supports JPG, PNG, PDF, DOC, DOCX (Max 10MB)',
         },
         hi: {
             analysisComplete: 'विश्लेषण पूर्ण',
             scanAnother: 'दोबारा स्कैन करें',
-            dosage: 'खुराक',
-            frequency: 'आवृत्ति',
-            duration: 'अवधि',
-            notes: 'टिप्पणी',
-            aiNotes: 'AI नोट्स',
             disclaimer: '⚠️ AI विश्लेषण में त्रुटियाँ हो सकती हैं। हमेशा डॉक्टर के नुस्खे का पालन करें।',
             processing: 'नुस्खा विश्लेषण हो रहा है...',
-            processBtn: 'छवि प्रोसेस करें',
+            processBtn: 'दस्तावेज़ विश्लेषण करें',
             dropText: 'अपना नुस्खा यहाँ डालें या ब्राउज़ करने के लिए क्लिक करें',
-            fileInfo: 'JPG, PNG सपोर्ट (अधिकतम 5MB)',
-            medicineType: 'प्रकार',
-            purpose: 'उद्देश्य',
-            correctedFrom: 'OCR सुधार',
-            unverifiedMsg: 'दवा की जानकारी अनुपलब्ध है लेकिन नुस्खे में पाई गई।',
-            verified: 'सत्यापित',
-            unverified: 'असत्यापित'
+            fileInfo: 'JPG, PNG, PDF, DOC, DOCX सपोर्ट (अधिकतम 10MB)',
         },
         te: {
             analysisComplete: 'విశ్లేషణ పూర్తయింది',
             scanAnother: 'మళ్ళీ స్కాన్ చేయండి',
-            dosage: 'మోతాదు',
-            frequency: 'తరచుదనం',
-            duration: 'వ్యవధి',
-            notes: 'గమనికలు',
-            aiNotes: 'AI గమనికలు',
             disclaimer: '⚠️ AI విశ్లేషణలో తప్పులు ఉండవచ్చు. ఎల్లప్పుడూ డాక్టర్ ప్రిస్క్రిప్షన్ అనుసరించండి.',
             processing: 'ప్రిస్క్రిప్షన్ విశ్లేషిస్తోంది...',
-            processBtn: 'చిత్రాన్ని ప్రాసెస్ చేయండి',
+            processBtn: 'డాక్యుమెంట్‌ను విశ్లేషించండి',
             dropText: 'మీ ప్రిస్క్రిప్షన్ ఇక్కడ డ్రాప్ చేయండి లేదా బ్రౌజ్ చేయడానికి క్లిక్ చేయండి',
-            fileInfo: 'JPG, PNG మద్దతు (గరిష్టం 5MB)',
-            medicineType: 'రకం',
-            purpose: 'ఉద్దేశ్యం',
-            correctedFrom: 'OCR సరిదిద్దబడింది',
-            unverifiedMsg: 'ఔషధ సమాచారం అందుబాటులో లేదు కానీ ప్రిస్క్రిప్షన్‌లో గుర్తించబడింది.',
-            verified: 'ధృవీకరించబడింది',
-            unverified: 'ధృవీకరించబడలేదు'
+            fileInfo: 'JPG, PNG, PDF, DOC, DOCX మద్దతు (గరిష్టం 10MB)',
         }
     }
     const t = scanLabels[scanLang] || scanLabels.en
 
-    // ─── CONTENT TRANSLATION (translate actual medicine data) ────────
-    const medicalTerms = {
-        hi: {
-            // Frequency patterns
-            'od': 'दिन में एक बार', 'bd': 'दिन में दो बार', 'tid': 'दिन में तीन बार',
-            'qid': 'दिन में चार बार', 'sos': 'ज़रूरत पर', 'hs': 'सोने से पहले', 'stat': 'तुरंत',
-            // Instructions
-            'after food': 'खाने के बाद', 'before food': 'खाने से पहले',
-            'with food': 'खाने के साथ', 'empty stomach': 'खाली पेट',
-            'morning': 'सुबह', 'evening': 'शाम', 'night': 'रात',
-            // Duration units
-            'days': 'दिन', 'day': 'दिन', 'weeks': 'सप्ताह', 'week': 'सप्ताह',
-            'months': 'महीने', 'month': 'महीना',
-            // Fallback text from backend
-            'Raw Prescription Text': 'कच्चा नुस्खा टेक्स्ट',
-            'No specific patient notes detected.': 'कोई विशेष रोगी नोट नहीं मिले।',
-            'Could not read prescription. Please upload a clearer image.': 'नुस्खा नहीं पढ़ा जा सका। कृपया स्पष्ट छवि अपलोड करें।',
-            'No distinct medicines were found. Please ensure the image is a clear prescription, not a receipt or report.': 'कोई दवा नहीं मिली। कृपया सुनिश्चित करें कि छवि एक स्पष्ट नुस्खा है, रसीद या रिपोर्ट नहीं।',
-            'No Medicines Detected': 'कोई दवा नहीं मिली',
-            // Medicine types
-            'tab': 'गोली', 'tablet': 'गोली', 'cap': 'कैप्सूल', 'capsule': 'कैप्सूल',
-            'syr': 'सिरप', 'syrup': 'सिरप', 'inj': 'इंजेक्शन', 'injection': 'इंजेक्शन',
-            'oint': 'मलहम', 'drp': 'ड्रॉप',
-            'for': 'के लिए'
-        },
-        te: {
-            // Frequency patterns
-            'od': 'రోజుకు ఒకసారి', 'bd': 'రోజుకు రెండుసార్లు', 'tid': 'రోజుకు మూడుసార్లు',
-            'qid': 'రోజుకు నాలుగుసార్లు', 'sos': 'అవసరమైనప్పుడు', 'hs': 'నిద్రపోయే ముందు', 'stat': 'వెంటనే',
-            // Instructions
-            'after food': 'భోజనం తర్వాత', 'before food': 'భోజనానికి ముందు',
-            'with food': 'భోజనంతో', 'empty stomach': 'ఖాళీ కడుపుతో',
-            'morning': 'ఉదయం', 'evening': 'సాయంత్రం', 'night': 'రాత్రి',
-            // Duration units
-            'days': 'రోజులు', 'day': 'రోజు', 'weeks': 'వారాలు', 'week': 'వారం',
-            'months': 'నెలలు', 'month': 'నెల',
-            // Fallback text from backend
-            'Raw Prescription Text': 'ముడి ప్రిస్క్రిప్షన్ టెక్స్ట్',
-            'No specific patient notes detected.': 'ప్రత్యేక రోగి గమనికలు కనుగొనబడలేదు.',
-            'Could not read prescription. Please upload a clearer image.': 'ప్రిస్క్రిప్షన్ చదవలేకపోయింది. దయచేసి స్పష్టమైన చిత్రాన్ని అప్‌లోడ్ చేయండి.',
-            'No distinct medicines were found. Please ensure the image is a clear prescription, not a receipt or report.': 'ఎలాంటి మందులు కనుగొనబడలేదు. దయచేసి చిత్రం స్పష్టమైన ప్రిస్క్రిప్షన్ అని నిర్ధారించుకోండి, రసీదు లేదా నివేదిక కాదు.',
-            'No Medicines Detected': 'మందులు కనుగొనబడలేదు',
-            // Medicine types
-            'tab': 'టాబ్లెట్', 'tablet': 'టాబ్లెట్', 'cap': 'క్యాప్సూల్', 'capsule': 'క్యాప్సూల్',
-            'syr': 'సిరప్', 'syrup': 'సిరప్', 'inj': 'ఇంజెక్షన్', 'injection': 'ఇంజెక్షన్',
-            'oint': 'మలహం', 'drp': 'డ్రాప్',
-            'for': 'కోసం'
+    // ─── DYNAMIC AI TRANSLATION ──────────────────────────────────────
+    const translateResult = useCallback(async (result, lang) => {
+        if (lang === 'en') {
+            setScanResult(result)
+            return
         }
-    }
-
-    // Translate a frequency like "1-0-1" into local language
-    const translateFrequency = (freq, lang) => {
-        if (lang === 'en' || !freq || freq === '—') return freq
-        const dict = medicalTerms[lang]
-        if (!dict) return freq
-        // Exact match first (od, bd, etc.)
-        const lowerFreq = freq.toLowerCase().trim()
-        if (dict[lowerFreq]) return dict[lowerFreq]
-        // Pattern like "1-0-1" → translate to local
-        const match = freq.match(/^(\d)-(\d)-(\d)$/)
-        if (match) {
-            const parts = lang === 'hi'
-                ? ['सुबह', 'दोपहर', 'रात']
-                : ['ఉదయం', 'మధ్యాహ్నం', 'రాత్రి']
-            const labels = []
-            if (match[1] !== '0') labels.push(`${parts[0]} ${match[1]}`)
-            if (match[2] !== '0') labels.push(`${parts[1]} ${match[2]}`)
-            if (match[3] !== '0') labels.push(`${parts[2]} ${match[3]}`)
-            return labels.join(', ') || freq
-        }
-        return freq
-    }
-
-    // Translate duration like "5 days" or "2 weeks"
-    const translateDuration = (dur, lang) => {
-        if (lang === 'en' || !dur || dur === '—') return dur
-        const dict = medicalTerms[lang]
-        if (!dict) return dur
-        let translated = dur
-        // Replace "for" keyword
-        translated = translated.replace(/\bfor\b/gi, dict['for'] || 'for')
-        // Replace duration units
-        for (const unit of ['days', 'day', 'weeks', 'week', 'months', 'month']) {
-            const regex = new RegExp(`\\b${unit}\\b`, 'gi')
-            translated = translated.replace(regex, dict[unit] || unit)
-        }
-        return translated
-    }
-
-    // Translate notes/instructions
-    const translateNotes = (notes, lang) => {
-        if (lang === 'en' || !notes || notes === '—') return notes
-        const dict = medicalTerms[lang]
-        if (!dict) return notes
-        let translated = notes
-        // Direct match for full phrases
-        if (dict[notes]) return dict[notes]
-        // Replace known instruction phrases
-        for (const phrase of ['after food', 'before food', 'with food', 'empty stomach', 'morning', 'evening', 'night']) {
-            const regex = new RegExp(`\\b${phrase}\\b`, 'gi')
-            translated = translated.replace(regex, dict[phrase] || phrase)
-        }
-        return translated
-    }
-
-    // Translate medicine name prefix (Tab → गोली etc.)
-    const translateMedicineName = (name, lang) => {
-        if (lang === 'en' || !name) return name
-        const dict = medicalTerms[lang]
-        if (!dict) return name
-        if (dict[name]) return dict[name]
-        // Replace prefix like "Tab " → "గోలీ "
-        for (const prefix of ['tablet', 'tab', 'capsule', 'cap', 'syrup', 'syr', 'injection', 'inj', 'oint', 'drp']) {
-            const regex = new RegExp(`^${prefix}\\b\\.?\\s*`, 'i')
-            if (regex.test(name)) {
-                return name.replace(regex, dict[prefix] + ' ')
+        setTranslating(true)
+        try {
+            const response = await fetch('/api/translate-prescription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: result, targetLanguage: lang })
+            })
+            if (response.ok) {
+                const translated = await response.json()
+                setScanResult(translated)
+            } else {
+                // If translation fails, show original with a warning
+                toast.error('Translation failed. Showing results in English.', { position: 'bottom-center' })
+                setScanResult(result)
             }
+        } catch (err) {
+            console.error('Translation error:', err)
+            toast.error('Translation failed. Showing results in English.', { position: 'bottom-center' })
+            setScanResult(result)
+        } finally {
+            setTranslating(false)
         }
-        return name
+    }, [])
+
+    // ─── LANGUAGE CHANGE HANDLER ─────────────────────────────────────
+    const handleLangChange = async (newLang) => {
+        setScanLang(newLang)
+        if (originalResult) {
+            await translateResult(originalResult, newLang)
+        }
+    }
+
+    // ─── FILE HELPERS ─────────────────────────────────────────────────
+    const getFileTypeIcon = (file) => {
+        if (!file) return null
+        const ext = file.name.split('.').pop().toLowerCase()
+        if (['jpg', 'jpeg', 'png'].includes(ext)) return '🖼️'
+        if (ext === 'pdf') return '📄'
+        if (['doc', 'docx'].includes(ext)) return '📝'
+        return '📄'
+    }
+
+    const isImageFile = (file) => {
+        return file && (file.type.startsWith('image/') || ['jpg', 'jpeg', 'png'].includes(file.name.split('.').pop().toLowerCase()))
     }
 
     // ─── HANDLERS ─────────────────────────────────────────────────────
@@ -215,19 +139,24 @@ export default function Services() {
         const selected = e.target.files[0]
         if (selected) {
             // Validate file type
-            const validTypes = ['image/jpeg', 'image/png', 'image/jpg']
-            if (!validTypes.includes(selected.type)) {
-                toast.error('Please upload a JPG or PNG image.', { position: 'bottom-center' })
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf',
+                'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+            const validExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx']
+            const ext = selected.name.split('.').pop().toLowerCase()
+
+            if (!validTypes.includes(selected.type) && !validExtensions.includes(ext)) {
+                toast.error('Please upload a JPG, PNG, PDF, DOC, or DOCX file.', { position: 'bottom-center' })
                 return
             }
-            // Validate file size (5MB max)
-            if (selected.size > 5 * 1024 * 1024) {
-                toast.error('Image exceeds 5MB limit. Please upload a smaller image.', { position: 'bottom-center' })
+            // Validate file size (10MB max for documents)
+            if (selected.size > 10 * 1024 * 1024) {
+                toast.error('File exceeds 10MB limit.', { position: 'bottom-center' })
                 return
             }
             if (file?.__previewUrl) URL.revokeObjectURL(file.__previewUrl)
             setFile(selected)
             setScanResult(null)
+            setOriginalResult(null)
         }
     }
 
@@ -236,20 +165,64 @@ export default function Services() {
         setScanning(true)
 
         try {
-            // ── PRIMARY: Azure Vision OCR via /api/analyze-prescription ──
-            const arrayBuffer = await file.arrayBuffer()
-            const response = await fetch('/api/analyze-prescription', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/octet-stream' },
-                body: arrayBuffer
-            })
+            const ext = file.name.split('.').pop().toLowerCase()
+            let response
+
+            if (isImageFile(file)) {
+                // ── PATH A: Image file → send binary to API ──
+                const arrayBuffer = await file.arrayBuffer()
+                response = await fetch('/api/analyze-prescription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                    body: arrayBuffer
+                })
+            } else {
+                // ── PATH B: PDF/DOC/DOCX → extract text client-side, send as JSON ──
+                let extractedText = ''
+
+                if (ext === 'pdf') {
+                    try {
+                        extractedText = await extractTextFromPDF(file)
+                    } catch (err) {
+                        console.error('PDF extraction error:', err)
+                        toast.error('Failed to read PDF. The file may be scanned or corrupted.', { position: 'bottom-center' })
+                        setScanning(false)
+                        return
+                    }
+                } else if (['doc', 'docx'].includes(ext)) {
+                    try {
+                        extractedText = await extractTextFromDOCX(file)
+                    } catch (err) {
+                        console.error('DOCX extraction error:', err)
+                        toast.error('Failed to read Word document. The file may be corrupted.', { position: 'bottom-center' })
+                        setScanning(false)
+                        return
+                    }
+                }
+
+                if (!extractedText.trim()) {
+                    toast.error('No readable text found in this document. Try uploading an image instead.', { position: 'bottom-center' })
+                    setScanning(false)
+                    return
+                }
+
+                response = await fetch('/api/analyze-prescription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ extractedText })
+                })
+            }
 
             if (response.ok) {
                 const result = await response.json()
-
-                // Allow the new general document structure and exact prescription structure to pass through
                 if (result.document_type) {
-                    setScanResult(result)
+                    setOriginalResult(result)
+                    // If a non-English language is selected, translate immediately
+                    if (scanLang !== 'en') {
+                        await translateResult(result, scanLang)
+                    } else {
+                        setScanResult(result)
+                    }
                     return
                 }
             } else {
@@ -262,7 +235,7 @@ export default function Services() {
             console.error('Prescription Scan Error:', error)
             const errorMsg = error.message && !error.message.includes('fetch')
                 ? error.message
-                : 'Unable to clearly interpret the prescription. Please upload a clearer image.'
+                : 'Unable to process the document. Please try a different file.'
             toast.error(errorMsg, { position: 'bottom-center' })
         } finally {
             setScanning(false)
@@ -293,12 +266,19 @@ export default function Services() {
 
                                 {!scanResult ? (
                                     <div className="scan-dropzone" style={{ border: '2px dashed var(--border)', borderRadius: '12px', padding: '3rem', textAlign: 'center', background: '#F8FAFC', cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
-                                        <input type="file" ref={fileInputRef} hidden accept="image/jpeg,image/png,image/jpg" onChange={handleFileChange} />
+                                        <input type="file" ref={fileInputRef} hidden accept="image/jpeg,image/png,image/jpg,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleFileChange} />
                                         {file ? (
                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ position: 'relative' }}>
-                                                    <img src={file.__previewUrl || (file.__previewUrl = URL.createObjectURL(file))} alt="Preview" style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                                    <ActionButton variant="danger" className="btn-icon" style={{ position: 'absolute', top: '-8px', right: '-8px' }} onClick={(e) => { e.stopPropagation(); setFile(null); }}>
+                                                    {isImageFile(file) ? (
+                                                        <img src={file.__previewUrl || (file.__previewUrl = URL.createObjectURL(file))} alt="Preview" style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                                    ) : (
+                                                        <div style={{ width: '120px', height: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', background: '#F8FAFC', border: '1px solid var(--border)' }}>
+                                                            <span style={{ fontSize: '3rem' }}>{getFileTypeIcon(file)}</span>
+                                                            <span style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.5rem', textTransform: 'uppercase', fontWeight: 700 }}>{file.name.split('.').pop()}</span>
+                                                        </div>
+                                                    )}
+                                                    <ActionButton variant="danger" className="btn-icon" style={{ position: 'absolute', top: '-8px', right: '-8px' }} onClick={(e) => { e.stopPropagation(); setFile(null); setOriginalResult(null); }}>
                                                         <X size={14} />
                                                     </ActionButton>
                                                 </div>
@@ -326,13 +306,14 @@ export default function Services() {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: '#F1F5F9', borderRadius: '6px', padding: '0.25rem 0.5rem' }}>
                                                     <Languages size={14} color="#64748B" />
-                                                    <select value={scanLang} onChange={(e) => setScanLang(e.target.value)} style={{ border: 'none', background: 'transparent', fontSize: '0.8rem', color: '#334155', cursor: 'pointer', outline: 'none' }}>
+                                                    <select value={scanLang} onChange={(e) => handleLangChange(e.target.value)} disabled={translating} style={{ border: 'none', background: 'transparent', fontSize: '0.8rem', color: '#334155', cursor: translating ? 'wait' : 'pointer', outline: 'none' }}>
                                                         <option value="en">English</option>
                                                         <option value="hi">हिंदी</option>
                                                         <option value="te">తెలుగు</option>
                                                     </select>
                                                 </div>
-                                                <button className="btn btn-outline btn-sm" onClick={() => { setScanResult(null); setFile(null); }}>{t.scanAnother}</button>
+                                                {translating && <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} color="var(--primary)" />}
+                                                <button className="btn btn-outline btn-sm" onClick={() => { setScanResult(null); setFile(null); setOriginalResult(null); }}>{t.scanAnother}</button>
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -349,8 +330,8 @@ export default function Services() {
                                                     <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
                                                     <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>
                                                         {scanResult.medicines && scanResult.medicines.length > 0 
-                                                            ? (scanLang === 'en' ? `Found ${scanResult.medicines.length} medicine(s) in your prescription.` : (scanLang === 'hi' ? `आपके नुस्खे में ${scanResult.medicines.length} दवा(एं) मिलीं।` : `మీ ప్రిస్క్రిప్షన్‌లో ${scanResult.medicines.length} మందు(లు) కనుగొనబడ్డాయి.`))
-                                                            : (scanLang === 'en' ? 'Prescription detected, but specific medicines could not be clearly identified.' : (scanLang === 'hi' ? 'नुस्खा मिला, लेकिन विशिष्ट दवाओं की स्पष्ट पहचान नहीं हो सकी।' : 'ప్రిస్క్రిప్షన్ కనుగొనబడింది, కానీ నిర్దిష్ట మందులను స్పష్టంగా గుర్తించలేకపోయింది.'))
+                                                            ? `${scanResult.medicines.length} medicine(s) found.`
+                                                            : 'Prescription detected, but specific medicines could not be clearly identified.'
                                                         }
                                                     </p>
                                                 </div>
@@ -358,14 +339,14 @@ export default function Services() {
                                                 <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
                                                     <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
                                                     <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>
-                                                        {scanResult.summary ? translateNotes(scanResult.summary, scanLang) : 'Extracted details below.'}
+                                                        {scanResult.summary || 'Extracted details below.'}
                                                     </p>
                                                 </div>
                                             ) : (
                                                 <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #94A3B8' }}>
                                                     <strong style={{ fontSize: '0.85rem', color: '#475569', display: 'block', marginBottom: '0.25rem' }}>Note:</strong>
                                                     <p style={{ fontSize: '0.9rem', color: '#475569', margin: 0 }}>
-                                                        {scanLang === 'en' ? 'The system could not automatically structure this document. Please review the raw extracted text below.' : (scanLang === 'hi' ? 'सिस्टम इस दस्तावेज़ को स्वचालित रूप से स्वरूपित नहीं कर सका। कृपया नीचे दिए गए मूल रूप से निकाले गए पाठ की समीक्षा करें।' : 'సిస్టమ్ ఈ పత్రాన్ని స్వయంచాలకంగా ఫార్మాట్ చేయలేకపోయింది. దయచేసి దిగువన తీసిన ముడి వచనాన్ని సమీక్షించండి.')}
+                                                        The system could not automatically structure this document. Please review the raw extracted text below.
                                                     </p>
                                                 </div>
                                             )}
@@ -390,7 +371,7 @@ export default function Services() {
                                                                 {/* Header: Name + Badges */}
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                                                        <strong style={{ fontSize: '1.1rem', color: '#0F172A' }}>{translateMedicineName(med.name, scanLang)}</strong>
+                                                                        <strong style={{ fontSize: '1.1rem', color: '#0F172A' }}>{med.name}</strong>
                                                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', background: conf.bg, color: conf.text, fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 600 }}>
                                                                             {conf.label}
                                                                         </span>

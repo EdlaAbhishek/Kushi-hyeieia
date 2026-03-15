@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
 import { supabase } from '../services/supabase'
-import { MapPin, Navigation, Video, Building2, Search } from 'lucide-react'
+import { MapPin, Navigation, Video, Building2, Search, AlertCircle, Calendar } from 'lucide-react'
 import SkeletonLoader from '../components/SkeletonLoader'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
@@ -17,6 +17,8 @@ import ActionButton from '../components/ui/ActionButton'
 export default function Hospitals() {
     const { user, isDoctor } = useAuth()
     const navigate = useNavigate()
+    const location = useLocation()
+    const urgentContext = location.state || {}
 
     const [hospitals, setHospitals] = useState([])
     const [loading, setLoading] = useState(true)
@@ -96,12 +98,39 @@ export default function Hospitals() {
     return (
         <>
             <PageHeader
-                title="Hospital Network"
-                description={`${hospitals.length} integrated hospital partners nationwide.`}
+                title={urgentContext.urgent ? '🚨 Urgent — Find a Hospital' : 'Hospital Network'}
+                description={urgentContext.urgent ? 'Select a hospital to book an urgent appointment based on your triage assessment.' : `${hospitals.length} integrated hospital partners nationwide.`}
             />
 
             <SectionContainer>
                 <div>
+                    {/* ─── URGENT TRIAGE BANNER ─── */}
+                    {urgentContext.urgent && (
+                        <div style={{
+                            background: urgentContext.triage === 'Emergency'
+                                ? 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)'
+                                : 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+                            border: `2px solid ${urgentContext.triage === 'Emergency' ? '#EF4444' : '#F59E0B'}`,
+                            borderRadius: '12px',
+                            padding: '1.25rem 1.5rem',
+                            marginBottom: '1.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1rem'
+                        }}>
+                            <AlertCircle size={24} color={urgentContext.triage === 'Emergency' ? '#B91C1C' : '#92400E'} style={{ flexShrink: 0 }} />
+                            <div style={{ flex: 1 }}>
+                                <h4 style={{ margin: '0 0 0.25rem', fontSize: '1rem', fontWeight: 700, color: urgentContext.triage === 'Emergency' ? '#B91C1C' : '#92400E' }}>
+                                    {urgentContext.triage} Triage — Select a hospital to book your appointment
+                                </h4>
+                                <p style={{ margin: 0, fontSize: '0.85rem', color: urgentContext.triage === 'Emergency' ? '#991B1B' : '#78350F', lineHeight: 1.5 }}>
+                                    Symptoms: {urgentContext.symptoms?.slice(0, 120)}{urgentContext.symptoms?.length > 120 ? '...' : ''}
+                                    {urgentContext.possibleConditions && ` · Possible: ${urgentContext.possibleConditions.slice(0, 80)}`}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <Breadcrumbs items={[{ label: 'Hospitals', href: '/hospitals' }]} />
                     <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
@@ -215,7 +244,7 @@ export default function Hospitals() {
                                                     <button
                                                         className="btn"
                                                         style={{ background: '#0F766E', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', fontWeight: 500, fontSize: '0.85rem' }}
-                                                        onClick={() => navigate(`/hospitals/${hospitalId}`)}
+                                                        onClick={() => navigate(`/hospitals/${hospitalId}`, { state: urgentContext.urgent ? urgentContext : undefined })}
                                                     >
                                                         {isDoctor ? 'View Details' : 'Book Appointment'}
                                                     </button>
