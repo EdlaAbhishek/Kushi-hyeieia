@@ -70,12 +70,12 @@ export default function DoctorPatients() {
                 if (!patientMap.has(key)) {
                     patientMap.set(key, {
                         id: key,
-                        name: patientInfo.name || 'Patient',
-                        email: patientInfo.email || '—',
+                        name: patientInfo.name || appt.patient_name || 'Patient',
+                        email: patientInfo.email || appt.patient_email || '—',
                         totalAppointments: 0,
                         teleconsultations: 0,
                         inPerson: 0,
-                        lastVisit: appt.appointment_date,
+                        lastVisit: appt.appointment_date || appt.scheduled_at,
                         lastStatus: appt.status,
                         appointments: [],
                         riskScore: 0,
@@ -84,18 +84,18 @@ export default function DoctorPatients() {
                 }
                 const patient = patientMap.get(key)
                 patient.totalAppointments++
-                if (appt.appointment_type === 'teleconsultation') patient.teleconsultations++
+                if (appt.appointment_type === 'teleconsultation' || appt.type === 'telehealth') patient.teleconsultations++
                 else patient.inPerson++
                 patient.appointments.push(appt)
             })
 
             // Generate synthetic deterministic risk scores for demo purposes
-            const patientArray = Array.from(patientMap.values()).map(p => {
+            let patientArray = Array.from(patientMap.values()).map(p => {
                 const nameScore = p.name.length * 13;
-                const idScore = p.id === 'Unknown' ? 20 : p.id.charCodeAt(0) * 7;
+                const idScore = String(p.id) === 'Unknown' ? 20 : String(p.id).charCodeAt(0) * 7;
                 const totalApptWeight = p.totalAppointments * 5;
                 const baseScore = (nameScore + idScore + totalApptWeight) % 100;
-                
+
                 // Ensure at least someone is high risk if there are patients
                 let finalScore = baseScore;
                 if (patientMap.size > 0 && Array.from(patientMap.values())[0].id === p.id) {
@@ -103,9 +103,54 @@ export default function DoctorPatients() {
                 }
 
                 const riskLevel = finalScore > 75 ? 'High' : finalScore > 40 ? 'Moderate' : 'Low';
-                
+
                 return { ...p, riskScore: finalScore, riskLevel }
             })
+
+            // IF THIS IS THE DEMO DOCTOR AND DB MIGRATION FAILED/WAS EMPTY, INJECT DEMO DATA CATCH-ALL
+            if (patientArray.length === 0 && user?.email === 'doctor.demo@khushi.in') {
+                patientArray = [
+                    {
+                        id: 'demo-1',
+                        name: 'Khushi Patient Demo',
+                        email: 'patient.demo@khushi.in',
+                        totalAppointments: 3,
+                        teleconsultations: 1,
+                        inPerson: 2,
+                        lastVisit: new Date().toISOString(),
+                        lastStatus: 'confirmed',
+                        appointments: [],
+                        riskScore: 12,
+                        riskLevel: 'Low'
+                    },
+                    {
+                        id: 'demo-2',
+                        name: 'Rahul Sharma',
+                        email: 'rahul.s@example.com',
+                        totalAppointments: 5,
+                        teleconsultations: 3,
+                        inPerson: 2,
+                        lastVisit: new Date(Date.now() - 86400000 * 2).toISOString(),
+                        lastStatus: 'completed',
+                        appointments: [],
+                        riskScore: 82,
+                        riskLevel: 'High'
+                    },
+                    {
+                        id: 'demo-3',
+                        name: 'Anita Patel',
+                        email: 'anita.p@example.com',
+                        totalAppointments: 1,
+                        teleconsultations: 0,
+                        inPerson: 1,
+                        lastVisit: new Date(Date.now() - 86400000 * 5).toISOString(),
+                        lastStatus: 'completed',
+                        appointments: [],
+                        riskScore: 45,
+                        riskLevel: 'Moderate'
+                    }
+                ]
+            }
 
             setPatients(patientArray)
         } catch (err) {
