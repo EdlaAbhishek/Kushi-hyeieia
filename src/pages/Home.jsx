@@ -23,7 +23,7 @@ export default function Home() {
 
     const patientServices = [
         { icon: HeartPulse, title: 'AI Symptom Checker', desc: 'Describe your symptoms and our AI instantly evaluates potential conditions and triage levels.', to: '/symptom-checker' },
-        { icon: ShieldCheck, title: 'Prescription Scanner (Health Vault)', desc: 'Upload any prescription (PDF/Image). Our AI reads it and translates all medicines and instructions into your regional language.', to: '/health-vault' },
+        { icon: ShieldCheck, title: 'Prescription Scanner (Health Vault)', desc: 'Upload any prescription (PDF/Image). Our AI reads it and translates all medicines and instructions into your regional language.', to: '/services' },
         { icon: Building2, title: 'AI Chat Assistant', desc: 'Have general health queries? Chat with our dedicated AI healthcare assistant anytime.', to: '/ai-chat' },
     ]
 
@@ -61,7 +61,7 @@ export default function Home() {
                                 </>
                             ) : (
                                 <>
-                                    <ActionButton to="/health-vault" variant="primary">Scan Prescription <ArrowRight size={16} /></ActionButton>
+                                    <ActionButton to="/services" variant="primary">Scan Prescription <ArrowRight size={16} /></ActionButton>
                                     <ActionButton to="/symptom-checker" variant="outline">Check Symptoms</ActionButton>
                                 </>
                             )}
@@ -148,7 +148,7 @@ export default function Home() {
                                 <li><Smartphone size={20} /><span><strong>AI Precision</strong> — Smart OCR and GenAI models read and analyze your documents instantly.</span></li>
                                 <li><Clock size={20} /><span><strong>All-In-One Platform</strong> — AI insights, telemedicine, and physical bookings in a single place.</span></li>
                             </ul>
-                            <ActionButton to="/health-vault" variant="primary">Try the Scanner <ArrowRight size={16} /></ActionButton>
+                            <ActionButton to="/services" variant="primary">Try the Scanner <ArrowRight size={16} /></ActionButton>
                         </motion.div>
                     </div>
                 </SectionContainer>

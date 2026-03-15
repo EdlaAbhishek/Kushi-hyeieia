@@ -5,13 +5,13 @@ Professional, enterprise-grade healthcare platform connecting patients, doctors,
 ---
 
 ## 🔑 Demo Accounts
-For quick testing without signing up, you can use these pre-configured demo accounts. The password for all accounts is: `password123`
+For quick testing without signing up, use these pre-configured demo accounts. The password for all accounts is: `Demo@1234`
 
-| Role | Email |
-| :--- | :--- |
-| **Patient** | `sam@test.com` |
-| **Doctor** | `doctor1@demo.com` |
-| **Admin**  | `admin@hygieia.com` |
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Patient** | `patient.demo@khushi.in` | `Demo@1234` |
+| **Doctor** | `doctor.demo@khushi.in` | `Demo@1234` |
+| **Admin**  | `admin.demo@khushi.in` | `Demo@1234` |
 
 ---
 

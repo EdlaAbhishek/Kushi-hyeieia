@@ -93,7 +93,6 @@ export default function DoctorPatientRecords() {
         setSelectedPatientId(patientId)
         setRecordsLoading(true)
         setRecordsError(null)
-        setHiddenCount(0)
         try {
             let query = supabase
                 .from('patient_records')
