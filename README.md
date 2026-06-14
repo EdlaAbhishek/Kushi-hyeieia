@@ -6,6 +6,7 @@ Professional, enterprise-grade healthcare platform connecting patients, doctors,
 
 ## 🔑 Demo Accounts
 For quick testing without signing up, use these pre-configured demo accounts. The password for all accounts is: `Demo@1234`
+https://kushi-hygieia.vercel.app
 
 | Role | Email | Password |
 | :--- | :--- | :--- |
