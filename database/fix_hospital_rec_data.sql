@@ -81,7 +81,7 @@ INSERT INTO public.hospitals (name, city, address, lat, lng, phone, emergency, r
     ('Medinova Super Speciality',      'Medchal',      'H No. 13-254, Opp. Asian Mukund, Nh-44, Medchal',   17.6300, 78.4800, '040-55556666', TRUE,  4.7),
     ('Navya Nursing Home',             'Medchal',      'Uma Nagar Colony, Secunderabad, Medchal',           17.6350, 78.4820, '084182-21234', TRUE,  4.0),
     ('Hope Hospital',                  'Medchal',      'National Highway 44, R T C Colony, Medchal',        17.6400, 78.4800, '077995-82007', TRUE,  4.8);
-
+    
 -- Make sure hospitals are publically readable
 DROP POLICY IF EXISTS "Anyone can view hospitals" ON public.hospitals;
 DROP POLICY IF EXISTS "Public read hospitals" ON public.hospitals;

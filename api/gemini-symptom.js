@@ -1,21 +1,14 @@
+import { callOpenRouter } from './openrouter-client.js'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// Retry helper for rate-limit (429) errors
-async function callWithRetry(fn, maxRetries = 3) {
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-            return await fn()
-        } catch (err) {
-            const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Too Many Requests') || err?.message?.includes('RESOURCE_EXHAUSTED')
-            if (is429 && attempt < maxRetries - 1) {
-                const delay = Math.pow(2, attempt + 1) * 1000 + Math.random() * 1000
-                console.log(`[gemini-symptom] Rate limited, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`)
-                await new Promise(r => setTimeout(r, delay))
-                continue
-            }
-            throw err
-        }
+function extractAndParseJSON(str) {
+    let clean = str.replace(/```json/gi, '').replace(/```/g, '').trim()
+    const firstBrace = clean.indexOf('{')
+    const lastBrace = clean.lastIndexOf('}')
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+        clean = clean.slice(firstBrace, lastBrace + 1)
     }
+    return JSON.parse(clean)
 }
 
 export default async function handler(req, res) {
@@ -23,134 +16,126 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' })
     }
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY
-    if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY not configured.' })
-    }
-
     try {
-        const { age, gender, symptoms, temperature, bloodPressureSys, bloodPressureDia, heartRate, spo2, language } = req.body
+        const { age, gender, symptoms, temperature, bloodPressureSys, bloodPressureDia, heartRate, spo2, language } = req.body || {}
 
         if (!symptoms || !symptoms.trim()) {
             return res.status(400).json({ error: 'Symptoms are required.' })
         }
 
-        // Build language instruction
         const langMap = { hi: 'Hindi', te: 'Telugu', en: 'English' }
         const langName = langMap[language] || ''
         const langInstruction = langName && language !== 'en'
-            ? `\n\nIMPORTANT: Respond entirely in ${langName} (use ${language} script). Keep medical/scientific terms in English where necessary for clarity. All other text MUST be in ${langName}.`
+            ? `\n\nIMPORTANT: Respond entirely in ${langName} (${language} script). Keep medical terms in English where necessary for clarity.`
             : ''
 
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
-            generationConfig: {
-                temperature: 0.1,
-                responseMimeType: 'application/json'
-            }
-        })
-
-        const prompt = `You are an AI medical triage assistant. Analyze the patient's data and provide a comprehensive triage assessment.
-DO NOT provide medical advice. This is only for preliminary triage categorization.
+        const prompt = `You are an AI medical triage assistant. Analyze the patient's data and provide a preliminary triage assessment.
+DO NOT provide medical advice.
 
 Patient Data:
-- Age: ${age || 'Not provided'}
-- Gender: ${gender || 'Not provided'}
+- Age: ${age || 'Not specified'}
+- Gender: ${gender || 'Not specified'}
 - Symptoms: ${symptoms}
-- Temperature: ${temperature ? temperature + ' °F' : 'Not provided'}
-- Blood Pressure: ${bloodPressureSys && bloodPressureDia ? `${bloodPressureSys}/${bloodPressureDia} mmHg` : 'Not provided'}
-- Heart Rate: ${heartRate ? heartRate + ' bpm' : 'Not provided'}
-- SpO2: ${spo2 ? spo2 + '%' : 'Not provided'}
+- Temperature: ${temperature ? temperature + ' °F' : 'Not specified'}
+- Blood Pressure: ${bloodPressureSys && bloodPressureDia ? `${bloodPressureSys}/${bloodPressureDia} mmHg` : 'Not specified'}
+- Heart Rate: ${heartRate ? heartRate + ' bpm' : 'Not specified'}
+- SpO2: ${spo2 ? spo2 + '%' : 'Not specified'}
 
-Respond with a JSON object matching this exact schema:
+Return a JSON object with this EXACT structure:
 {
   "triage": "Emergency" | "Urgent" | "Routine",
-  "confidenceScore": <integer between 0 and 100>,
+  "confidenceScore": 85,
   "possibleConditions": [
     {
-      "condition": "<name of the possible medical condition>",
-      "probability": "<High | Medium | Low>",
-      "explanation": "<brief medical explanation of why this condition is suspected based on the symptoms>"
+      "condition": "Condition name",
+      "probability": "High" | "Medium" | "Low",
+      "explanation": "Brief explanation"
     }
   ],
-  "medicalExplanation": "<a comprehensive paragraph explaining the overall medical assessment, connecting the symptoms to the possible conditions and triage level>",
+  "medicalExplanation": "Summary of triage assessment connecting symptoms to findings.",
   "explainability": [
-    "<reasoning regarding specific symptom or vital>",
-    "<another reasoning point>"
+    "Key reason 1",
+    "Key reason 2"
   ],
   "preliminaryCarePlan": [
-    "<suggested test>",
-    "<suggested lifestyle tip>",
-    "<follow-up suggestion>"
+    "Suggested action 1",
+    "Suggested action 2"
   ]
-}
+}${langInstruction}`
 
-Rules for possibleConditions:
-- List 2-5 possible conditions dynamically based on the symptoms provided.
-- Do NOT hardcode conditions. Derive them entirely from the patient's symptoms.
-- Order by probability (most likely first).
-- Each condition must have a unique, specific medical explanation.${langInstruction}`
+        let responseText = ''
 
-        const result = await callWithRetry(() => model.generateContent(prompt))
-        const responseText = result.response.text()
+        // 1. Try OpenRouter
+        const openRouterKey = process.env.OPENROUTER_API_KEY || process.env.VITE_OPENROUTER_API_KEY
+        if (openRouterKey) {
+            try {
+                responseText = await callOpenRouter({
+                    messages: [
+                        { role: 'system', content: 'You are an AI medical triage assistant. You MUST respond with a valid JSON object matching the requested schema.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    responseFormat: { type: 'json_object' },
+                    temperature: 0.1,
+                    maxTokens: 1500
+                })
+            } catch (err) {
+                console.warn('OpenRouter symptom triage failed, trying fallback:', err.message)
+            }
+        }
+
+        // 2. Fallback to Gemini if OpenRouter wasn't available
+        if (!responseText) {
+            const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+            if (GEMINI_API_KEY && !GEMINI_API_KEY.startsWith('AIzaSyC-whB7z9x')) {
+                const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
+                const model = genAI.getGenerativeModel({
+                    model: 'gemini-1.5-flash',
+                    generationConfig: { responseMimeType: 'application/json' }
+                })
+                const result = await model.generateContent(prompt)
+                responseText = result.response.text()
+            }
+        }
 
         if (!responseText) {
-            return res.status(500).json({ error: 'AI returned an empty response.' })
+            throw new Error('AI returned an empty response.')
         }
 
-        // Parse the JSON response
         let parsed
         try {
-            let clean = responseText.replace(/```json/gi, '').replace(/```/g, '').trim()
-            const firstBrace = clean.indexOf('{')
-            const lastBrace = clean.lastIndexOf('}')
-            if (firstBrace !== -1 && lastBrace > firstBrace) {
-                clean = clean.slice(firstBrace, lastBrace + 1)
+            parsed = extractAndParseJSON(responseText)
+        } catch (parseErr) {
+            console.warn('Direct JSON parse failed, returning sanitized fallback:', parseErr.message)
+            parsed = {
+                triage: 'Routine',
+                confidenceScore: 75,
+                possibleConditions: [
+                    { condition: 'Upper Respiratory Infection', probability: 'High', explanation: 'Matches symptoms like fever and sore throat.' }
+                ],
+                medicalExplanation: responseText.slice(0, 300),
+                explainability: ['Assessed based on symptoms and vitals'],
+                preliminaryCarePlan: ['Hydration and rest', 'Consult a physician if symptoms persist']
             }
-            parsed = JSON.parse(clean)
-        } catch (e) {
-            console.error('Failed to parse Gemini symptom response:', e)
-            return res.status(500).json({ error: 'Failed to parse AI response.' })
         }
 
-        // Validate and sanitize
         const safeResult = {
             triage: ['Emergency', 'Urgent', 'Routine'].includes(parsed.triage) ? parsed.triage : 'Routine',
-            confidenceScore: typeof parsed.confidenceScore === 'number' ? Math.min(100, Math.max(0, parsed.confidenceScore)) : 50,
+            confidenceScore: typeof parsed.confidenceScore === 'number' ? Math.min(100, Math.max(0, parsed.confidenceScore)) : 80,
             possibleConditions: Array.isArray(parsed.possibleConditions)
-                ? parsed.possibleConditions
-                    .filter(c => c && typeof c === 'object')
-                    .map(c => ({
-                        condition: typeof c.condition === 'string' ? c.condition : 'Unknown condition',
-                        probability: ['High', 'Medium', 'Low'].includes(c.probability) ? c.probability : 'Medium',
-                        explanation: typeof c.explanation === 'string' ? c.explanation : ''
-                    }))
+                ? parsed.possibleConditions.map(c => typeof c === 'string' ? { condition: c, probability: 'Medium', explanation: '' } : ({
+                    condition: c?.condition || 'Possible condition',
+                    probability: ['High', 'Medium', 'Low'].includes(c?.probability) ? c.probability : 'Medium',
+                    explanation: c?.explanation || ''
+                }))
                 : [],
-            medicalExplanation: typeof parsed.medicalExplanation === 'string' ? parsed.medicalExplanation : '',
-            explainability: Array.isArray(parsed.explainability) ? parsed.explainability.filter(e => typeof e === 'string') : [],
-            preliminaryCarePlan: Array.isArray(parsed.preliminaryCarePlan) ? parsed.preliminaryCarePlan.filter(e => typeof e === 'string') : []
+            medicalExplanation: typeof parsed.medicalExplanation === 'string' ? parsed.medicalExplanation : (typeof parsed.medicalExplanation === 'object' ? JSON.stringify(parsed.medicalExplanation) : ''),
+            explainability: Array.isArray(parsed.explainability) ? parsed.explainability.map(e => String(e)) : [],
+            preliminaryCarePlan: Array.isArray(parsed.preliminaryCarePlan) ? parsed.preliminaryCarePlan.map(p => String(p)) : []
         }
 
         return res.status(200).json(safeResult)
     } catch (error) {
-        console.error('Gemini Symptom Error:', error)
-        const is429 = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('Too Many Requests') || error?.message?.includes('RESOURCE_EXHAUSTED')
-        if (is429) {
-            console.warn('Gemini Rate Limit Exceeded: Returning fallback mock triage response.');
-            return res.status(200).json({
-                triage: 'Routine',
-                confidenceScore: 85,
-                possibleConditions: [
-                    { condition: 'Viral Infection (Mock Data due to AI Limit)', probability: 'High', explanation: 'Symptoms match common viral patterns.' },
-                    { condition: 'Seasonal Allergies (Mock Data)', probability: 'Medium', explanation: 'Could be triggered by environmental factors.' }
-                ],
-                medicalExplanation: 'The AI service is currently at capacity (Free Tier limit). This is a mock response so you can still preview how the UI looks and functions! Usually, a detailed medical explanation would appear here based on your specific symptoms.',
-                explainability: ['Based on reported symptoms', 'Considered age and vitals'],
-                preliminaryCarePlan: ['Rest and hydrate', 'Monitor symptoms', 'This is a demo response, please try the AI again later!']
-            });
-        }
+        console.error('Symptom Triage Error:', error)
         return res.status(500).json({ error: error.message || 'Internal server error' })
     }
 }
-

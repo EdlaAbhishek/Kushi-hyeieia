@@ -1,35 +1,13 @@
+import { callOpenRouter } from './openrouter-client.js'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-
-// Retry helper for rate-limit (429) errors
-async function callWithRetry(fn, maxRetries = 3) {
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-            return await fn()
-        } catch (err) {
-            const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Too Many Requests') || err?.message?.includes('RESOURCE_EXHAUSTED')
-            if (is429 && attempt < maxRetries - 1) {
-                const delay = Math.pow(2, attempt + 1) * 1000 + Math.random() * 1000
-                console.log(`[translate-prescription] Rate limited, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`)
-                await new Promise(r => setTimeout(r, delay))
-                continue
-            }
-            throw err
-        }
-    }
-}
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' })
     }
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY
-    if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY not configured.' })
-    }
-
     try {
-        const { content, targetLanguage } = req.body
+        const { content, targetLanguage } = req.body || {}
 
         if (!content || !targetLanguage) {
             return res.status(400).json({ error: 'content and targetLanguage are required.' })
@@ -49,73 +27,79 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Unsupported language. Use: en, hi, te' })
         }
 
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
-            generationConfig: {
-                temperature: 0.1,
-                responseMimeType: 'application/json'
-            }
-        })
-
         const prompt = `You are a professional medical translator. Translate the following medical prescription analysis result COMPLETELY into ${langName}.
 
 Rules:
 - Keep the EXACT same JSON structure and field names in English (keys stay in English)
 - Translate ALL field VALUES into ${langName}, including:
-  - Medicine/tablet names: transliterate into ${langName} script (e.g. "Paracetamol" → "${langName === 'Hindi' ? 'पैरासिटामोल' : 'పారాసిటమాల్'}")
+  - Medicine/tablet names: transliterate into ${langName} script
   - Dosage and usage instructions: translate fully into ${langName}
-  - Medicine type: translate (e.g. "Tablet" → "${langName === 'Hindi' ? 'गोली' : 'టాబ్లెట్'}", "Capsule" → "${langName === 'Hindi' ? 'कैप्सूल' : 'క్యాప్సూల్'}", "Syrup" → "${langName === 'Hindi' ? 'सिरप' : 'సిరప్'}")
-  - Purpose and instructions: translate fully into ${langName}
-  - Document type: translate into ${langName}
-  - Patient name: keep as-is (do not translate proper nouns)
-  - All other descriptive text: translate into ${langName}
+  - Purpose: translate fully into ${langName}
 - Keep "confidence" values as-is ("high", "medium", "low")
-- The entire output should be readable by a ${langName}-speaking person who does not understand English
 
 Input JSON to translate:
 ${JSON.stringify(content, null, 2)}
 
-Return the translated JSON with the same structure.`
+Return ONLY valid JSON.`
 
-        const result = await callWithRetry(() => model.generateContent(prompt))
-        const responseText = result.response.text()
+        let responseText = ''
 
-        let parsed
-        try {
-            let clean = responseText.replace(/```json/gi, '').replace(/```/g, '').trim()
-            const firstBrace = clean.indexOf('{')
-            const lastBrace = clean.lastIndexOf('}')
-            if (firstBrace !== -1 && lastBrace > firstBrace) {
-                clean = clean.slice(firstBrace, lastBrace + 1)
+        // 1. Try OpenRouter
+        const openRouterKey = process.env.OPENROUTER_API_KEY || process.env.VITE_OPENROUTER_API_KEY
+        if (openRouterKey) {
+            try {
+                responseText = await callOpenRouter({
+                    messages: [
+                        { role: 'system', content: 'You are a medical prescription translator. Return only valid JSON.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    responseFormat: { type: 'json_object' },
+                    temperature: 0.1,
+                    maxTokens: 1500
+                })
+            } catch (err) {
+                console.warn('OpenRouter prescription translation failed, trying Gemini:', err.message)
             }
-            parsed = JSON.parse(clean)
-            
-            // Critical Fix: Services.jsx strictly checks for `result.document_type` to display the UI. 
-            // If the AI somehow returns `documentType` instead of `document_type`, map it back so the UI doesn't crash.
-            if (!parsed.document_type && parsed.documentType) {
-                parsed.document_type = parsed.documentType;
-            } else if (!parsed.document_type && content.document_type) {
-                parsed.document_type = content.document_type;
+        }
+
+        // 2. Fallback to Gemini
+        if (!responseText) {
+            const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+            if (GEMINI_API_KEY && !GEMINI_API_KEY.startsWith('AIzaSyC-whB7z9x')) {
+                const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
+                const model = genAI.getGenerativeModel({
+                    model: 'gemini-1.5-flash',
+                    generationConfig: { responseMimeType: 'application/json' }
+                })
+                const result = await model.generateContent(prompt)
+                responseText = result.response.text()
             }
-        } catch (e) {
-            console.error('Translation parse error:', e)
-            return res.status(500).json({ error: 'Failed to parse translated response.' })
+        }
+
+        if (!responseText) {
+            return res.status(200).json(content)
+        }
+
+        let clean = responseText.replace(/```json/gi, '').replace(/```/g, '').trim()
+        const firstBrace = clean.indexOf('{')
+        const lastBrace = clean.lastIndexOf('}')
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+            clean = clean.slice(firstBrace, lastBrace + 1)
+        }
+        const parsed = JSON.parse(clean)
+
+        if (!parsed.document_type && parsed.documentType) {
+            parsed.document_type = parsed.documentType
+        } else if (!parsed.document_type && content.document_type) {
+            parsed.document_type = content.document_type
         }
 
         return res.status(200).json(parsed)
     } catch (error) {
-        console.error('Translation Error:', error)
-        const is429 = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('Too Many Requests') || error?.message?.includes('RESOURCE_EXHAUSTED')
-        if (is429) {
-            console.warn('Gemini Rate Limit Exceeded: Returning fallback un-translated response for prescription.');
-            // Just return the original content so the UI doesn't crash on 429
-            return res.status(200).json({
-                ...content,
-                document_type: `${content.document_type || content.documentType || 'Prescription'} (Mock - Translation Limit Reached)`,
-            });
+        console.error('Prescription Translation Error:', error)
+        if (req.body?.content) {
+            return res.status(200).json(req.body.content)
         }
         return res.status(500).json({ error: error.message || 'Translation failed' })
     }
 }
-

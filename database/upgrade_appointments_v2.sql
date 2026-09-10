@@ -29,6 +29,7 @@ USING (auth.uid() = doctor_id OR auth.uid() = patient_id);
 
 CREATE POLICY "Users can insert video sessions" 
 ON video_sessions FOR INSERT 
+
 WITH CHECK (auth.uid() = doctor_id OR auth.uid() = patient_id);
 
 CREATE POLICY "Users can update their own video sessions" 

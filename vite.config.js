@@ -15,9 +15,7 @@ function loadAllEnv() {
             if (eqIndex === -1) continue
             const key = trimmed.substring(0, eqIndex).trim()
             const value = trimmed.substring(eqIndex + 1).trim()
-            if (!process.env[key]) {
-                process.env[key] = value
-            }
+            process.env[key] = value
         }
     } catch (e) {
         console.warn('Could not load .env for API routes:', e.message)
