@@ -77,31 +77,87 @@ export default function SymptomChecker() {
         setLoading(true)
 
         try {
-            const response = await fetch('/api/gemini-symptom', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    age: formData.age,
-                    gender: formData.gender,
-                    symptoms: formData.symptoms,
-                    temperature: formData.temperature,
-                    bloodPressureSys: formData.bloodPressureSys,
-                    bloodPressureDia: formData.bloodPressureDia,
-                    heartRate: formData.heartRate,
-                    spo2: formData.spo2,
-                    language
-                })
-            })
+            let jsonResult = null
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}))
-                throw new Error(errorData.error || `Server error: ${response.status}`)
+            try {
+                const response = await fetch('/api/gemini-symptom', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        age: formData.age,
+                        gender: formData.gender,
+                        symptoms: formData.symptoms,
+                        temperature: formData.temperature,
+                        bloodPressureSys: formData.bloodPressureSys,
+                        bloodPressureDia: formData.bloodPressureDia,
+                        heartRate: formData.heartRate,
+                        spo2: formData.spo2,
+                        language
+                    })
+                })
+
+                if (response.ok) {
+                    jsonResult = await response.json().catch(() => null)
+                }
+            } catch (serverErr) {
+                console.warn('Serverless symptom endpoint unavailable, trying direct client fallback:', serverErr)
             }
 
-            const jsonResult = await response.json()
+            // Direct client-side OpenRouter fallback (works in all environments)
+            if (!jsonResult || !jsonResult.triage) {
+                const clientKey = import.meta.env.VITE_OPENROUTER_API_KEY
+                if (clientKey) {
+                    const prompt = `You are an AI medical triage assistant. Analyze the patient:
+- Age: ${formData.age || 'Not provided'}
+- Gender: ${formData.gender || 'Not provided'}
+- Symptoms: ${formData.symptoms}
 
-            if (!jsonResult.triage || !jsonResult.confidenceScore) {
-                throw new Error('Invalid response schema from AI.')
+Return ONLY a valid JSON object matching this structure:
+{
+  "triage": "Emergency" | "Urgent" | "Routine",
+  "confidenceScore": 85,
+  "possibleConditions": [
+    { "condition": "Condition name", "probability": "High" | "Medium" | "Low", "explanation": "Why" }
+  ],
+  "medicalExplanation": "Summary explanation connecting symptoms to triage.",
+  "explainability": ["Key factor 1", "Key factor 2"],
+  "preliminaryCarePlan": ["Step 1", "Step 2"]
+}`
+                    const clientRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${clientKey}`,
+                            'Content-Type': 'application/json',
+                            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://khushihygieia.in',
+                            'X-Title': 'Khushi Hygieia'
+                        },
+                        body: JSON.stringify({
+                            model: import.meta.env.VITE_OPENROUTER_MODEL || 'nex-agi/nex-n2.5-mini:free',
+                            messages: [
+                                { role: 'system', content: 'You are an AI medical triage assistant. Output only valid JSON.' },
+                                { role: 'user', content: prompt }
+                            ],
+                            response_format: { type: 'json_object' },
+                            max_tokens: 1200
+                        })
+                    })
+
+                    if (clientRes.ok) {
+                        const cData = await clientRes.json()
+                        const content = cData?.choices?.[0]?.message?.content
+                        if (content) {
+                            try {
+                                jsonResult = JSON.parse(content)
+                            } catch (e) {
+                                console.warn('Failed to parse client JSON:', e)
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!jsonResult || !jsonResult.triage) {
+                throw new Error('AI returned an invalid response. Please try again.')
             }
 
             setOriginalResult(jsonResult)

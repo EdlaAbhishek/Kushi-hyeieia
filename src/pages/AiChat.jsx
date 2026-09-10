@@ -229,27 +229,75 @@ export default function AiChat() {
         setLoading(true)
 
         try {
-            const response = await fetch('/api/gemini-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messages: newMessages.map(m => ({
-                        role: m.role,
-                        content: m.content
-                    })),
-                    language
-                })
-            })
+            let replyText = ''
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}))
-                throw new Error(errorData.error || `Server error: ${response.status}`)
+            try {
+                const response = await fetch('/api/gemini-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: newMessages.map(m => ({
+                            role: m.role,
+                            content: m.content
+                        })),
+                        language
+                    })
+                })
+
+                if (response.ok) {
+                    const data = await response.json().catch(() => null)
+                    if (data?.reply) replyText = data.reply
+                }
+            } catch (serverErr) {
+                console.warn('Serverless chat endpoint unavailable, trying direct client fallback:', serverErr)
             }
 
-            const data = await response.json()
-            if (!data.reply) throw new Error('AI returned an empty response. Please try again.')
+            // Direct client-side OpenRouter fallback (works in all environments)
+            if (!replyText) {
+                const clientKey = import.meta.env.VITE_OPENROUTER_API_KEY
+                if (clientKey) {
+                    const langMap = { hi: 'Hindi', te: 'Telugu', en: 'English' }
+                    const langName = langMap[language] || ''
+                    const langInstruction = langName && language !== 'en'
+                        ? `\n\nIMPORTANT: Respond entirely in ${langName} (${language} script).`
+                        : ''
 
-            setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+                    const clientRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${clientKey}`,
+                            'Content-Type': 'application/json',
+                            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://khushihygieia.in',
+                            'X-Title': 'Khushi Hygieia'
+                        },
+                        body: JSON.stringify({
+                            model: import.meta.env.VITE_OPENROUTER_MODEL || 'nex-agi/nex-n2.5-mini:free',
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: `You are Khushi Care AI, a helpful, empathetic healthcare assistant for the Khushi Hygieia platform. Provide general health guidance, wellness tips, and first-aid information. Never diagnose conditions or prescribe medicines. Always advise consulting a qualified doctor.${langInstruction}`
+                                },
+                                ...newMessages.map(m => ({
+                                    role: m.role === 'user' ? 'user' : 'assistant',
+                                    content: m.content
+                                }))
+                            ],
+                            max_tokens: 500
+                        })
+                    })
+
+                    if (clientRes.ok) {
+                        const clientData = await clientRes.json()
+                        replyText = clientData?.choices?.[0]?.message?.content || ''
+                    }
+                }
+            }
+
+            if (!replyText) {
+                throw new Error('AI returned an empty response. Please try again.')
+            }
+
+            setMessages(prev => [...prev, { role: 'assistant', content: replyText }])
         } catch (err) {
             console.error("AI Error:", err)
             // Show user-friendly error message
