@@ -35,6 +35,42 @@ async function extractTextFromDOCX(file) {
     return result.value.trim()
 }
 
+// ─── Helper: Downscale high-res images for fast, reliable AI OCR ─────
+function compressImageForOcr(file, maxDimension = 1280, quality = 0.82) {
+    return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            const img = new Image()
+            img.onload = () => {
+                let { width, height } = img
+                if (width > maxDimension || height > maxDimension) {
+                    if (width > height) {
+                        height = Math.round((height * maxDimension) / width)
+                        width = maxDimension
+                    } else {
+                        width = Math.round((width * maxDimension) / height)
+                        height = maxDimension
+                    }
+                }
+                const canvas = document.createElement('canvas')
+                canvas.width = width
+                canvas.height = height
+                const ctx = canvas.getContext('2d')
+                ctx.drawImage(img, 0, 0, width, height)
+                canvas.toBlob(
+                    (blob) => resolve(blob || file),
+                    'image/jpeg',
+                    quality
+                )
+            }
+            img.onerror = () => resolve(file)
+            img.src = e.target.result
+        }
+        reader.onerror = () => resolve(file)
+        reader.readAsDataURL(file)
+    })
+}
+
 export default function Services() {
     const { user, isDoctor } = useAuth()
 
@@ -173,11 +209,17 @@ export default function Services() {
             let response
 
             if (isImageFile(file)) {
-                // ── PATH A: Image file → send binary to API ──
-                const arrayBuffer = await file.arrayBuffer()
+                // ── PATH A: Image file → compress to optimal OCR size & send binary ──
+                let uploadData = file
+                try {
+                    uploadData = await compressImageForOcr(file)
+                } catch (compErr) {
+                    console.warn('Image compression fallback:', compErr)
+                }
+                const arrayBuffer = await uploadData.arrayBuffer()
                 response = await fetch('/api/analyze-prescription', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/octet-stream' },
+                    headers: { 'Content-Type': uploadData.type || 'image/jpeg' },
                     body: arrayBuffer
                 })
             } else {

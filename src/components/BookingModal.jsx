@@ -152,6 +152,22 @@ export default function BookingModal({ doctor, onClose, hospitalName, urgentCont
 
             // Save to Supabase
             try {
+                // Ensure patient record exists in public.patients table to satisfy foreign key constraint appointments_patient_id_fkey
+                try {
+                    const { error: patientErr } = await supabase.from('patients').insert([{
+                        id: user.id,
+                        full_name: fullName.trim() || user.user_metadata?.full_name || user.email || 'Patient',
+                        email: email.trim() || user.email || '',
+                        phone: phoneNumber.trim() || null
+                    }]);
+                    // If error code is 23505 (unique_violation), the patient row already exists, which is expected
+                    if (patientErr && patientErr.code !== '23505') {
+                        console.warn("Patient profile auto-provisioning note:", patientErr.message);
+                    }
+                } catch (pCheckErr) {
+                    console.warn("Could not check/insert patient profile:", pCheckErr);
+                }
+
                 const { error: dbError } = await supabase.from('appointments').insert([appointmentData]);
                 if (dbError) throw dbError;
 

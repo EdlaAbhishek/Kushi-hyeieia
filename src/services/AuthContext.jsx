@@ -18,16 +18,18 @@ export function AuthProvider({ children }) {
     if (resolvedRole === 'admin') return
     
     try {
-      const { error } = await supabase.from('patients').upsert([{
+      const { error } = await supabase.from('patients').insert([{
         id: sessionUser.id,
         email: sessionUser.email,
         full_name: sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email,
-        role: resolvedRole || sessionUser.user_metadata?.role || 'patient'
-      }], { onConflict: 'id', ignoreDuplicates: false })
+        phone: sessionUser.user_metadata?.phone || null
+      }])
 
-      if (error) console.warn("Profile upsert note:", error.message)
+      if (error && error.code !== '23505') {
+        console.warn("Profile insert note:", error.message)
+      }
     } catch (err) {
-      console.warn("Could not upsert patient profile:", err)
+      console.warn("Could not insert patient profile:", err)
     }
   }
 
