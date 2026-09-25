@@ -138,18 +138,16 @@ export default function KushiHero() {
                         maxWidth: '920px',
                         overflow: 'hidden',
                         borderRadius: '24px',
-                        background: 'rgba(255, 255, 255, 0.64)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
-                        border: '1px solid rgba(255, 255, 255, 0.85)',
+                        background: 'transparent',
+                        border: '1px solid rgba(255, 255, 255, 0.75)',
                         padding: '3rem 2.5rem 2.5rem 2.5rem',
-                        boxShadow: '0 20px 45px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8)',
+                        boxShadow: '0 20px 45px -15px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.6)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center'
                     }}
                 >
-                    {/* Layer 1: Background Image Layer (100% visibility, crisp details, no blur) */}
+                    {/* Layer 1: Background Image Layer (100% full visibility, no blur) */}
                     <div
                         aria-hidden="true"
                         style={{
@@ -167,7 +165,7 @@ export default function KushiHero() {
                         }}
                     />
 
-                    {/* Layer 2: Soft Luminous Overlay for Text Contrast without Diminishing Image Visibility */}
+                    {/* Layer 2: Minimal Translucent Scrim for Subtle Polish */}
                     <div
                         aria-hidden="true"
                         style={{
@@ -175,13 +173,13 @@ export default function KushiHero() {
                             inset: 0,
                             width: '100%',
                             height: '100%',
-                            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.26) 45%, rgba(255, 255, 255, 0.46) 100%)',
+                            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.22) 100%)',
                             zIndex: 1,
                             pointerEvents: 'none'
                         }}
                     />
 
-                    {/* Layer 3: Content Layer (fully sharp heading, description, buttons) */}
+                    {/* Layer 3: Content Layer (fully sharp heading, description, buttons - no glowing effects) */}
                     <div
                         style={{
                             position: 'relative',
@@ -203,8 +201,7 @@ export default function KushiHero() {
                                 lineHeight: 1.15,
                                 letterSpacing: '-0.03em',
                                 color: 'var(--text-dark)',
-                                fontFamily: 'var(--font-heading)',
-                                textShadow: '0 2px 14px rgba(255, 255, 255, 0.95), 0 0 4px rgba(255, 255, 255, 0.9)'
+                                fontFamily: 'var(--font-heading)'
                             }}
                         >
                             Connected Healthcare.<br />
@@ -212,8 +209,7 @@ export default function KushiHero() {
                                 style={{
                                     background: 'linear-gradient(135deg, #1565C0 0%, #0D9488 100%)',
                                     WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    filter: 'drop-shadow(0 2px 10px rgba(255, 255, 255, 0.9))'
+                                    WebkitTextFillColor: 'transparent'
                                 }}
                             >
                                 One Continuous Health Journey.
@@ -229,8 +225,7 @@ export default function KushiHero() {
                                 fontSize: 'clamp(0.95rem, 1.8vw, 1.12rem)',
                                 lineHeight: 1.6,
                                 color: '#0F172A',
-                                fontWeight: 600,
-                                textShadow: '0 1px 10px rgba(255, 255, 255, 0.95), 0 0 4px rgba(255, 255, 255, 0.9)'
+                                fontWeight: 600
                             }}
                         >
                             From appointments and OPD queues to prescriptions, lab reports, medication reminders,
