@@ -18,7 +18,7 @@ export default function GradientWave({ className = '' }) {
                 overflow: 'hidden',
                 pointerEvents: 'none',
                 zIndex: 0,
-                background: 'linear-gradient(180deg, #F8FAFD 0%, #F0F6FC 40%, #EBF4FC 75%, #F4F9FD 100%)'
+                background: 'transparent'
             }}
             aria-hidden="true"
         >
