@@ -158,7 +158,7 @@ export default function KushiHero() {
                     textAlign: 'center'
                 }}
             >
-                {/* Main Hero Panel with Frosted Glassmorphic Translucency */}
+                {/* Main Hero Panel with Frosted Glassmorphic Translucency & Family Background */}
                 <motion.div
                     className="kushi-hero-panel"
                     variants={containerMotion}
@@ -169,18 +169,48 @@ export default function KushiHero() {
                         width: '100%',
                         maxWidth: '920px',
                         overflow: 'hidden',
-                        background: 'rgba(255, 255, 255, 0.68)',
-                        backdropFilter: 'blur(10px)',
-                        WebkitBackdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.9)',
                         borderRadius: '24px',
+                        border: '1px solid rgba(255, 255, 255, 0.9)',
                         padding: '3rem 2.5rem 2.5rem 2.5rem',
-                        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.85)',
+                        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.9)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center'
                     }}
                 >
+                    {/* Same Family Background Photo Inside Panel */}
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            position: 'absolute',
+                            top: '-15px',
+                            left: '-15px',
+                            right: '-15px',
+                            bottom: '-15px',
+                            backgroundImage: `url(${familyHeroBg})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center 22%',
+                            filter: 'blur(4px)',
+                            transform: 'scale(1.05)',
+                            zIndex: 0,
+                            pointerEvents: 'none'
+                        }}
+                    />
+
+                    {/* Translucent Soft Frosted Overlay for Perfect Legibility */}
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(248, 250, 252, 0.74) 50%, rgba(240, 249, 255, 0.82) 100%)',
+                            backdropFilter: 'blur(6px)',
+                            WebkitBackdropFilter: 'blur(6px)',
+                            zIndex: 1,
+                            pointerEvents: 'none'
+                        }}
+                    />
+
                     {/* Content Layer */}
                     <div
                         style={{
