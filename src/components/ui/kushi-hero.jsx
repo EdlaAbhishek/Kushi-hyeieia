@@ -160,9 +160,9 @@ export default function KushiHero() {
                             backgroundImage: `url(${familyHeroBg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center 20%',
-                            opacity: 0.28,
-                            filter: 'blur(6px)',
-                            transform: 'scale(1.04)',
+                            opacity: 0.32,
+                            filter: 'blur(2px)',
+                            transform: 'scale(1.02)',
                             zIndex: 0,
                             pointerEvents: 'none'
                         }}
