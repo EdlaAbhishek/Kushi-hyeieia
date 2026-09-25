@@ -120,7 +120,10 @@ export default function MainLayout() {
                 <div className="container">
                     <div className="footer-grid">
                         <div className="footer-brand">
-                            <h2>Khushi Hygieia</h2>
+                            <NavLink to="/" className="footer-logo">
+                                <img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" />
+                                <h2>Khushi Hygieia</h2>
+                            </NavLink>
                             <p>Professional healthcare infrastructure providing accessible medical solutions across India.</p>
                         </div>
                         {!isDoctor && (

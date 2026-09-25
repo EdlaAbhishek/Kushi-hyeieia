@@ -4,8 +4,7 @@ import { motion } from 'framer-motion'
 import { Video, Calendar, ShieldCheck, Stethoscope, HeartPulse, Clock, ArrowRight, Star, UserCheck, Building2, Smartphone, Droplet } from 'lucide-react'
 import SectionContainer from '../components/ui/SectionContainer'
 import ActionButton from '../components/ui/ActionButton'
-
-import heroImage from '../assets/hero-banner.png'
+import KushiHero from '../components/ui/kushi-hero'
 
 const fadeUp = {
     initial: { opacity: 0, y: 20 },
@@ -39,46 +38,8 @@ export default function Home() {
 
     return (
         <>
-            {/* ─── HERO ─── */}
-            <section className="hero">
-                <div className="container hero-grid">
-                    <motion.div className="hero-content" {...fadeUp}>
-                        <div className="hero-badge">
-                            <HeartPulse size={14} />
-                            <span>Powered by Advanced AI Technology</span>
-                        </div>
-                        <h1 className="hero-title">
-                            {isDoctor ? 'Doctor Command Center' : 'Your Personal AI Health Assistant'}
-                        </h1>
-                        <p className="hero-subtitle">
-                            {isDoctor
-                                ? 'Manage your appointments, teleconsultations, and patient care from one clinical dashboard.'
-                                : 'Instantly analyze symptoms, decode medical prescriptions into your native language, and chat with a smart healthcare AI.'}
-                        </p>
-                        <div className="hero-actions">
-                            {isDoctor ? (
-                                <>
-                                    <ActionButton to="/doctor-dashboard" variant="primary">My Appointments <ArrowRight size={16} /></ActionButton>
-                                    <ActionButton to="/hospitals" variant="outline">Hospital Network</ActionButton>
-                                </>
-                            ) : (
-                                <>
-                                    <ActionButton to="/services" variant="primary">Scan Prescription <ArrowRight size={16} /></ActionButton>
-                                    <ActionButton to="/symptom-checker" variant="outline">Check Symptoms</ActionButton>
-                                </>
-                            )}
-                        </div>
-                        <div className="hero-stats">
-                            <div className="stat-item"><h4>AI</h4><p>Driven Insights</p></div>
-                            <div className="stat-item"><h4>3</h4><p>Languages</p></div>
-                            <div className="stat-item"><h4>24/7</h4><p>Instant Support</p></div>
-                        </div>
-                    </motion.div>
-                    <motion.div className="hero-img-wrap" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.15 }}>
-                        <img src={heroImage} alt="Family consulting healthcare provider online using Khushi Hygieia app" loading="lazy" />
-                    </motion.div>
-                </div>
-            </section>
+            {/* ─── INTEGRATED KUSHI HERO (HEROSECTION02 ARCHITECTURE) ─── */}
+            <KushiHero />
 
             {/* ─── SERVICES — Feature Rows ─── */}
             <SectionContainer>

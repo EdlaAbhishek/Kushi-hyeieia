@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useAuth } from '../services/AuthContext'
+import { motion } from 'framer-motion'
 import { supabase } from '../services/supabase'
-import { MessageCircle, X, Send, AlertTriangle, Activity } from 'lucide-react'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import {
+    MessageCircle, X, Send, AlertTriangle, Activity,
+    Ticket, FolderHeart, Compass, Pill, Shield, HeartHandshake, HandHeart
+} from 'lucide-react'
 import InfoTooltip from '../components/ui/InfoTooltip'
 import { toast } from 'react-hot-toast'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
@@ -376,8 +379,126 @@ export default function Dashboard({ activeTab = 'overview' }) {
 
             <SectionContainer style={{ paddingTop: '1.5rem' }}>
                 <div>
+                    {activeTab === 'overview' && (
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                                <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
+                                    <Compass size={22} color="var(--primary)" /> Connected Healthcare Ecosystem
+                                </h2>
+                                <p className="section-subtitle">Real-time outpatient queue, personal health vault, medication doses, and coverage.</p>
+                            </div>
+
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                                gap: '1rem'
+                            }}>
+                                <Link to="/dashboard/queue" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <DashboardCard style={{ height: '100%', border: '1px solid var(--border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                            <div style={{ background: '#E0F2FE', color: '#0369A1', padding: '0.6rem', borderRadius: 'var(--radius-sm)' }}>
+                                                <Ticket size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-dark)' }}>Smart OPD Queue</h3>
+                                                <span style={{ fontSize: '0.75rem', color: '#16A34A', fontWeight: 600 }}>Live Token Tracking</span>
+                                            </div>
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                                            Digital tokens, live queue status, and smart cafeteria wait-time estimates.
+                                        </p>
+                                    </DashboardCard>
+                                </Link>
+
+                                <Link to="/dashboard/health-vault" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <DashboardCard style={{ height: '100%', border: '1px solid var(--border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                            <div style={{ background: '#FEF3C7', color: '#D97706', padding: '0.6rem', borderRadius: 'var(--radius-sm)' }}>
+                                                <FolderHeart size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-dark)' }}>Health Vault</h3>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600 }}>Lab Transfers & Timeline</span>
+                                            </div>
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                                            Securely store prescriptions, view chronological history, and review pending lab reports.
+                                        </p>
+                                    </DashboardCard>
+                                </Link>
+
+                                <Link to="/dashboard/health-journey" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <DashboardCard style={{ height: '100%', border: '1px solid var(--border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                            <div style={{ background: '#F0FDF4', color: '#16A34A', padding: '0.6rem', borderRadius: 'var(--radius-sm)' }}>
+                                                <Compass size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-dark)' }}>Health Journey</h3>
+                                                <span style={{ fontSize: '0.75rem', color: '#16A34A', fontWeight: 600 }}>Connected Narrative</span>
+                                            </div>
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                                            Unified chronological timeline connecting symptoms, OPD tokens, prescriptions, and claims.
+                                        </p>
+                                    </DashboardCard>
+                                </Link>
+
+                                <Link to="/dashboard/medications" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <DashboardCard style={{ height: '100%', border: '1px solid var(--border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                            <div style={{ background: '#FDF2F8', color: '#BE185D', padding: '0.6rem', borderRadius: 'var(--radius-sm)' }}>
+                                                <Pill size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-dark)' }}>Medication Center</h3>
+                                                <span style={{ fontSize: '0.75rem', color: '#BE185D', fontWeight: 600 }}>Dose Adherence</span>
+                                            </div>
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                                            Daily medication reminders, prescription OCR parsing, and AI schedule review.
+                                        </p>
+                                    </DashboardCard>
+                                </Link>
+
+                                <Link to="/dashboard/insurance" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <DashboardCard style={{ height: '100%', border: '1px solid var(--border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                            <div style={{ background: '#EFF6FF', color: '#2563EB', padding: '0.6rem', borderRadius: 'var(--radius-sm)' }}>
+                                                <Shield size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-dark)' }}>Insurance Center</h3>
+                                                <span style={{ fontSize: '0.75rem', color: '#2563EB', fontWeight: 600 }}>Policy & Claim Tracker</span>
+                                            </div>
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                                            Visual claim timelines, cashless pre-authorization checklists, and network hospitals.
+                                        </p>
+                                    </DashboardCard>
+                                </Link>
+
+                                <Link to="/dashboard/care-circle" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <DashboardCard style={{ height: '100%', border: '1px solid var(--border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                            <div style={{ background: '#FEF2F2', color: '#DC2626', padding: '0.6rem', borderRadius: 'var(--radius-sm)' }}>
+                                                <HeartHandshake size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-dark)' }}>Care Circle</h3>
+                                                <span style={{ fontSize: '0.75rem', color: '#DC2626', fontWeight: 600 }}>Granular Permissions</span>
+                                            </div>
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                                            Authorize trusted family members and caregivers to view designated health records.
+                                        </p>
+                                    </DashboardCard>
+                                </Link>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Personal Health Trends Panel (Only on Overview) */}
-                    {/* Personal Health Metrics (Overview Only) */}
                     {activeTab === 'overview' && (
                         <div style={{ marginBottom: '3.5rem' }}>
                             <div className="section-header" style={{ marginBottom: '1.5rem' }}>

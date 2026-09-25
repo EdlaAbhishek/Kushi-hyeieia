@@ -1104,12 +1104,38 @@ select.form-control {
     margin-bottom: 3rem;
 }
 
+.footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    text-decoration: none;
+    margin-bottom: 1.25rem;
+    transition: opacity var(--transition);
+}
+
+.footer-logo:hover {
+    opacity: 0.92;
+}
+
+.footer-logo img {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+    background: #ffffff;
+    padding: 3px;
+    border-radius: 8px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.footer-logo h2,
 .footer-brand h2 {
     font-family: var(--font-heading);
     font-size: 1.35rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
     letter-spacing: -0.02em;
+    color: #ffffff;
 }
 
 .footer-brand p {

@@ -3,16 +3,20 @@ import { useState } from 'react'
 import { useAuth } from '../services/AuthContext'
 import {
     LayoutDashboard, Users, Hospital, Stethoscope, Calendar,
-    ChevronLeft, ChevronRight, ShieldCheck, UserCog, LogOut
+    ChevronLeft, ChevronRight, ShieldCheck, UserCog, LogOut,
+    Ticket, Shield, HandHeart
 } from 'lucide-react'
 
 const ADMIN_NAV = [
     { label: 'Overview', path: '/admin-dashboard', icon: LayoutDashboard, end: true },
+    { label: 'OPD Queue Command', path: '/admin-dashboard/queue', icon: Ticket },
     { label: 'Doctor Applications', path: '/admin-dashboard/applications', icon: UserCog },
     { label: 'Hospitals', path: '/admin-dashboard/hospitals', icon: Hospital },
     { label: 'Doctors', path: '/admin-dashboard/doctors', icon: Stethoscope },
     { label: 'Appointments', path: '/admin-dashboard/appointments', icon: Calendar },
-    { label: 'Users', path: '/admin-dashboard/users', icon: Users },
+    { label: 'Insurance Desk', path: '/admin-dashboard/insurance', icon: Shield },
+    { label: 'Community Tasks', path: '/admin-dashboard/community', icon: HandHeart },
+    { label: 'Users & Roles', path: '/admin-dashboard/users', icon: Users },
 ]
 
 export default function AdminLayout() {

@@ -44,8 +44,17 @@ import AdminHospitals from './pages/admin/AdminHospitals'
 import AdminDoctors from './pages/admin/AdminDoctors'
 import AdminAppointments from './pages/admin/AdminAppointments'
 import AdminUsers from './pages/admin/AdminUsers'
+import AdminQueue from './pages/admin/AdminQueue'
+import PatientQueue from './pages/queue/PatientQueue'
+import DoctorQueue from './pages/queue/DoctorQueue'
+import MedicationCenter from './pages/medications/MedicationCenter'
+import InsuranceCenter from './pages/insurance/InsuranceCenter'
+import KushiCommunity from './pages/community/KushiCommunity'
+import HealthJourney from './pages/HealthJourney'
+import CareCircle from './pages/CareCircle'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
+import { Agentation } from 'agentation'
 
 export default function App() {
     const location = useLocation()
@@ -64,6 +73,10 @@ export default function App() {
                         }
                     }}
                 />
+
+                {(import.meta.env.DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')) && (
+                    <Agentation endpoint="http://localhost:4747" />
+                )}
                 
                 <AnimatePresence mode="wait">
                     <motion.div
@@ -106,17 +119,28 @@ export default function App() {
                                 <Route element={<MainLayout />}>
                                     <Route path="/appointment-confirmation" element={<AppointmentConfirmation />} />
                                     <Route path="/services" element={<Services />} />
-                                    <Route path="/insurance" element={<Insurance />} />
+                                    <Route path="/insurance" element={<InsuranceCenter />} />
+                                    <Route path="/queue" element={<PatientQueue />} />
+                                    <Route path="/medications" element={<MedicationCenter />} />
+                                    <Route path="/community" element={<KushiCommunity />} />
+                                    <Route path="/health-journey" element={<HealthJourney />} />
+                                    <Route path="/care-circle" element={<CareCircle />} />
 
                                     {/* Dashboard with sidebar */}
                                     <Route path="/dashboard" element={<DashboardLayout />}>
                                         <Route index element={<Dashboard activeTab="overview" />} />
+                                        <Route path="queue" element={<PatientQueue />} />
+                                        <Route path="health-journey" element={<HealthJourney />} />
+                                        <Route path="health-vault" element={<HealthVault />} />
+                                        <Route path="medications" element={<MedicationCenter />} />
+                                        <Route path="insurance" element={<InsuranceCenter />} />
+                                        <Route path="care-circle" element={<CareCircle />} />
+                                        <Route path="community" element={<KushiCommunity />} />
+                                        <Route path="appointments" element={<Dashboard activeTab="appointments" />} />
                                         <Route path="symptom-checker" element={<SymptomChecker />} />
                                         <Route path="blood-donation" element={<BloodDonation />} />
-                                        <Route path="appointments" element={<Dashboard activeTab="appointments" />} />
                                         <Route path="hospital-rec" element={<HospitalRecommendation />} />
                                         <Route path="apply-doctor" element={<ApplyDoctor />} />
-                                        <Route path="health-vault" element={<HealthVault />} />
                                     </Route>
 
                                     {/* Old direct routes → redirect to dashboard sub-pages */}
@@ -128,10 +152,14 @@ export default function App() {
                             {/* Doctor-only routes */}
                             <Route element={<ProtectedRoute allowedRoles={['doctor']} />}>
                                 <Route element={<MainLayout />}>
+                                    <Route path="/doctor-queue" element={<DoctorQueue />} />
                                     <Route path="/doctor-dashboard" element={<DashboardLayout />}>
                                         <Route index element={<DoctorDashboard />} />
+                                        <Route path="queue" element={<DoctorQueue />} />
                                         <Route path="patients" element={<DoctorPatients />} />
                                         <Route path="patient-records" element={<DoctorPatientRecords />} />
+                                        <Route path="prescriptions" element={<MedicationCenter />} />
+                                        <Route path="community" element={<KushiCommunity />} />
                                         <Route path="health-worker" element={<HealthWorkerMode />} />
                                         <Route path="hospital-rec" element={<HospitalRecommendation />} />
                                         <Route path="population-health" element={<AdminDashboard mode="population" />} />
@@ -148,10 +176,13 @@ export default function App() {
                             <Route element={<ProtectedRoute allowedRoles={['admin', 'doctor']} />}>
                                 <Route path="/admin-dashboard" element={<AdminLayout />}>
                                     <Route index element={<AdminOverview />} />
+                                    <Route path="queue" element={<AdminQueue />} />
                                     <Route path="applications" element={<AdminDoctorApps />} />
                                     <Route path="hospitals" element={<AdminHospitals />} />
                                     <Route path="doctors" element={<AdminDoctors />} />
                                     <Route path="appointments" element={<AdminAppointments />} />
+                                    <Route path="insurance" element={<InsuranceCenter />} />
+                                    <Route path="community" element={<KushiCommunity />} />
                                     <Route path="users" element={<AdminUsers />} />
                                 </Route>
                             </Route>
