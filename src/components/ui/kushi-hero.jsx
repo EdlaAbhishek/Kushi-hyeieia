@@ -149,7 +149,7 @@ export default function KushiHero() {
                         alignItems: 'center'
                     }}
                 >
-                    {/* Layer 1: Background Image Layer (clipped inside rounded corners, behind content) */}
+                    {/* Layer 1: Background Image Layer (100% visibility, crisp details, no blur) */}
                     <div
                         aria-hidden="true"
                         style={{
@@ -160,15 +160,14 @@ export default function KushiHero() {
                             backgroundImage: `url(${familyHeroBg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center 20%',
-                            opacity: 0.32,
-                            filter: 'blur(2px)',
-                            transform: 'scale(1.02)',
+                            opacity: 1,
+                            filter: 'none',
                             zIndex: 0,
                             pointerEvents: 'none'
                         }}
                     />
 
-                    {/* Layer 2: Soft Overlay Layer (white / very light blue, opacity 45–65%) */}
+                    {/* Layer 2: Soft Luminous Overlay for Text Contrast without Diminishing Image Visibility */}
                     <div
                         aria-hidden="true"
                         style={{
@@ -176,7 +175,7 @@ export default function KushiHero() {
                             inset: 0,
                             width: '100%',
                             height: '100%',
-                            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(240, 249, 255, 0.50) 50%, rgba(248, 250, 252, 0.62) 100%)',
+                            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.26) 45%, rgba(255, 255, 255, 0.46) 100%)',
                             zIndex: 1,
                             pointerEvents: 'none'
                         }}
@@ -204,7 +203,8 @@ export default function KushiHero() {
                                 lineHeight: 1.15,
                                 letterSpacing: '-0.03em',
                                 color: 'var(--text-dark)',
-                                fontFamily: 'var(--font-heading)'
+                                fontFamily: 'var(--font-heading)',
+                                textShadow: '0 2px 14px rgba(255, 255, 255, 0.95), 0 0 4px rgba(255, 255, 255, 0.9)'
                             }}
                         >
                             Connected Healthcare.<br />
@@ -212,7 +212,8 @@ export default function KushiHero() {
                                 style={{
                                     background: 'linear-gradient(135deg, #1565C0 0%, #0D9488 100%)',
                                     WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent'
+                                    WebkitTextFillColor: 'transparent',
+                                    filter: 'drop-shadow(0 2px 10px rgba(255, 255, 255, 0.9))'
                                 }}
                             >
                                 One Continuous Health Journey.
@@ -227,8 +228,9 @@ export default function KushiHero() {
                                 margin: '0 0 2rem 0',
                                 fontSize: 'clamp(0.95rem, 1.8vw, 1.12rem)',
                                 lineHeight: 1.6,
-                                color: 'var(--text-main)',
-                                fontWeight: 500
+                                color: '#0F172A',
+                                fontWeight: 600,
+                                textShadow: '0 1px 10px rgba(255, 255, 255, 0.95), 0 0 4px rgba(255, 255, 255, 0.9)'
                             }}
                         >
                             From appointments and OPD queues to prescriptions, lab reports, medication reminders,
