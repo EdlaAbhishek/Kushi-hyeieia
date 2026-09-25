@@ -108,42 +108,10 @@ export default function KushiHero() {
                 paddingBottom: '2.5rem'
             }}
         >
-            {/* 1. Full Hero Background with Family Using Khushi Hygieia Photo + Blur */}
-            <div
-                aria-hidden="true"
-                style={{
-                    position: 'absolute',
-                    top: '-20px',
-                    left: '-20px',
-                    right: '-20px',
-                    bottom: '-20px',
-                    backgroundImage: `url(${familyHeroBg})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center 18%',
-                    filter: 'blur(2.5px)',
-                    transform: 'scale(1.04)',
-                    opacity: 0.82,
-                    zIndex: 0,
-                    pointerEvents: 'none'
-                }}
-            />
-
-            {/* Soft Ambient Depth & Vignette Overlay */}
-            <div
-                aria-hidden="true"
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(180deg, rgba(248, 250, 252, 0.40) 0%, rgba(240, 246, 252, 0.25) 38%, rgba(248, 250, 252, 0.70) 80%, rgba(255, 255, 255, 0.95) 100%)',
-                    zIndex: 1,
-                    pointerEvents: 'none'
-                }}
-            />
-
-            {/* 2. Fluid Moving Waves Floating Across Hero */}
+            {/* 1. Atmospheric Wave Background (Clean, minimal page background) */}
             <GradientWave />
 
-            {/* 3. Central Hero Container */}
+            {/* 2. Central Hero Container */}
             <div
                 className="container"
                 style={{
@@ -158,7 +126,7 @@ export default function KushiHero() {
                     textAlign: 'center'
                 }}
             >
-                {/* Main Hero Panel with Frosted Glassmorphic Translucency & Family Background */}
+                {/* Main Hero Panel with Glassmorphism & Background Image INSIDE Card Only */}
                 <motion.div
                     className="kushi-hero-panel"
                     variants={containerMotion}
@@ -170,48 +138,51 @@ export default function KushiHero() {
                         maxWidth: '920px',
                         overflow: 'hidden',
                         borderRadius: '24px',
-                        border: '1px solid rgba(255, 255, 255, 0.9)',
+                        background: 'rgba(255, 255, 255, 0.64)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(255, 255, 255, 0.85)',
                         padding: '3rem 2.5rem 2.5rem 2.5rem',
-                        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.9)',
+                        boxShadow: '0 20px 45px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center'
                     }}
                 >
-                    {/* Same Family Background Photo Inside Panel */}
-                    <div
-                        aria-hidden="true"
-                        style={{
-                            position: 'absolute',
-                            top: '-15px',
-                            left: '-15px',
-                            right: '-15px',
-                            bottom: '-15px',
-                            backgroundImage: `url(${familyHeroBg})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center 22%',
-                            filter: 'blur(4px)',
-                            transform: 'scale(1.05)',
-                            zIndex: 0,
-                            pointerEvents: 'none'
-                        }}
-                    />
-
-                    {/* Translucent Soft Frosted Overlay for Perfect Legibility */}
+                    {/* Layer 1: Background Image Layer (clipped inside rounded corners, behind content) */}
                     <div
                         aria-hidden="true"
                         style={{
                             position: 'absolute',
                             inset: 0,
-                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(248, 250, 252, 0.74) 50%, rgba(240, 249, 255, 0.82) 100%)',
-                            backdropFilter: 'blur(6px)',
-                            WebkitBackdropFilter: 'blur(6px)',
+                            width: '100%',
+                            height: '100%',
+                            backgroundImage: `url(${familyHeroBg})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center 20%',
+                            opacity: 0.28,
+                            filter: 'blur(6px)',
+                            transform: 'scale(1.04)',
+                            zIndex: 0,
+                            pointerEvents: 'none'
+                        }}
+                    />
+
+                    {/* Layer 2: Soft Overlay Layer (white / very light blue, opacity 45–65%) */}
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(240, 249, 255, 0.50) 50%, rgba(248, 250, 252, 0.62) 100%)',
                             zIndex: 1,
                             pointerEvents: 'none'
                         }}
                     />
 
-                    {/* Content Layer */}
+                    {/* Layer 3: Content Layer (fully sharp heading, description, buttons) */}
                     <div
                         style={{
                             position: 'relative',
