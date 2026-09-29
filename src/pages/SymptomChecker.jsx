@@ -128,8 +128,8 @@ Return ONLY a valid JSON object matching this structure:
                         headers: {
                             'Authorization': `Bearer ${clientKey}`,
                             'Content-Type': 'application/json',
-                            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://khushihygieia.in',
-                            'X-Title': 'Khushi Hygieia'
+                            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://kushihygieia.in',
+                            'X-Title': 'Kushi Hygieia'
                         },
                         body: JSON.stringify({
                             model: import.meta.env.VITE_OPENROUTER_MODEL || 'nex-agi/nex-n2.5-mini:free',

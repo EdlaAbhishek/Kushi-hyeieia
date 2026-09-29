@@ -41,7 +41,7 @@ export default function UpdatePassword() {
     return (
         <div className="auth-page">
             <div className="auth-card">
-                <div className="auth-logo"><img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" /></div>
+                <div className="auth-logo"><img src="/assets/logo.png" alt="Kushi Hygieia" loading="lazy" /></div>
                 <h1 className="auth-title">Update Password</h1>
                 <p className="auth-sub">Enter your new password below</p>
                 {error && <div id="update-error" className="auth-error" role="alert">{error}</div>}

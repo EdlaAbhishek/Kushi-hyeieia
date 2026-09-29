@@ -1,4 +1,4 @@
-// Shared OpenRouter Client for Khushi Hygieia Backend Handlers
+// Shared OpenRouter Client for Kushi Hygieia Backend Handlers
 
 export async function callOpenRouter({
     messages,
@@ -38,8 +38,8 @@ export async function callOpenRouter({
                 headers: {
                     'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json',
-                    'HTTP-Referer': 'https://khushihygieia.in',
-                    'X-Title': 'Khushi Hygieia'
+                    'HTTP-Referer': 'https://kushihygieia.in',
+                    'X-Title': 'Kushi Hygieia'
                 },
                 body: JSON.stringify(payload),
                 signal: controller.signal

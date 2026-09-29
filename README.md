@@ -1,4 +1,4 @@
-# Khushi Hygieia Healthcare Platform
+# Kushi Hygieia Healthcare Platform
 
 Professional, enterprise-grade healthcare platform connecting patients, doctors, and hospitals across India.
 

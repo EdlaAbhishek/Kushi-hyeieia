@@ -1,5 +1,5 @@
 -- =====================================================================
--- MASTER SETUP — Khushi Hygieia Healthcare Platform
+-- MASTER SETUP — Kushi Hygieia Healthcare Platform
 -- Run this ENTIRE file in your Supabase SQL Editor
 -- ✅ FULLY IDEMPOTENT — safe to run multiple times
 -- =====================================================================

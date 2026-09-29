@@ -155,7 +155,7 @@ export default function Patients() {
                 <div className="container grid-2">
                     <motion.div className="split-content" {...fadeUp}>
                         <h3>AI-Powered Health Analytics</h3>
-                        <p>Khushi Hygieia utilizes advanced analytics to provide diagnostic support and preventive health recommendations based on your historical health data.</p>
+                        <p>Kushi Hygieia utilizes advanced analytics to provide diagnostic support and preventive health recommendations based on your historical health data.</p>
                         <ul className="split-list">
                             <li><Check size={20} /><span>Condition tracking and vital sign monitoring</span></li>
                             <li><Check size={20} /><span>Automated prescription refill alerts</span></li>
@@ -165,7 +165,7 @@ export default function Patients() {
                     </motion.div>
                     <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>
                         <div className="ai-preview-card">
-                            <div className="ai-preview-header"><span>🤖</span> Khushi Care AI</div>
+                            <div className="ai-preview-header"><span>🤖</span> Kushi Care AI</div>
                             <div className="ai-preview-body">
                                 <p className="ai-preview-msg ai-msg-bot">Hello! I can help you understand your health reports, medications, and recovery guidelines.</p>
                                 <p className="ai-preview-msg ai-msg-user">What should I do after my cardiologist visit?</p>

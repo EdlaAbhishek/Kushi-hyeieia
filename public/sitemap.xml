@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://kushi-hygieia.vercel.app/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://kushi-hygieia.vercel.app/about</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kushi-hygieia.vercel.app/doctors</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kushi-hygieia.vercel.app/hospitals</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kushi-hygieia.vercel.app/symptom-checker</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kushi-hygieia.vercel.app/ai-chat</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kushi-hygieia.vercel.app/security</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://kushi-hygieia.vercel.app/contact</loc>
+    <priority>0.5</priority>
+  </url>
+</urlset>

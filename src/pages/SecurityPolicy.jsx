@@ -6,7 +6,7 @@ export default function SecurityPolicy() {
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                 <Shield size={48} color="var(--primary)" style={{ margin: '0 auto 1rem' }} />
                 <h1 style={{ fontSize: '2.5rem', color: 'var(--text-color)', marginBottom: '1rem' }}>Security & Privacy Policy</h1>
-                <p style={{ color: 'var(--text-light)', fontSize: '1.1rem' }}>Learn how Khushi Hygieia protects your health data and ensures safe AI interactions.</p>
+                <p style={{ color: 'var(--text-light)', fontSize: '1.1rem' }}>Learn how Kushi Hygieia protects your health data and ensures safe AI interactions.</p>
             </div>
 
             <div className="card" style={{ padding: '2rem', marginBottom: '2rem' }}>
@@ -14,7 +14,7 @@ export default function SecurityPolicy() {
                     <Lock size={24} color="var(--primary)" /> Data Encryption & Storage
                 </h2>
                 <p style={{ lineHeight: 1.6, marginBottom: '1rem' }}>
-                    All patient data stored on Khushi Hygieia is secured using industry-standard AES-256 encryption at rest. Data transmitted between your browser and our servers is protected by TLS 1.3 encryption.
+                    All patient data stored on Kushi Hygieia is secured using industry-standard AES-256 encryption at rest. Data transmitted between your browser and our servers is protected by TLS 1.3 encryption.
                 </p>
                 <p style={{ lineHeight: 1.6 }}>
                     We utilize Supabase infrastructure which adheres to strict security standards, ensuring your personal health information (PHI) is isolated and protected against unauthorized access.
@@ -26,7 +26,7 @@ export default function SecurityPolicy() {
                     <Eye size={24} color="#059669" /> AI Usage Transparency
                 </h2>
                 <p style={{ lineHeight: 1.6, marginBottom: '1rem' }}>
-                    Khushi Hygieia uses advanced Artificial Intelligence models (powered by Google Gemini) to provide symptom analysis and hospital recommendations.
+                    Kushi Hygieia uses advanced Artificial Intelligence models (powered by Google Gemini) to provide symptom analysis and hospital recommendations.
                 </p>
                 <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '1rem' }}>
                     <h3 style={{ color: '#B91C1C', fontSize: '1rem', marginBottom: '0.5rem' }}>Important Medical Disclaimer</h3>

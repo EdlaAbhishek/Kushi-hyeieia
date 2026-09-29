@@ -1,6 +1,6 @@
 -- =============================================================
 -- database/schema.sql
--- Khushi Hygieia — PostgreSQL Schema
+-- Kushi Hygieia — PostgreSQL Schema
 -- =============================================================
 
 -- Users (patients, doctors, admins)

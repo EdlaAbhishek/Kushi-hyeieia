@@ -51,7 +51,7 @@ export default function Contact() {
                         <p>For general enquiries, partnership requests, or technical support, use the contact form or reach us directly.</p>
                         <ul className="split-list">
                             <li><Phone size={20} /><span>+91 1800-123-4567 (Toll Free)</span></li>
-                            <li><Mail size={20} /><span>support@khushihygieia.com</span></li>
+                            <li><Mail size={20} /><span>support@kushihygieia.com</span></li>
                             <li><MessageSquare size={20} /><span>Live chat available 24/7 in app</span></li>
                         </ul>
                     </motion.div>

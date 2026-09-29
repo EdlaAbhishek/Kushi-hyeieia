@@ -64,7 +64,7 @@ export default function DoctorDetail() {
 
     // Generate contextual data
     const experience = doctor.experience || "Not Specified";
-    const hospitalDisplay = fromHospital || doctor.hospital_name || 'Khushi Hygieia Networks';
+    const hospitalDisplay = fromHospital || doctor.hospital_name || 'Kushi Hygieia Networks';
     const generatedBio = `Dr. ${doctor.full_name} is a specialist in ${doctor.specialty || 'General Medicine'} consulting at ${hospitalDisplay}. Committed to staying updated with the latest medical advancements and delivering compassionate, comprehensive treatment.`;
 
     // Build breadcrumbs based on navigation context
@@ -276,7 +276,7 @@ export default function DoctorDetail() {
                                     <div>
                                         <h3 style={{ fontSize: '1.05rem', color: '#1E293B', marginBottom: '0.25rem' }}>{hospitalDisplay}</h3>
                                         <p style={{ color: '#64748B', fontSize: '0.9rem', margin: 0 }}>
-                                            {hospitalId ? 'Click to view hospital details →' : 'Part of Khushi Hygieia Healthcare Network'}
+                                            {hospitalId ? 'Click to view hospital details →' : 'Part of Kushi Hygieia Healthcare Network'}
                                         </p>
                                     </div>
                                 </div>

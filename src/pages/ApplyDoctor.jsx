@@ -138,7 +138,7 @@ export default function ApplyDoctor() {
                 <CheckCircle size={56} color="#10B981" style={{ margin: '0 auto 1.5rem' }} />
                 <h2 style={{ fontSize: '1.5rem', color: '#1E293B', marginBottom: '1rem' }}>Application Submitted Successfully</h2>
                 <p style={{ color: '#64748B', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-                    Thank you for applying to join the Khushi Hygieia medical network.
+                    Thank you for applying to join the Kushi Hygieia medical network.
                     Our AI-powered verification system will review your credentials and medical license.
                     Once approved, your profile will appear under your affiliated hospital automatically.
                 </p>

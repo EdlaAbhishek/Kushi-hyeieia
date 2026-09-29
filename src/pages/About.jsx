@@ -14,14 +14,14 @@ export default function About() {
     return (
         <>
             <PageHeader
-                title="About Khushi Hygieia"
+                title="About Kushi Hygieia"
                 description="Building India's most trusted digital healthcare infrastructure."
             />
             <SectionContainer>
                 <div className="grid-2">
                     <motion.div className="split-content" {...fadeUp}>
                         <h3>Our Mission</h3>
-                        <p>Khushi Hygieia is committed to making quality healthcare accessible, affordable, and efficient for every Indian citizen through technology-driven solutions.</p>
+                        <p>Kushi Hygieia is committed to making quality healthcare accessible, affordable, and efficient for every Indian citizen through technology-driven solutions.</p>
                         <ul className="split-list">
                             <li><Check size={20} /><span>Bridging the urban-rural healthcare divide</span></li>
                             <li><Brain size={20} /><span>AI-powered diagnostic and preventive care</span></li>

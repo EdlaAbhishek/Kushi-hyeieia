@@ -1,5 +1,5 @@
 -- =====================================================
--- Khushi Hygieia: Doctor Application & Approval Schema
+-- Kushi Hygieia: Doctor Application & Approval Schema
 -- Run this in the Supabase SQL Editor
 -- =====================================================
 

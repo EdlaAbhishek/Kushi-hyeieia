@@ -20,7 +20,7 @@ const ACCOUNTS = [
     },
     {
         email: 'admin.demo@khushi.in',
-        full_name: 'Admin Khushi',
+        full_name: 'Admin Kushi',
         role: 'patient' // signup as patient first, then add to admins table
     }
 ]
@@ -148,7 +148,7 @@ async function main() {
         await supabase.from('patients').upsert({
             id: adminId,
             email: 'admin.demo@khushi.in',
-            full_name: 'Admin Khushi',
+            full_name: 'Admin Kushi',
             role: 'admin'
         }, { onConflict: 'id' })
 

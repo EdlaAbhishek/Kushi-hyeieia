@@ -1,6 +1,6 @@
 -- =============================================================
 -- database/phase4_rural_vitals.sql
--- Khushi Hygieia — Rural Healthcare Vitals Table
+-- Kushi Hygieia — Rural Healthcare Vitals Table
 -- =============================================================
 
 CREATE TABLE IF NOT EXISTS vitals (

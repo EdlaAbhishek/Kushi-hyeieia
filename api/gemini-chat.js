@@ -20,7 +20,7 @@ export default async function handler(req, res) {
             ? `\n\nIMPORTANT: The user prefers ${langName}. You MUST respond entirely in ${langName} (${language} script). Keep medical terms in English where necessary for clarity.`
             : ''
 
-        const systemPrompt = `You are Khushi Care AI, a helpful, empathetic healthcare assistant for the Khushi Hygieia platform — an Indian healthcare app serving patients in English, Hindi, and Telugu.
+        const systemPrompt = `You are Kushi Care AI, a helpful, empathetic healthcare assistant for the Kushi Hygieia platform — an Indian healthcare app serving patients in English, Hindi, and Telugu.
 
 Rules:
 - Provide general health guidance, wellness tips, and first-aid information.

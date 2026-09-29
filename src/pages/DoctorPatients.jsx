@@ -112,7 +112,7 @@ export default function DoctorPatients() {
                 patientArray = [
                     {
                         id: 'demo-1',
-                        name: 'Khushi Patient Demo',
+                        name: 'Kushi Patient Demo',
                         email: 'patient.demo@khushi.in',
                         totalAppointments: 3,
                         teleconsultations: 1,

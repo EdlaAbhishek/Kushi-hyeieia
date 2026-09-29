@@ -78,7 +78,7 @@ export default function Login() {
     return (
         <div className="auth-page">
             <div className="auth-card">
-                <div className="auth-logo"><img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" /></div>
+                <div className="auth-logo"><img src="/assets/logo.png" alt="Kushi Hygieia" loading="lazy" /></div>
                 <h1 className="auth-title">Sign In</h1>
                 <p className="auth-sub">Access your healthcare dashboard</p>
                 {error && <div id="login-error" className="auth-error" role="alert">{error}</div>}

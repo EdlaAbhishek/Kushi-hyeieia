@@ -6,14 +6,14 @@ export default function ConsentPopup() {
 
     useEffect(() => {
         // Check if user has already accepted the consent
-        const hasConsented = localStorage.getItem('khushi_hygieia_consent')
+        const hasConsented = localStorage.getItem('kushi_hygieia_consent') || localStorage.getItem('khushi_hygieia_consent')
         if (!hasConsented) {
             setIsVisible(true)
         }
     }, [])
 
     const handleAccept = () => {
-        localStorage.setItem('khushi_hygieia_consent', 'true')
+        localStorage.setItem('kushi_hygieia_consent', 'true')
         setIsVisible(false)
     }
 
@@ -41,7 +41,7 @@ export default function ConsentPopup() {
                 <div>
                     <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#fff' }}>Data Privacy & Security Consent</h3>
                     <p style={{ fontSize: '0.9rem', color: '#94A3B8', lineHeight: 1.5, margin: 0 }}>
-                        We use cookies, local storage, and AI processing to improve your experience. Health data entered into AI tools (Symptom Checker, Hospital REC) is processed solely for triage and is not used to train global AI models. By continuing to use Khushi Hygieia, you agree to our <a href="/security" style={{ color: '#38BDF8', textDecoration: 'underline' }}>Security & Privacy Policy</a>.
+                        We use cookies, local storage, and AI processing to improve your experience. Health data entered into AI tools (Symptom Checker, Hospital REC) is processed solely for triage and is not used to train global AI models. By continuing to use Kushi Hygieia, you agree to our <a href="/security" style={{ color: '#38BDF8', textDecoration: 'underline' }}>Security & Privacy Policy</a>.
                     </p>
                 </div>
             </div>

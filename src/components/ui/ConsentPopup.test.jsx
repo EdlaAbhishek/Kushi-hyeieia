@@ -22,11 +22,17 @@ describe('ConsentPopup Component', () => {
 
         fireEvent.click(acceptButton)
 
-        expect(localStorage.getItem('khushi_hygieia_consent')).toBe('true')
+        expect(localStorage.getItem('kushi_hygieia_consent')).toBe('true')
         expect(screen.queryByText(/Data Privacy & Security Consent/i)).not.toBeInTheDocument()
     })
 
     it('does not render if consent is already given', () => {
+        localStorage.setItem('kushi_hygieia_consent', 'true')
+        render(<ConsentPopup />)
+        expect(screen.queryByText(/Data Privacy & Security Consent/i)).not.toBeInTheDocument()
+    })
+
+    it('honors legacy consent key', () => {
         localStorage.setItem('khushi_hygieia_consent', 'true')
         render(<ConsentPopup />)
         expect(screen.queryByText(/Data Privacy & Security Consent/i)).not.toBeInTheDocument()

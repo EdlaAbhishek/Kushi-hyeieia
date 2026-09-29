@@ -35,7 +35,7 @@ export default function MainLayout() {
             <header className="navbar">
                 <div className="container nav-container">
                     <NavLink to="/" className="logo" onClick={closeMenu}>
-                        <img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" />
+                        <img src="/assets/logo.png" alt="Kushi Hygieia" loading="lazy" />
                     </NavLink>
 
                     <button className="hamburger" onClick={toggleMenu}>
@@ -121,8 +121,8 @@ export default function MainLayout() {
                     <div className="footer-grid">
                         <div className="footer-brand">
                             <NavLink to="/" className="footer-logo">
-                                <img src="/assets/logo.png" alt="Khushi Hygieia" loading="lazy" />
-                                <h2>Khushi Hygieia</h2>
+                                <img src="/assets/logo.png" alt="Kushi Hygieia" loading="lazy" />
+                                <h2>Kushi Hygieia</h2>
                             </NavLink>
                             <p>Professional healthcare infrastructure providing accessible medical solutions across India.</p>
                         </div>
@@ -154,7 +154,7 @@ export default function MainLayout() {
                         </div>
                     </div>
                     <div className="footer-bottom">
-                        <p>&copy; 2026 Khushi Hygieia Healthcare Platform. All rights reserved.</p>
+                        <p>&copy; 2026 Kushi Hygieia Healthcare Platform. All rights reserved.</p>
                         <div className="footer-bottom-links">
                             <NavLink to="/security">Privacy Policy</NavLink>
                             <a href="#">Terms of Service</a>

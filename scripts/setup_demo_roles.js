@@ -56,7 +56,7 @@ async function main() {
     const { error: admPatUpd } = await supabase.from('patients').upsert({
         id: adminUserId,
         email: 'admin.demo@khushi.in',
-        full_name: 'Admin Khushi',
+        full_name: 'Admin Kushi',
         role: 'admin'
     }, { onConflict: 'id' })
     console.log('Admin patient update:', admPatUpd ? admPatUpd.message : 'OK')

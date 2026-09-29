@@ -102,7 +102,7 @@ export default function DoctorDashboard() {
                     {
                         id: 'demo-appt-1',
                         patient_id: 'demo-1',
-                        patient_display_name: 'Khushi Patient Demo',
+                        patient_display_name: 'Kushi Patient Demo',
                         doctor_id: user.id,
                         appointment_date: new Date(Date.now() + 86400000).toISOString(),
                         appointment_time: '10:00',
@@ -128,7 +128,7 @@ export default function DoctorDashboard() {
                     {
                         id: 'demo-appt-3',
                         patient_id: 'demo-1',
-                        patient_display_name: 'Khushi Patient Demo',
+                        patient_display_name: 'Kushi Patient Demo',
                         doctor_id: user.id,
                         appointment_date: new Date(Date.now() + 86400000 * 2).toISOString(),
                         appointment_time: '16:00',

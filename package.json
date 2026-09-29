@@ -1,5 +1,5 @@
 {
-    "name": "khushi-hygieia",
+    "name": "kushi-hygieia",
     "private": true,
     "version": "1.0.0",
     "type": "module",
@@ -7,7 +7,8 @@
         "dev": "vite",
         "server": "node --env-file=.env dev-server.js",
         "build": "vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "test": "vitest run"
     },
     "dependencies": {
         "@google/generative-ai": "^0.24.1",

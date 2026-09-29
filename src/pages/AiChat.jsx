@@ -8,7 +8,7 @@ export default function AiChat() {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: 'Hello! I\'m Khushi Care AI, your healthcare assistant. How can I help you today?\n\n_I can provide general health guidance, but please remember to consult a doctor for medical concerns._'
+            content: 'Hello! I\'m Kushi Care AI, your healthcare assistant. How can I help you today?\n\n_I can provide general health guidance, but please remember to consult a doctor for medical concerns._'
         }
     ])
     const [input, setInput] = useState('')
@@ -267,15 +267,15 @@ export default function AiChat() {
                         headers: {
                             'Authorization': `Bearer ${clientKey}`,
                             'Content-Type': 'application/json',
-                            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://khushihygieia.in',
-                            'X-Title': 'Khushi Hygieia'
+                            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://kushihygieia.in',
+                            'X-Title': 'Kushi Hygieia'
                         },
                         body: JSON.stringify({
                             model: import.meta.env.VITE_OPENROUTER_MODEL || 'nex-agi/nex-n2.5-mini:free',
                             messages: [
                                 {
                                     role: 'system',
-                                    content: `You are Khushi Care AI, a helpful, empathetic healthcare assistant for the Khushi Hygieia platform. Provide general health guidance, wellness tips, and first-aid information. Never diagnose conditions or prescribe medicines. Always advise consulting a qualified doctor.${langInstruction}`
+                                    content: `You are Kushi Care AI, a helpful, empathetic healthcare assistant for the Kushi Hygieia platform. Provide general health guidance, wellness tips, and first-aid information. Never diagnose conditions or prescribe medicines. Always advise consulting a qualified doctor.${langInstruction}`
                                 },
                                 ...newMessages.map(m => ({
                                     role: m.role === 'user' ? 'user' : 'assistant',
@@ -319,7 +319,7 @@ export default function AiChat() {
         <>
             <section className="page-header">
                 <div className="container">
-                    <h1 className="page-title">Khushi Care AI</h1>
+                    <h1 className="page-title">Kushi Care AI</h1>
                     <p className="page-subtitle">Your 24/7 healthcare assistant — get instant general medical guidance to your health queries.</p>
                 </div>
             </section>
@@ -374,7 +374,7 @@ export default function AiChat() {
                                     className={`chat-bubble ${msg.role === 'user' ? 'chat-user' : 'chat-assistant'} ${msg.emergency ? 'chat-emergency' : ''}`}
                                 >
                                     <span className="chat-sender">
-                                        {msg.role === 'user' ? userName : '🤖 Khushi Care AI'}
+                                        {msg.role === 'user' ? userName : '🤖 Kushi Care AI'}
                                     </span>
                                     <div className="chat-text">
                                         {msg.content.split('\n').map((line, j) => (
@@ -426,7 +426,7 @@ export default function AiChat() {
                             ))}
                             {loading && (
                                 <div className="chat-bubble chat-assistant">
-                                    <span className="chat-sender">🤖 Khushi Care AI</span>
+                                    <span className="chat-sender">🤖 Kushi Care AI</span>
                                     <div className="chat-typing">
                                         <span></span><span></span><span></span>
                                     </div>

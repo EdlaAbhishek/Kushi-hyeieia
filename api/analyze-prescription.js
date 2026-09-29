@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { callOpenRouter } from './openrouter-client.js'
 
-function normalizeResponse(responseText) {
+export function normalizeResponse(responseText) {
     if (!responseText || typeof responseText !== 'string') {
         return { document_type: 'Prescription', medicines: [] }
     }
@@ -78,6 +78,9 @@ function normalizeResponse(responseText) {
         }
     }
 }
+
+export const normalizeGeminiResponse = normalizeResponse
+
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {

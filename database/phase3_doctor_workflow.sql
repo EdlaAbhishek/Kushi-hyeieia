@@ -1,6 +1,6 @@
 -- =============================================================
 -- database/phase3_doctor_workflow.sql
--- Khushi Hygieia — Upgrades for AI Triage Queue
+-- Kushi Hygieia — Upgrades for AI Triage Queue
 -- =============================================================
 
 -- Add urgency to appointments (Emergency, Urgent, Routine)

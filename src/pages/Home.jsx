@@ -155,7 +155,7 @@ export default function Home() {
                 <SectionContainer className="cta-section">
                     <div style={{ textAlign: 'center' }}>
                         <motion.h2 className="cta-title" {...fadeUp}>Ready to take control of your health?</motion.h2>
-                        <motion.p className="cta-subtitle" {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>Join thousands of patients who already trust Khushi Hygieia for their healthcare needs.</motion.p>
+                        <motion.p className="cta-subtitle" {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>Join thousands of patients who already trust Kushi Hygieia for their healthcare needs.</motion.p>
                         <motion.div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }} {...fadeUp} transition={{ duration: 0.5, delay: 0.2, ease: 'easeOut' }}>
                             <ActionButton to="/signup" variant="primary" style={{ padding: '0.75rem 2rem' }}>
                                 Get Started — It's Free <ArrowRight size={16} />

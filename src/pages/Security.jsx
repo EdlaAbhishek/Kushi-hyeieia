@@ -34,7 +34,7 @@ export default function Security() {
                             Enterprise-Grade Health Security
                         </h2>
                         <p style={{ fontSize: '1.1rem', color: '#475569', lineHeight: 1.7, maxWidth: '700px', margin: '0 auto' }}>
-                            Khushi Hygieia uses state-of-the-art cryptographic protocols to ensure your Protected Health Information (PHI) is isolated, encrypted, and accessible only to authorized personnel.
+                            Kushi Hygieia uses state-of-the-art cryptographic protocols to ensure your Protected Health Information (PHI) is isolated, encrypted, and accessible only to authorized personnel.
                         </p>
                     </motion.div>
 

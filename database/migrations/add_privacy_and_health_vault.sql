@@ -1,6 +1,6 @@
 -- =====================================================================
 -- MIGRATION: Women's Privacy Mode + Health Vault
--- Khushi Hygieia Healthcare Platform
+-- Kushi Hygieia Healthcare Platform
 -- ✅ FULLY IDEMPOTENT — safe to run multiple times
 -- =====================================================================
 
