@@ -1,0 +1,469 @@
+{
+  "status": "success",
+  "random_seed": 42,
+  "backend": "Qiskit Aer Simulator (Local Statevector)",
+  "execution_time_total_ms": 6646.2,
+  "dataset_info": {
+    "target_column": "Outcome",
+    "total_samples": 768,
+    "train_samples": 614,
+    "test_samples": 154,
+    "original_features_count": 8,
+    "quantum_qubits": 4,
+    "features_used": [
+      "PC1",
+      "PC2",
+      "PC3",
+      "PC4"
+    ],
+    "sample_reduction": {
+      "reduced_samples": 80,
+      "total_train_samples": 614,
+      "reason": "Subsampled for polynomial-time quantum kernel evaluation on statevector simulator."
+    }
+  },
+  "preprocessing_applied": {
+    "scaling": "minmax",
+    "imputation": "median (train-fitted)",
+    "dimensionality_reduction": "pca",
+    "data_leakage_prevented": true
+  },
+  "classical_evaluation": {
+    "model_name": "RandomForestClassifier",
+    "metrics": {
+      "accuracy": 0.7273,
+      "balanced_accuracy": 0.7346,
+      "precision": 0.5857,
+      "recall": 0.7593,
+      "specificity": 0.71,
+      "f1_score": 0.6613,
+      "roc_auc": 0.8215,
+      "pr_auc": 0.7046,
+      "confusion_matrix": {
+        "tp": 41,
+        "fp": 29,
+        "tn": 71,
+        "fn": 13
+      },
+      "roc_curve": [
+        {
+          "fpr": 0.0,
+          "tpr": 0.0
+        },
+        {
+          "fpr": 0.02,
+          "tpr": 0.222
+        },
+        {
+          "fpr": 0.07,
+          "tpr": 0.352
+        },
+        {
+          "fpr": 0.12,
+          "tpr": 0.481
+        },
+        {
+          "fpr": 0.19,
+          "tpr": 0.574
+        },
+        {
+          "fpr": 0.23,
+          "tpr": 0.667
+        },
+        {
+          "fpr": 0.29,
+          "tpr": 0.778
+        },
+        {
+          "fpr": 0.34,
+          "tpr": 0.833
+        },
+        {
+          "fpr": 0.45,
+          "tpr": 0.926
+        },
+        {
+          "fpr": 1.0,
+          "tpr": 1.0
+        }
+      ],
+      "training_time_ms": 148.8
+    },
+    "feature_importance": [
+      {
+        "feature": "Glucose",
+        "importance": 0.05714285714285718,
+        "normalized_importance": 0.6470588235294112
+      },
+      {
+        "feature": "BMI",
+        "importance": 0.025974025974026028,
+        "normalized_importance": 0.2941176470588237
+      },
+      {
+        "feature": "Age",
+        "importance": 0.005194805194805219,
+        "normalized_importance": 0.0588235294117649
+      },
+      {
+        "feature": "DiabetesPedigreeFunction",
+        "importance": 0.0,
+        "normalized_importance": 0.0
+      },
+      {
+        "feature": "SkinThickness",
+        "importance": 0.0,
+        "normalized_importance": 0.0
+      },
+      {
+        "feature": "Insulin",
+        "importance": 0.0,
+        "normalized_importance": 0.0
+      }
+    ]
+  },
+  "quantum_evaluation": {
+    "model_name": "Variational Quantum Classifier (VQC)",
+    "metrics": {
+      "accuracy": 0.5779,
+      "balanced_accuracy": 0.5685,
+      "precision": 0.4203,
+      "recall": 0.537,
+      "specificity": 0.6,
+      "f1_score": 0.4715,
+      "roc_auc": 0.5665,
+      "pr_auc": 0.4508,
+      "confusion_matrix": {
+        "tp": 29,
+        "fp": 40,
+        "tn": 60,
+        "fn": 25
+      },
+      "roc_curve": [
+        {
+          "fpr": 0.0,
+          "tpr": 0.0
+        },
+        {
+          "fpr": 0.05,
+          "tpr": 0.111
+        },
+        {
+          "fpr": 0.16,
+          "tpr": 0.278
+        },
+        {
+          "fpr": 0.28,
+          "tpr": 0.426
+        },
+        {
+          "fpr": 0.35,
+          "tpr": 0.519
+        },
+        {
+          "fpr": 0.59,
+          "tpr": 0.611
+        },
+        {
+          "fpr": 0.64,
+          "tpr": 0.704
+        },
+        {
+          "fpr": 0.77,
+          "tpr": 0.815
+        },
+        {
+          "fpr": 0.9,
+          "tpr": 0.889
+        },
+        {
+          "fpr": 1.0,
+          "tpr": 1.0
+        }
+      ],
+      "training_time_ms": 5950.0
+    },
+    "feature_map": "ZZFeatureMap",
+    "qubits": 4,
+    "shots": 512,
+    "measurement_counts": {
+      "1101": 33,
+      "0100": 33,
+      "1000": 27,
+      "1011": 37,
+      "0010": 32,
+      "1100": 31,
+      "1111": 32,
+      "0110": 34,
+      "0000": 33,
+      "0011": 36,
+      "1010": 30,
+      "1110": 26,
+      "1001": 31,
+      "0001": 36,
+      "0111": 29,
+      "0101": 32
+    },
+    "circuit": {
+      "num_qubits": 4,
+      "depth": 15,
+      "total_gates": 28,
+      "ops_count": {
+        "cx": 9,
+        "ry": 8,
+        "p": 7,
+        "h": 4
+      },
+      "gates_sequence": [
+        {
+          "gate": "H",
+          "qubits": [
+            0
+          ],
+          "params": [],
+          "qubit": 0
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            0
+          ],
+          "params": [],
+          "qubit": 0
+        },
+        {
+          "gate": "H",
+          "qubits": [
+            1
+          ],
+          "params": [],
+          "qubit": 1
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            1
+          ],
+          "params": [],
+          "qubit": 1
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            0,
+            1
+          ],
+          "params": [],
+          "control": 0,
+          "target": 1
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            1
+          ],
+          "params": [],
+          "qubit": 1
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            0,
+            1
+          ],
+          "params": [],
+          "control": 0,
+          "target": 1
+        },
+        {
+          "gate": "RY",
+          "qubits": [
+            0
+          ],
+          "params": [],
+          "qubit": 0
+        },
+        {
+          "gate": "H",
+          "qubits": [
+            2
+          ],
+          "params": [],
+          "qubit": 2
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            2
+          ],
+          "params": [],
+          "qubit": 2
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            1,
+            2
+          ],
+          "params": [],
+          "control": 1,
+          "target": 2
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            2
+          ],
+          "params": [],
+          "qubit": 2
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            1,
+            2
+          ],
+          "params": [],
+          "control": 1,
+          "target": 2
+        },
+        {
+          "gate": "RY",
+          "qubits": [
+            1
+          ],
+          "params": [],
+          "qubit": 1
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            0,
+            1
+          ],
+          "params": [],
+          "control": 0,
+          "target": 1
+        },
+        {
+          "gate": "RY",
+          "qubits": [
+            0
+          ],
+          "params": [],
+          "qubit": 0
+        },
+        {
+          "gate": "H",
+          "qubits": [
+            3
+          ],
+          "params": [],
+          "qubit": 3
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            3
+          ],
+          "params": [],
+          "qubit": 3
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            2,
+            3
+          ],
+          "params": [],
+          "control": 2,
+          "target": 3
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            3
+          ],
+          "params": [],
+          "qubit": 3
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            2,
+            3
+          ],
+          "params": [],
+          "control": 2,
+          "target": 3
+        },
+        {
+          "gate": "RY",
+          "qubits": [
+            2
+          ],
+          "params": [],
+          "qubit": 2
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            1,
+            2
+          ],
+          "params": [],
+          "control": 1,
+          "target": 2
+        },
+        {
+          "gate": "RY",
+          "qubits": [
+            1
+          ],
+          "params": [],
+          "qubit": 1
+        },
+        {
+          "gate": "RY",
+          "qubits": [
+            3
+          ],
+          "params": [],
+          "qubit": 3
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            2,
+            3
+          ],
+          "params": [],
+          "control": 2,
+          "target": 3
+        },
+        {
+          "gate": "RY",
+          "qubits": [
+            2
+          ],
+          "params": [],
+          "qubit": 2
+        },
+        {
+          "gate": "RY",
+          "qubits": [
+            3
+          ],
+          "params": [],
+          "qubit": 3
+        }
+      ],
+      "ascii_diagram": "     \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\u00bb\nq_0: \u25240                                   \u251c\u00bb\n     \u2502                                    \u2502\u00bb\nq_1: \u25241                                   \u251c\u00bb\n     \u2502  ZZFeatureMap(x[0],x[1],x[2],x[3]) \u2502\u00bb\nq_2: \u25242                                   \u251c\u00bb\n     \u2502                                    \u2502\u00bb\nq_3: \u25243                                   \u251c\u00bb\n     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\u00bb\n\u00ab     \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u00abq_0: \u25240                                                         \u251c\n\u00ab     \u2502                                                          \u2502\n\u00abq_1: \u25241                                                         \u251c\n\u00ab     \u2502  RealAmplitudes(\u03b8[0],\u03b8[1],\u03b8[2],\u03b8[3],\u03b8[4],\u03b8[5],\u03b8[6],\u03b8[7]) \u2502\n\u00abq_2: \u25242                                                         \u251c\n\u00ab     \u2502                                                          \u2502\n\u00abq_3: \u25243                                                         \u251c\n\u00ab     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"
+    }
+  },
+  "dataset_id": "diabetes",
+  "dataset_name": "Pima Indians Diabetes",
+  "id": "exp_1790868998_21d763",
+  "timestamp": "2026-10-01 21:06:38",
+  "model_version": "1.0.0"
+}

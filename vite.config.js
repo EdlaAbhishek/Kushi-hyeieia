@@ -34,37 +34,44 @@ function apiPlugin() {
             server.middlewares.use(async (req, res, next) => {
                 if (!req.url.startsWith('/api/')) return next()
 
-                const routeName = req.url.replace('/api/', '').split('?')[0]
+                const urlObj = new URL(req.url, 'http://localhost')
+                const routeName = urlObj.pathname.replace('/api/', '').split('/')[0]
                 const handlerPath = `./api/${routeName}.js`
 
-                if (req.method !== 'POST') {
+                req.query = Object.fromEntries(urlObj.searchParams)
+
+                if (req.method !== 'POST' && req.method !== 'GET') {
                     res.statusCode = 405
                     res.setHeader('Content-Type', 'application/json')
                     res.end(JSON.stringify({ error: 'Method not allowed' }))
                     return
                 }
 
-                // Collect request body
-                let bodyChunks = []
-                req.on('data', chunk => { bodyChunks.push(chunk) })
-                await new Promise(resolve => req.on('end', resolve))
-                
-                const rawBody = Buffer.concat(bodyChunks)
-                
-                // If it's a JSON request or empty, trying parsing as JSON
-                const contentType = req.headers['content-type'] || '';
-                if (contentType.includes('application/json') || rawBody.length === 0) {
-                    try { 
-                        req.body = rawBody.length > 0 ? JSON.parse(rawBody.toString()) : {} 
-                        console.log(`[Vite API] Parsed JSON body successfully for ${req.url}`);
-                    } catch (e) { 
-                        console.error(`[Vite API] JSON Parse Error for ${req.url}:`, e);
-                        req.body = {} 
+                if (req.method === 'POST') {
+                    // Collect request body
+                    let bodyChunks = []
+                    req.on('data', chunk => { bodyChunks.push(chunk) })
+                    await new Promise(resolve => req.on('end', resolve))
+                    
+                    const rawBody = Buffer.concat(bodyChunks)
+                    
+                    // If it's a JSON request or empty, trying parsing as JSON
+                    const contentType = req.headers['content-type'] || '';
+                    if (contentType.includes('application/json') || rawBody.length === 0) {
+                        try { 
+                            req.body = rawBody.length > 0 ? JSON.parse(rawBody.toString()) : {} 
+                            console.log(`[Vite API] Parsed JSON body successfully for ${req.url}`);
+                        } catch (e) { 
+                            console.error(`[Vite API] JSON Parse Error for ${req.url}:`, e);
+                            req.body = {} 
+                        }
+                    } else {
+                        // It's likely an image or streaming transfer (octet-stream), pass the raw Buffer
+                        console.log(`[Vite API] Passed raw Buffer for ${req.url}`);
+                        req.body = rawBody
                     }
                 } else {
-                    // It's likely an image or streaming transfer (octet-stream), pass the raw Buffer
-                    console.log(`[Vite API] Passed raw Buffer for ${req.url}`);
-                    req.body = rawBody
+                    req.body = {}
                 }
 
                 try {

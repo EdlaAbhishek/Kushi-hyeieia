@@ -1,0 +1,333 @@
+{
+  "status": "success",
+  "random_seed": 42,
+  "backend": "Qiskit Aer Simulator (Local Statevector)",
+  "execution_time_total_ms": 111877.7,
+  "dataset_info": {
+    "target_column": "target",
+    "total_samples": 569,
+    "train_samples": 455,
+    "test_samples": 114,
+    "original_features_count": 30,
+    "quantum_qubits": 4,
+    "features_used": [
+      "PC1",
+      "PC2",
+      "PC3",
+      "PC4"
+    ],
+    "sample_reduction": {
+      "reduced_samples": 80,
+      "total_train_samples": 455,
+      "reason": "Subsampled for polynomial-time quantum kernel evaluation on statevector simulator."
+    }
+  },
+  "preprocessing_applied": {
+    "scaling": "standard",
+    "imputation": "median (train-fitted)",
+    "dimensionality_reduction": "pca",
+    "data_leakage_prevented": true
+  },
+  "classical_evaluation": {
+    "model_name": "SVC",
+    "metrics": {
+      "accuracy": 0.9649,
+      "balanced_accuracy": 0.9673,
+      "precision": 0.9857,
+      "recall": 0.9583,
+      "specificity": 0.9762,
+      "f1_score": 0.9718,
+      "roc_auc": 0.994,
+      "pr_auc": 0.9963,
+      "confusion_matrix": {
+        "tp": 69,
+        "fp": 1,
+        "tn": 41,
+        "fn": 3
+      },
+      "roc_curve": [
+        {
+          "fpr": 0.0,
+          "tpr": 0.0
+        },
+        {
+          "fpr": 0.0,
+          "tpr": 0.014
+        },
+        {
+          "fpr": 0.0,
+          "tpr": 0.806
+        },
+        {
+          "fpr": 0.024,
+          "tpr": 0.806
+        },
+        {
+          "fpr": 0.024,
+          "tpr": 0.972
+        },
+        {
+          "fpr": 0.048,
+          "tpr": 0.972
+        },
+        {
+          "fpr": 0.048,
+          "tpr": 0.986
+        },
+        {
+          "fpr": 0.095,
+          "tpr": 0.986
+        },
+        {
+          "fpr": 0.095,
+          "tpr": 1.0
+        },
+        {
+          "fpr": 1.0,
+          "tpr": 1.0
+        }
+      ],
+      "training_time_ms": 9.4
+    },
+    "feature_importance": [
+      {
+        "feature": "radius_error",
+        "importance": 0.02456140350877194,
+        "normalized_importance": 0.1794871794871795
+      },
+      {
+        "feature": "area_error",
+        "importance": 0.024561403508771916,
+        "normalized_importance": 0.1794871794871793
+      },
+      {
+        "feature": "worst_radius",
+        "importance": 0.022807017543859675,
+        "normalized_importance": 0.16666666666666677
+      },
+      {
+        "feature": "worst_area",
+        "importance": 0.022807017543859654,
+        "normalized_importance": 0.16666666666666663
+      },
+      {
+        "feature": "worst_perimeter",
+        "importance": 0.02105263157894739,
+        "normalized_importance": 0.1538461538461539
+      },
+      {
+        "feature": "perimeter_error",
+        "importance": 0.02105263157894739,
+        "normalized_importance": 0.1538461538461539
+      }
+    ]
+  },
+  "quantum_evaluation": {
+    "model_name": "Quantum Support Vector Classifier (QSVC)",
+    "metrics": {
+      "accuracy": 0.6053,
+      "balanced_accuracy": 0.4841,
+      "precision": 0.6239,
+      "recall": 0.9444,
+      "specificity": 0.0238,
+      "f1_score": 0.7514,
+      "roc_auc": null,
+      "pr_auc": null,
+      "confusion_matrix": {
+        "tp": 68,
+        "fp": 41,
+        "tn": 1,
+        "fn": 4
+      },
+      "roc_curve": [],
+      "training_time_ms": 110733.4
+    },
+    "feature_map": "ZZFeatureMap",
+    "qubits": 4,
+    "shots": 1024,
+    "measurement_counts": {
+      "1010": 61,
+      "0001": 79,
+      "1110": 68,
+      "0011": 58,
+      "0100": 69,
+      "1101": 71,
+      "0000": 56,
+      "0010": 51,
+      "1100": 69,
+      "0110": 70,
+      "1111": 64,
+      "1011": 56,
+      "1000": 62,
+      "0101": 48,
+      "1001": 69,
+      "0111": 73
+    },
+    "circuit": {
+      "num_qubits": 4,
+      "depth": 11,
+      "total_gates": 17,
+      "ops_count": {
+        "p": 7,
+        "cx": 6,
+        "h": 4
+      },
+      "gates_sequence": [
+        {
+          "gate": "H",
+          "qubits": [
+            0
+          ],
+          "params": [],
+          "qubit": 0
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            0
+          ],
+          "params": [],
+          "qubit": 0
+        },
+        {
+          "gate": "H",
+          "qubits": [
+            1
+          ],
+          "params": [],
+          "qubit": 1
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            1
+          ],
+          "params": [],
+          "qubit": 1
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            0,
+            1
+          ],
+          "params": [],
+          "control": 0,
+          "target": 1
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            1
+          ],
+          "params": [],
+          "qubit": 1
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            0,
+            1
+          ],
+          "params": [],
+          "control": 0,
+          "target": 1
+        },
+        {
+          "gate": "H",
+          "qubits": [
+            2
+          ],
+          "params": [],
+          "qubit": 2
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            2
+          ],
+          "params": [],
+          "qubit": 2
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            1,
+            2
+          ],
+          "params": [],
+          "control": 1,
+          "target": 2
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            2
+          ],
+          "params": [],
+          "qubit": 2
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            1,
+            2
+          ],
+          "params": [],
+          "control": 1,
+          "target": 2
+        },
+        {
+          "gate": "H",
+          "qubits": [
+            3
+          ],
+          "params": [],
+          "qubit": 3
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            3
+          ],
+          "params": [],
+          "qubit": 3
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            2,
+            3
+          ],
+          "params": [],
+          "control": 2,
+          "target": 3
+        },
+        {
+          "gate": "P",
+          "qubits": [
+            3
+          ],
+          "params": [],
+          "qubit": 3
+        },
+        {
+          "gate": "CNOT",
+          "qubits": [
+            2,
+            3
+          ],
+          "params": [],
+          "control": 2,
+          "target": 3
+        }
+      ],
+      "ascii_diagram": "     \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\nq_0: \u25240                                   \u251c\n     \u2502                                    \u2502\nq_1: \u25241                                   \u251c\n     \u2502  ZZFeatureMap(x[0],x[1],x[2],x[3]) \u2502\nq_2: \u25242                                   \u251c\n     \u2502                                    \u2502\nq_3: \u25243                                   \u251c\n     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"
+    }
+  },
+  "dataset_id": "breast_cancer",
+  "dataset_name": "Breast Cancer Wisconsin (Diagnostic)",
+  "id": "exp_1790870291_e4b913",
+  "timestamp": "2026-10-01 21:28:11",
+  "model_version": "1.0.0"
+}

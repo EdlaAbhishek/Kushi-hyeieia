@@ -44,31 +44,19 @@ export default function MainLayout() {
 
                     <nav className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
                         <NavLink to="/" end onClick={closeMenu}>Home</NavLink>
+                        <NavLink to="/quantum-intelligence" onClick={closeMenu}>Quantum Intelligence</NavLink>
+                        <NavLink to="/chat" onClick={closeMenu}>AI Assistance</NavLink>
+                        <NavLink to="/services" onClick={closeMenu}>Services</NavLink>
+                        <NavLink to="/hospitals" onClick={closeMenu}>Find Hospitals</NavLink>
 
-                        {/* Patient nav — hospital-first booking */}
-                        {!isDoctor && (
-                            <>
-                                <NavLink to="/hospitals" onClick={closeMenu}>Find Hospital</NavLink>
-                                <NavLink to="/services" onClick={closeMenu}>Services</NavLink>
-                                <NavLink to="/chat" onClick={closeMenu}>AI Assistant</NavLink>
-                            </>
-                        )}
-
-                        {/* Doctor nav */}
+                        {/* Doctor-specific extra links */}
                         {isDoctor && (
-                            <>
-                                <NavLink to="/doctor-dashboard/patients" onClick={closeMenu}>My Patients</NavLink>
-                                <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
-                                <NavLink to="/chat" onClick={closeMenu}>AI Assistant</NavLink>
-                            </>
+                            <NavLink to="/doctor-dashboard/patients" onClick={closeMenu}>My Patients</NavLink>
                         )}
 
-                        {/* Admin-only nav */}
+                        {/* Admin-only extra links */}
                         {isAdmin && !isDoctor && (
-                            <>
-                                <NavLink to="/hospitals" onClick={closeMenu}>Hospitals</NavLink>
-                                <NavLink to="/admin-dashboard" onClick={closeMenu}>Admin Panel</NavLink>
-                            </>
+                            <NavLink to="/admin-dashboard" onClick={closeMenu}>Admin Panel</NavLink>
                         )}
 
                         {/* Mobile Actions */}
@@ -130,8 +118,10 @@ export default function MainLayout() {
                             <div>
                                 <h4 className="footer-heading">For Patients</h4>
                                 <ul className="footer-links">
-                                    <li><NavLink to="/hospitals">Book Appointment</NavLink></li>
-                                    <li><NavLink to="/services">Teleconsultation</NavLink></li>
+                                    <li><NavLink to="/quantum-intelligence">Quantum Intelligence</NavLink></li>
+                                    <li><NavLink to="/chat">AI Assistance</NavLink></li>
+                                    <li><NavLink to="/services">Services & Prescriptions</NavLink></li>
+                                    <li><NavLink to="/hospitals">Find Hospitals & Beds</NavLink></li>
                                     <li><NavLink to="/dashboard">Health Records</NavLink></li>
                                 </ul>
                             </div>

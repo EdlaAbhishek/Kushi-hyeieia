@@ -4285,3 +4285,1480 @@ select.form-control {
 .access-request-actions .btn-deny:hover {
     background: #FECACA;
 }
+
+/* ============================================================
+   Quantum Disease Intelligence — Refined Minimal Styles
+   Apple-inspired visual hierarchy, confident typography,
+   intentional whitespace, Kushi-Hygieia design tokens.
+   ============================================================ */
+
+.qi-page {
+    background: #FFFFFF;
+    color: #0F172A;
+    min-height: 100vh;
+}
+
+.qi-container {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* ------------ 1. Hero Section ------------ */
+.qi-hero-minimal {
+    padding: 4.5rem 0 3rem;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.qi-hero-header {
+    max-width: 760px;
+}
+
+.qi-title {
+    font-family: var(--font-heading, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+    font-size: 2.75rem;
+    font-weight: 700;
+    color: #0F172A;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
+    margin: 0 0 1rem;
+}
+
+.qi-subtitle {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #334155;
+    line-height: 1.5;
+    margin: 0 0 0.5rem;
+}
+
+.qi-supporting {
+    font-size: 0.95rem;
+    color: #64748B;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+}
+
+.qi-hero-actions {
+    display: flex;
+    gap: 0.85rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.qi-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.6rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: 980px;
+    background: #1565C0;
+    color: #FFFFFF;
+    border: 1px solid #1565C0;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(21, 101, 192, 0.12);
+}
+
+.qi-btn-primary:hover {
+    background: #0D47A1;
+    border-color: #0D47A1;
+    transform: translateY(-1px);
+}
+
+.qi-btn-primary.qi-btn-large {
+    padding: 0.85rem 2rem;
+    font-size: 0.98rem;
+}
+
+.qi-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: 980px;
+    background: #FFFFFF;
+    color: #1E293B;
+    border: 1px solid #CBD5E1;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.qi-btn-secondary:hover {
+    background: #F8FAFC;
+    border-color: #94A3B8;
+}
+
+.qi-btn-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    background: none;
+    border: none;
+    color: #64748B;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.qi-btn-text:hover {
+    color: #0F172A;
+}
+
+/* ------------ 2. Simple Workflow ------------ */
+.qi-workflow-section {
+    padding: 2.5rem 0 3.5rem;
+}
+
+.qi-workflow-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.qi-step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.55rem 0.85rem;
+    border-radius: 10px;
+    transition: all 0.15s ease;
+    text-align: left;
+    flex: 1;
+}
+
+.qi-step-item:hover {
+    background: #F8FAFC;
+}
+
+.qi-step-item.active {
+    background: #F0F7FF;
+}
+
+.qi-step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: #F1F5F9;
+    color: #64748B;
+    flex-shrink: 0;
+}
+
+.qi-step-item.active .qi-step-num {
+    background: #1565C0;
+    color: #FFFFFF;
+}
+
+.qi-step-item.completed .qi-step-num {
+    background: #0D9488;
+    color: #FFFFFF;
+}
+
+.qi-step-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.qi-step-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0F172A;
+    line-height: 1.2;
+}
+
+.qi-step-detail {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    margin-top: 1px;
+}
+
+.qi-step-divider {
+    color: #CBD5E1;
+    font-size: 0.85rem;
+    padding: 0 0.25rem;
+    flex-shrink: 0;
+}
+
+/* ------------ 3. Main Workspace ------------ */
+.qi-workspace-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.qi-pane-header {
+    margin-bottom: 2rem;
+}
+
+.qi-pane-header h2 {
+    font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: #0F172A;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.35rem;
+}
+
+.qi-pane-header p {
+    font-size: 0.92rem;
+    color: #64748B;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Dataset selection */
+.qi-dataset-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.qi-dataset-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1.15rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    background: #FAFAFA;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.qi-dataset-choice:hover {
+    border-color: #CBD5E1;
+    background: #FFFFFF;
+}
+
+.qi-dataset-choice.selected {
+    border-color: #1565C0;
+    background: #F0F7FF;
+}
+
+.qi-choice-radio {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid #CBD5E1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.qi-dataset-choice.selected .qi-choice-radio {
+    border-color: #1565C0;
+}
+
+.qi-radio-inner {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.qi-dataset-choice.selected .qi-radio-inner {
+    background: #1565C0;
+}
+
+.qi-choice-text strong {
+    display: block;
+    font-size: 0.95rem;
+    color: #0F172A;
+    margin-bottom: 0.2rem;
+}
+
+.qi-choice-text span {
+    display: block;
+    font-size: 0.8rem;
+    color: #64748B;
+    line-height: 1.4;
+}
+
+.qi-upload-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.qi-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border: 1px dashed #CBD5E1;
+    border-radius: 8px;
+    background: #FAFAFA;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.qi-upload-btn:hover {
+    border-color: #1565C0;
+    color: #1565C0;
+    background: #F0F7FF;
+}
+
+.qi-reset-btn {
+    background: none;
+    border: none;
+    color: #94A3B8;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.qi-reset-btn:hover {
+    color: #64748B;
+}
+
+/* Essential Summary Bar */
+.qi-summary-bar {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    margin: 1.5rem 0;
+}
+
+.qi-meta-pill {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.qi-meta-pill .qi-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748B;
+    font-weight: 600;
+}
+
+.qi-meta-pill .qi-val {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0F172A;
+}
+
+.qi-pane-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+/* Form controls */
+.qi-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.qi-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.qi-form-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1E293B;
+}
+
+.qi-form-subtext {
+    font-size: 0.78rem;
+    color: #64748B;
+    margin: 0 0 0.25rem;
+    line-height: 1.4;
+}
+
+.qi-select {
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    background: #FFFFFF;
+    font-size: 0.88rem;
+    color: #0F172A;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.qi-select:focus {
+    border-color: #1565C0;
+}
+
+.qi-input-readonly {
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    background: #F8FAFC;
+    font-size: 0.88rem;
+    color: #475569;
+    font-family: 'JetBrains Mono', monospace;
+    outline: none;
+}
+
+/* Models grid */
+.qi-model-columns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.qi-model-box {
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    background: #FAFAFA;
+}
+
+.qi-model-section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    display: block;
+    margin-bottom: 0.85rem;
+}
+
+.qi-model-radios {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.qi-model-radio-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    background: #FFFFFF;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.qi-model-radio-card:hover {
+    border-color: #CBD5E1;
+}
+
+.qi-model-radio-card.active {
+    border-color: #1565C0;
+    background: #F0F7FF;
+}
+
+.qi-model-radio-card input[type="radio"] {
+    margin-top: 3px;
+    accent-color: #1565C0;
+}
+
+.qi-model-radio-card strong {
+    display: block;
+    font-size: 0.88rem;
+    color: #0F172A;
+    margin-bottom: 0.15rem;
+}
+
+.qi-model-radio-card span {
+    display: block;
+    font-size: 0.78rem;
+    color: #64748B;
+    line-height: 1.35;
+}
+
+.qi-backend-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    margin: 1.25rem 0;
+    font-size: 0.85rem;
+}
+
+.qi-backend-label {
+    font-weight: 600;
+    color: #475569;
+}
+
+.qi-backend-val {
+    color: #0F172A;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+}
+
+.qi-error-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.15rem;
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    border-radius: 8px;
+    color: #991B1B;
+    font-size: 0.85rem;
+    margin: 1rem 0;
+}
+
+/* ------------ 4. Run Analysis & Progress ------------ */
+.qi-run-banner {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #F1F5F9;
+}
+
+.qi-running-state {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: #F0F7FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 12px;
+}
+
+.qi-spinner {
+    width: 28px;
+    height: 28px;
+    border: 2.5px solid #BFDBFE;
+    border-top-color: #1565C0;
+    border-radius: 50%;
+    animation: qiSpin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes qiSpin {
+    to { transform: rotate(360deg); }
+}
+
+.qi-running-stage {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1565C0;
+    margin-bottom: 0.35rem;
+}
+
+.qi-running-sequence {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    color: #64748B;
+    flex-wrap: wrap;
+}
+
+.qi-running-sequence .current {
+    color: #1565C0;
+    font-weight: 700;
+}
+
+/* ------------ 5. Results Section ------------ */
+.qi-results-section {
+    padding: 4rem 0 3.5rem;
+    background: #F8FAFC;
+    border-top: 1px solid #E2E8F0;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.qi-section-title {
+    font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #0F172A;
+    letter-spacing: -0.025em;
+    margin: 0 0 0.35rem;
+}
+
+.qi-section-subtitle {
+    font-size: 0.95rem;
+    color: #64748B;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.qi-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.qi-medical-disclaimer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: #64748B;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    padding: 0.45rem 0.85rem;
+    border-radius: 980px;
+}
+
+/* Results Metrics Grid */
+.qi-results-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.qi-metric-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.qi-metric-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748B;
+}
+
+.qi-metric-value-strong {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #0F172A;
+    letter-spacing: -0.02em;
+}
+
+.qi-metric-sub {
+    font-size: 0.75rem;
+    color: #94A3B8;
+}
+
+/* Tables */
+.qi-table-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 1.75rem;
+    margin-bottom: 2.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.qi-table-title {
+    font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #0F172A;
+    margin: 0 0 1.25rem;
+}
+
+.qi-table-responsive {
+    overflow-x: auto;
+}
+
+.qi-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.qi-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748B;
+    border-bottom: 1px solid #E2E8F0;
+    font-weight: 600;
+}
+
+.qi-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #F1F5F9;
+    color: #334155;
+}
+
+.qi-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.qi-th-num, .qi-td-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+}
+
+.qi-th-action, .qi-td-action {
+    text-align: right;
+}
+
+.qi-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+    background: #FFFFFF;
+    color: #1E293B;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.qi-view-btn:hover {
+    background: #F1F5F9;
+    border-color: #94A3B8;
+}
+
+.qi-status-tag {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 980px;
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+/* ------------ 6. Quantum Circuit ------------ */
+.qi-circuit-section-wrapper {
+    margin-bottom: 2.25rem;
+}
+
+.qi-circuit-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.qi-circuit-viz {
+    display: flex;
+    flex-direction: column;
+}
+
+.qi-circuit-meta-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 0.85rem 1.25rem;
+    background: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.qi-circuit-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.qi-meta-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #64748B;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.qi-meta-val {
+    font-weight: 600;
+    color: #0F172A;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+}
+
+.qi-circuit-scroll {
+    overflow-x: auto;
+    padding: 1.5rem;
+    background: #FFFFFF;
+}
+
+.qi-circuit-legend {
+    display: flex;
+    gap: 1.25rem;
+    padding: 0.75rem 1.25rem;
+    background: #F8FAFC;
+    border-top: 1px solid #E2E8F0;
+    font-size: 0.78rem;
+    color: #64748B;
+}
+
+.qi-legend-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.35rem;
+}
+
+.qi-circuit-empty {
+    padding: 2.5rem;
+    text-align: center;
+    color: #94A3B8;
+    font-size: 0.9rem;
+}
+
+/* ------------ 7. Explainability ------------ */
+.qi-explainability-wrapper {
+    margin-bottom: 1rem;
+}
+
+.qi-explain-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.qi-explain-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.qi-explain-card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0F172A;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.qi-explain-desc {
+    font-size: 0.8rem;
+    color: #64748B;
+    margin: 0 0 1.25rem;
+    line-height: 1.4;
+}
+
+.qi-feature-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.qi-feature-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.qi-feature-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+}
+
+.qi-feature-name {
+    color: #1E293B;
+    font-weight: 500;
+}
+
+.qi-feature-pct {
+    color: #64748B;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+}
+
+.qi-bar-track {
+    height: 6px;
+    background: #F1F5F9;
+    border-radius: 980px;
+    overflow: hidden;
+}
+
+.qi-bar-fill {
+    height: 100%;
+    background: #1565C0;
+    border-radius: 980px;
+    transition: width 0.3s ease;
+}
+
+.qi-measurement-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-bottom: 1.25rem;
+}
+
+.qi-state-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.82rem;
+}
+
+.qi-state-ket {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: #0F172A;
+    width: 65px;
+    flex-shrink: 0;
+}
+
+.qi-state-bar-track {
+    flex: 1;
+    height: 6px;
+    background: #F1F5F9;
+    border-radius: 980px;
+    overflow: hidden;
+}
+
+.qi-state-bar-fill {
+    height: 100%;
+    background: #0D9488;
+    border-radius: 980px;
+    transition: width 0.3s ease;
+}
+
+.qi-state-prob {
+    font-family: 'JetBrains Mono', monospace;
+    color: #64748B;
+    font-size: 0.8rem;
+    width: 48px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.qi-state-empty {
+    font-size: 0.82rem;
+    color: #94A3B8;
+    margin: 0;
+}
+
+.qi-config-summary-sub {
+    display: flex;
+    gap: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #F1F5F9;
+    font-size: 0.78rem;
+    color: #64748B;
+    flex-wrap: wrap;
+}
+
+.qi-config-item strong {
+    color: #0F172A;
+}
+
+/* ------------ 8. Experiments History ------------ */
+.qi-experiments-section {
+    padding: 3.5rem 0 5rem;
+}
+
+.qi-experiments-header {
+    margin-bottom: 1.5rem;
+}
+
+.qi-empty-history {
+    padding: 2.5rem;
+    text-align: center;
+    color: #94A3B8;
+    font-size: 0.9rem;
+}
+
+.qi-empty-history p {
+    margin: 0;
+}
+
+/* ------------ Responsive Breakpoints ------------ */
+@media (max-width: 900px) {
+    .qi-results-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .qi-model-columns, .qi-explain-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .qi-hero-minimal {
+        padding: 3rem 0 2rem;
+    }
+    .qi-title {
+        font-size: 2rem;
+    }
+    .qi-workflow-nav {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+    }
+    .qi-step-divider {
+        display: none;
+    }
+    .qi-dataset-options, .qi-form-grid {
+        grid-template-columns: 1fr;
+    }
+    .qi-summary-bar {
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+    .qi-workspace-card {
+        padding: 1.5rem;
+    }
+    .qi-results-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   Quantum Intelligence — Extended Clinical & Research Styles
+   ============================================================ */
+
+/* Mode Switcher */
+.qi-mode-bar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.qi-mode-pills {
+    display: inline-flex;
+    background: #F1F5F9;
+    padding: 4px;
+    border-radius: 980px;
+    border: 1px solid #E2E8F0;
+}
+
+.qi-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: #64748B;
+    border-radius: 980px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.qi-mode-btn.active {
+    background: #FFFFFF;
+    color: #0F172A;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Dataset Details Card */
+.qi-dataset-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.25rem;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    margin: 1.25rem 0;
+}
+
+.qi-meta-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.qi-meta-cell-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: #64748B;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.qi-meta-cell-value {
+    font-size: 0.9rem;
+    color: #0F172A;
+    font-weight: 500;
+}
+
+.qi-dataset-citation {
+    font-size: 0.8rem;
+    color: #64748B;
+    padding: 0.6rem 0.9rem;
+    background: #F1F5F9;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    border-left: 3px solid #1565C0;
+}
+
+/* Validation Rejection Card */
+.qi-validation-card {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 1rem 0;
+}
+
+.qi-validation-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #991B1B;
+    margin-bottom: 0.5rem;
+}
+
+.qi-validation-list {
+    margin: 0.5rem 0 0 1.5rem;
+    color: #B91C1C;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* Clinical Prediction Mode */
+.qi-prediction-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.qi-form-schema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+}
+
+.qi-schema-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.qi-schema-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+}
+
+.qi-schema-name {
+    font-weight: 600;
+    color: #1E293B;
+}
+
+.qi-schema-median {
+    color: #64748B;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.qi-input-field {
+    padding: 0.6rem 0.85rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #0F172A;
+    background: #FFFFFF;
+    transition: all 0.15s ease;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.qi-input-field:focus {
+    outline: none;
+    border-color: #1565C0;
+    box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+}
+
+.qi-prediction-banner {
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border: 1px solid transparent;
+}
+
+.qi-prediction-banner.elevated {
+    background: #FFF1F2;
+    border-color: #FECDD3;
+}
+
+.qi-prediction-banner.low {
+    background: #F0FDF4;
+    border-color: #BBF7D0;
+}
+
+.qi-prediction-banner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.qi-pred-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 980px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.qi-pred-badge.elevated {
+    background: #FFE4E6;
+    color: #BE123C;
+}
+
+.qi-pred-badge.low {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.qi-deviations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.qi-dev-pill {
+    padding: 0.65rem 0.85rem;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.qi-dev-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.qi-dev-val {
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: #0F172A;
+}
+
+.qi-dev-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.qi-dev-tag.elevated {
+    color: #DC2626;
+}
+
+.qi-dev-tag.reduced {
+    color: #2563EB;
+}
+
+.qi-dev-tag.normal {
+    color: #64748B;
+}
+
+/* AI Explanation Drawer & Interactive Dialogue */
+.qi-ai-panel {
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.qi-ai-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.qi-ai-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.qi-ai-panel-badge {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 980px;
+    border: 1px solid #BFDBFE;
+}
+
+.qi-ai-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    font-size: 0.93rem;
+    color: #334155;
+    line-height: 1.7;
+}
+
+.qi-ai-h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 1.25rem 0 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qi-ai-h3:first-child {
+    margin-top: 0;
+}
+
+.qi-ai-p {
+    margin: 0;
+    color: #334155;
+}
+
+.qi-ai-list {
+    margin: 0.25rem 0 0.5rem 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.qi-ai-li {
+    color: #334155;
+}
+
+.qi-ai-divider {
+    border: 0;
+    border-top: 1px solid #E2E8F0;
+    margin: 1rem 0;
+}
+
+.qi-ai-prompts {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #E2E8F0;
+}
+
+.qi-ai-prompt-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    border-radius: 980px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.qi-ai-prompt-chip:hover {
+    background: #EFF6FF;
+    border-color: #93C5FD;
+    color: #1D4ED8;
+}
+
+.qi-ai-input-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.qi-ai-input {
+    flex: 1;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: #0F172A;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.qi-ai-input:focus {
+    border-color: #1565C0;
+    box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+}
+
+.qi-ascii-circuit {
+    background: #0F172A;
+    color: #38BDF8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    padding: 1.25rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+

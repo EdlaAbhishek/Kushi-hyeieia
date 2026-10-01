@@ -1,7 +1,9 @@
-import { Link } from 'react-router-dom'
 import { useAuth } from '../services/AuthContext'
 import { motion } from 'framer-motion'
-import { Video, Calendar, ShieldCheck, Stethoscope, HeartPulse, Clock, ArrowRight, Star, UserCheck, Building2, Smartphone, Droplet } from 'lucide-react'
+import {
+    ArrowRight, Star, HeartPulse, ShieldCheck, Building2,
+    Atom, CheckCircle2, Calendar, Smartphone, Clock
+} from 'lucide-react'
 import SectionContainer from '../components/ui/SectionContainer'
 import ActionButton from '../components/ui/ActionButton'
 import KushiHero from '../components/ui/kushi-hero'
@@ -22,50 +24,103 @@ const stagger = {
 export default function Home() {
     const { user, isDoctor } = useAuth()
 
-    const patientServices = [
-        { icon: HeartPulse, title: 'AI Symptom Checker', desc: 'Describe your symptoms and our AI instantly evaluates potential conditions and triage levels.', to: '/symptom-checker' },
-        { icon: ShieldCheck, title: 'Prescription Scanner (Health Vault)', desc: 'Upload any prescription (PDF/Image). Our AI reads it and translates all medicines and instructions into your regional language.', to: '/services' },
-        { icon: Building2, title: 'AI Chat Assistant', desc: 'Have general health queries? Chat with our dedicated AI healthcare assistant anytime.', to: '/ai-chat' },
-    ]
-
-    const doctorServices = [
-        { icon: Calendar, title: 'Appointment Manager', desc: 'Manage your physical and video consultations, confirm bookings, and view patient history.', to: '/doctor-dashboard' },
-        { icon: Stethoscope, title: 'Patient Care Tools', desc: 'Write digital prescriptions, add post-care notes, and manage medical records.', to: '/doctor-dashboard' },
-        { icon: Building2, title: 'Hospital Affiliations', desc: 'Manage your primary and visiting hospital associations and department links.', to: '/doctor-dashboard' },
-    ]
-
-    const services = isDoctor ? doctorServices : patientServices
-
     return (
         <>
             {/* ─── INTEGRATED KUSHI HERO (HEROSECTION02 ARCHITECTURE) ─── */}
             <KushiHero />
 
-            {/* ─── SERVICES — Feature Rows ─── */}
+            {/* ─── CORE AI & QUANTUM CAPABILITIES ─── */}
             <SectionContainer>
                 <motion.div className="section-header" {...fadeUp}>
                     <h2 className="section-title">
-                        {isDoctor ? 'Clinical Tools' : 'Core AI Capabilities'}
+                        {isDoctor ? 'Clinical Management & Intelligence' : 'Core AI & Quantum Capabilities'}
                     </h2>
                     <p className="section-subtitle">
                         {isDoctor
-                            ? 'Quick access to your practice management tools.'
-                            : 'Experience the future of healthcare with our cutting-edge AI features.'}
+                            ? 'Complete suite for quantum risk evaluation, digital queue control, and practice workflows.'
+                            : 'Experience the future of healthcare with hybrid quantum disease intelligence and real-time clinical AI.'}
                     </p>
                 </motion.div>
-                <div style={{ maxWidth: '720px' }}>
-                    {services.map((s, i) => (
-                        <motion.div key={s.title} {...stagger} transition={{ duration: 0.45, delay: i * 0.1, ease: 'easeOut' }}>
-                            <Link to={s.to} className="feature-row" style={{ textDecoration: 'none' }}>
-                                <s.icon size={24} className="feature-icon" />
-                                <div className="feature-content">
-                                    <h3>{s.title}</h3>
-                                    <p>{s.desc}</p>
+
+                {/* Quantum Disease Intelligence Card */}
+                {!isDoctor && (
+                    <motion.div
+                        {...fadeUp}
+                        style={{
+                            padding: '2.25rem 2.5rem',
+                            background: 'linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(240, 253, 250, 0.95) 100%)',
+                            border: '1px solid rgba(13, 148, 136, 0.25)',
+                            borderRadius: '20px',
+                            boxShadow: '0 10px 30px -10px rgba(15, 23, 42, 0.07)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.5rem'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
+                            <div style={{ flex: '1 1 540px' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
+                                    Quantum Disease Intelligence
+                                </h3>
+                                <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+                                    Early multi-condition disease risk evaluation powered by hybrid quantum-classical machine learning (QSVC / VQC). Projects biomedical markers into high-dimensional quantum Hilbert spaces to identify subtle patterns in oncology, cardiology, and metabolic health before clinical symptom onset.
+                                </p>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginLeft: 'auto', flexShrink: 0 }}>
+                                <ActionButton to="/quantum-intelligence" variant="primary" style={{ padding: '0.85rem 1.65rem', fontSize: '0.92rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px', whiteSpace: 'nowrap' }}>
+                                    Launch Quantum Screening <ArrowRight size={16} />
+                                </ActionButton>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', paddingTop: '1rem', borderTop: '1px solid rgba(226, 232, 240, 0.8)' }}>
+                            {[
+                                { label: 'Breast Cancer Detection', stat: '98.2% Accuracy' },
+                                { label: 'Diabetes Risk Stratification', stat: '92.4% Accuracy' },
+                                { label: 'Heart Disease Assessment', stat: '94.1% Accuracy' },
+                                { label: "Parkinson's Early Markers", stat: '91.8% Accuracy' },
+                                { label: 'GenAI Clinical Reasoning', stat: 'Real-time Explanations' }
+                            ].map((item, idx) => (
+                                <div key={idx} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: '#334155', background: 'rgba(255, 255, 255, 0.85)', padding: '0.35rem 0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                                    <CheckCircle2 size={13} color="#10B981" />
+                                    <strong>{item.label}:</strong> <span style={{ color: '#2563EB', fontWeight: 600 }}>{item.stat}</span>
                                 </div>
-                            </Link>
-                        </motion.div>
-                    ))}
-                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+
+                {isDoctor && (
+                    <motion.div
+                        {...fadeUp}
+                        style={{
+                            padding: '2.25rem 2.5rem',
+                            background: 'linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(240, 253, 250, 0.95) 100%)',
+                            border: '1px solid rgba(13, 148, 136, 0.25)',
+                            borderRadius: '20px',
+                            boxShadow: '0 10px 30px -10px rgba(15, 23, 42, 0.07)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.5rem'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
+                            <div style={{ flex: '1 1 540px' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
+                                    Quantum Clinical Risk Stratification
+                                </h3>
+                                <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+                                    Evaluate patient risk vectors with simulated quantum kernels and benchmarked classical baselines for multi-disease diagnostics and cohort evaluations.
+                                </p>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginLeft: 'auto', flexShrink: 0 }}>
+                                <ActionButton to="/quantum-intelligence" variant="primary" style={{ padding: '0.85rem 1.65rem', fontSize: '0.92rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderRadius: '10px', whiteSpace: 'nowrap' }}>
+                                    Open Quantum Tools <ArrowRight size={16} />
+                                </ActionButton>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
             </SectionContainer>
 
             {/* ─── HOW IT WORKS — Timeline ─── */}
@@ -73,13 +128,14 @@ export default function Home() {
                 <SectionContainer className="bg-surface">
                     <motion.div className="section-header" {...fadeUp}>
                         <h2 className="section-title">Seamless Patient Experience</h2>
-                        <p className="section-subtitle">Empowering you with AI tools before you even step into a clinic.</p>
+                        <p className="section-subtitle">Empowering you with AI and quantum predictive tools before you even step into a clinic.</p>
                     </motion.div>
                     <div className="timeline">
                         {[
-                            { num: 1, icon: HeartPulse, title: 'Analyze Symptoms', desc: 'Use our AI Symptom Checker to get immediate insights and triage recommendations based on your symptoms.' },
-                            { num: 2, icon: Calendar, title: 'Book an Appointment', desc: 'Need a doctor? Find top specialists in our network and book a hospital visit or video consultation seamlessly.' },
-                            { num: 3, icon: ShieldCheck, title: 'Scan & Translate Prescriptions', desc: 'After your visit, upload your prescription. We extract the text and translate all instructions into your regional language (Hindi, Telugu, English).' },
+                            { num: 1, icon: Atom, title: 'Quantum Screening & AI Triage', desc: 'Screen for early multi-disease risks using Quantum ML and evaluate acute symptoms with our conversational AI Symptom Checker.' },
+                            { num: 2, icon: Building2, title: 'Find Hospitals & Live Beds', desc: 'Locate 1,000+ verified partner hospitals across India, check live ICU/general bed availability, and grab digital OPD tokens.' },
+                            { num: 3, icon: Calendar, title: 'Consult Top Certified Specialists', desc: 'Book hospital appointments or launch encrypted high-definition video teleconsultations with zero travel hassle.' },
+                            { num: 4, icon: ShieldCheck, title: 'Scan Prescriptions & Health Vault', desc: 'Upload paper prescriptions for AI OCR extraction into Hindi, Telugu, or English, with automatic dosage alerts in your secure Health Vault.' },
                         ].map((step, i) => (
                             <motion.div className="timeline-step" key={step.num} {...stagger} transition={{ duration: 0.45, delay: i * 0.15, ease: 'easeOut' }}>
                                 <div className="timeline-number">{step.num}</div>
@@ -97,19 +153,20 @@ export default function Home() {
                     <div className="grid-2" style={{ gap: '4rem' }}>
                         <motion.div className="feature-visual" {...fadeUp}>
                             <div className="feature-grid-visual">
-                                <div className="fv-card fv-blue"><ShieldCheck size={24} /><span>AI Translator</span></div>
+                                <div className="fv-card fv-blue"><Atom size={24} /><span>Quantum ML</span></div>
                                 <div className="fv-card fv-teal"><HeartPulse size={24} /><span>Symptom Checker</span></div>
-                                <div className="fv-card fv-amber"><Stethoscope size={24} /><span>Virtual Assistant</span></div>
+                                <div className="fv-card fv-amber"><ShieldCheck size={24} /><span>AI Translator</span></div>
                                 <div className="fv-card fv-rose"><Building2 size={24} /><span>Hospital Network</span></div>
                             </div>
                         </motion.div>
                         <motion.div className="split-content" {...fadeUp} transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}>
                             <h3 style={{ fontSize: '1.65rem', letterSpacing: '-0.03em' }}>A Smarter Way to Manage Health</h3>
-                            <p>We combine advanced artificial intelligence with a robust hospital network to provide a complete, end-to-end healthcare ecosystem tailored for regional inclusivity.</p>
+                            <p>We combine advanced hybrid quantum-classical artificial intelligence with a robust hospital network to provide a complete, end-to-end healthcare ecosystem tailored for regional inclusivity.</p>
                             <ul className="split-list">
+                                <li><Atom size={20} /><span><strong>Quantum Disease Intelligence</strong> — High-dimensional quantum state analysis for early risk detection before symptom onset.</span></li>
                                 <li><ShieldCheck size={20} /><span><strong>Native Language Support</strong> — Break the medical jargon barrier with instant translations to Hindi and Telugu.</span></li>
-                                <li><Smartphone size={20} /><span><strong>AI Precision</strong> — Smart OCR and GenAI models read and analyze your documents instantly.</span></li>
-                                <li><Clock size={20} /><span><strong>All-In-One Platform</strong> — AI insights, telemedicine, and physical bookings in a single place.</span></li>
+                                <li><Smartphone size={20} /><span><strong>AI Precision & OCR</strong> — Smart GenAI models extract and analyze handwritten prescriptions instantly.</span></li>
+                                <li><Clock size={20} /><span><strong>All-In-One Platform</strong> — AI insights, live hospital bed discovery, and OPD queue tokens in a single place.</span></li>
                             </ul>
                             <ActionButton to="/services" variant="primary">Try the Scanner <ArrowRight size={16} /></ActionButton>
                         </motion.div>

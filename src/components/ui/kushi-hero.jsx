@@ -5,22 +5,38 @@ import { useAuth } from '../../services/AuthContext'
 import {
     FileHeart, Pill, ShieldCheck,
     UsersRound, Clock, HeartHandshake, ArrowRight, Sparkles,
-    Shield, CheckCircle2
+    Shield, CheckCircle2, Atom, Bot
 } from 'lucide-react'
 import GradientWave from './kushi-hero-utils/gradient-wave'
 import Marquee from './kushi-hero-utils/marquee'
 import ActionButton from './ActionButton'
-import familyHeroBg from '../../assets/family-hero.jpg'
+import healthcareHeroBg from '../../assets/healthcare-hero.jpg'
 
-// Three visual feature phrases
+// Three visual feature pillars
 const FEATURE_PILLARS = [
-    { title: 'Connected Care', desc: 'Seamless clinical handoffs' },
-    { title: 'Smart Health Records', desc: 'FHIR-ready personal vault' },
-    { title: 'Continuous Support', desc: 'Family circle & community' }
+    { title: 'Quantum Intelligence', desc: 'Hybrid QML early disease detection' },
+    { title: 'Smart AI Assistance', desc: '24/7 clinical triage & translation' },
+    { title: 'Connected Hospitals', desc: 'Real-time beds & specialist care' }
 ]
 
 // Bottom Marquee capabilities with feature navigation routes
 const HEALTH_CAPABILITIES = [
+    {
+        name: 'Quantum Intelligence',
+        designation: 'Hybrid Quantum-Classical ML',
+        description: 'Early disease risk stratification using hybrid quantum machine learning algorithms.',
+        icon: Atom,
+        to: '/quantum-intelligence',
+        doctorTo: '/quantum-intelligence'
+    },
+    {
+        name: 'AI Assistance',
+        designation: '24/7 Conversational Care',
+        description: 'Empathetic AI healthcare assistance for symptom analysis and clinical triage.',
+        icon: Bot,
+        to: '/chat',
+        doctorTo: '/chat'
+    },
     {
         name: 'Health Vault',
         designation: 'Personal Health Records',
@@ -108,7 +124,7 @@ export default function KushiHero() {
                 paddingBottom: '2.5rem'
             }}
         >
-            {/* 1. Atmospheric Wave Background (Clean, minimal page background) */}
+            {/* 1. Atmospheric Moving Gradient Waves (Full page flowing fluid wave animation) */}
             <GradientWave />
 
             {/* 2. Central Hero Container */}
@@ -126,7 +142,7 @@ export default function KushiHero() {
                     textAlign: 'center'
                 }}
             >
-                {/* Main Hero Panel with Glassmorphism & Background Image INSIDE Card Only */}
+                {/* Main Hero Panel with Glassmorphism & Meaningful Healthcare Image with Blur */}
                 <motion.div
                     className="kushi-hero-panel"
                     variants={containerMotion}
@@ -147,25 +163,26 @@ export default function KushiHero() {
                         alignItems: 'center'
                     }}
                 >
-                    {/* Layer 1: Background Image Layer (100% full visibility, no blur) */}
+                    {/* Layer 1: Meaningful Healthcare Background Image with Soft Blur */}
                     <div
                         aria-hidden="true"
                         style={{
                             position: 'absolute',
-                            inset: 0,
-                            width: '100%',
-                            height: '100%',
-                            backgroundImage: `url(${familyHeroBg})`,
+                            inset: '-12px',
+                            width: 'calc(100% + 24px)',
+                            height: 'calc(100% + 24px)',
+                            backgroundImage: `url(${healthcareHeroBg})`,
                             backgroundSize: 'cover',
-                            backgroundPosition: 'center 20%',
-                            opacity: 1,
-                            filter: 'none',
+                            backgroundPosition: 'center 30%',
+                            opacity: 0.88,
+                            filter: 'blur(6px)',
+                            transform: 'scale(1.05)',
                             zIndex: 0,
                             pointerEvents: 'none'
                         }}
                     />
 
-                    {/* Layer 2: Minimal Translucent Scrim for Subtle Polish */}
+                    {/* Layer 2: Translucent Scrim for Excellent Text Contrast & Glass Aesthetic */}
                     <div
                         aria-hidden="true"
                         style={{
@@ -173,13 +190,13 @@ export default function KushiHero() {
                             inset: 0,
                             width: '100%',
                             height: '100%',
-                            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.22) 100%)',
+                            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.70) 0%, rgba(255, 255, 255, 0.52) 50%, rgba(255, 255, 255, 0.76) 100%)',
                             zIndex: 1,
                             pointerEvents: 'none'
                         }}
                     />
 
-                    {/* Layer 3: Content Layer (fully sharp heading, description, buttons - no glowing effects) */}
+                    {/* Layer 3: Content Layer (fully sharp typography and actions) */}
                     <div
                         style={{
                             position: 'relative',
@@ -204,7 +221,7 @@ export default function KushiHero() {
                                 fontFamily: 'var(--font-heading)'
                             }}
                         >
-                            Connected Healthcare.<br />
+                            Next-Generation Healthcare.<br />
                             <span
                                 style={{
                                     background: 'linear-gradient(135deg, #1565C0 0%, #0D9488 100%)',
@@ -212,15 +229,15 @@ export default function KushiHero() {
                                     WebkitTextFillColor: 'transparent'
                                 }}
                             >
-                                One Continuous Health Journey.
+                                Quantum Intelligence & Connected Care.
                             </span>
                         </h1>
 
-                        {/* SUPPORTING: Short Explanation */}
+                        {/* SUPPORTING: Relevant Platform Explanation */}
                         <p
                             className="kushi-hero-supporting"
                             style={{
-                                maxWidth: '720px',
+                                maxWidth: '740px',
                                 margin: '0 0 2rem 0',
                                 fontSize: 'clamp(0.95rem, 1.8vw, 1.12rem)',
                                 lineHeight: 1.6,
@@ -228,8 +245,8 @@ export default function KushiHero() {
                                 fontWeight: 600
                             }}
                         >
-                            From appointments and OPD queues to prescriptions, lab reports, medication reminders,
-                            insurance and community care, Kushi Hygieia brings your healthcare journey together in one secure platform.
+                            Uniting Quantum Disease Intelligence for early risk detection, 24/7 AI clinical assistance,
+                            multilingual prescription translation, and real-time hospital bed discovery across India.
                         </p>
 
                         {/* CTAs: Primary & Secondary */}
@@ -261,7 +278,7 @@ export default function KushiHero() {
                             </ActionButton>
 
                             <ActionButton
-                                to="/health-journey"
+                                to="/quantum-intelligence"
                                 variant="outline"
                                 style={{
                                     padding: '0.75rem 1.65rem',
@@ -272,7 +289,7 @@ export default function KushiHero() {
                                     backdropFilter: 'blur(8px)'
                                 }}
                             >
-                                View Health Journey
+                                Quantum Intelligence
                             </ActionButton>
                         </div>
                     </div>

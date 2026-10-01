@@ -2,7 +2,7 @@
 
 export async function callOpenRouter({
     messages,
-    model = process.env.OPENROUTER_MODEL || 'nex-agi/nex-n2.5-mini:free',
+    model = process.env.OPENROUTER_MODEL || 'deepseek/deepseek-chat',
     temperature = 0.3,
     maxTokens = 1500,
     responseFormat = null,

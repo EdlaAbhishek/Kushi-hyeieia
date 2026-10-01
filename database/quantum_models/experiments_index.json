@@ -1,0 +1,93 @@
+[
+  {
+    "id": "exp_1790874071_494527",
+    "timestamp": "2026-10-01 22:31:11",
+    "dataset_id": "parkinsons",
+    "dataset_name": "Oxford Parkinson's Disease",
+    "classical_model": "RandomForestClassifier",
+    "quantum_model": "Variational Quantum Classifier (VQC)",
+    "qubits": 4,
+    "classical_accuracy": 0.9231,
+    "quantum_accuracy": 0.4615,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  },
+  {
+    "id": "exp_1790871590_111b97",
+    "timestamp": "2026-10-01 21:49:50",
+    "dataset_id": "breast_cancer",
+    "dataset_name": "Breast Cancer Wisconsin (Diagnostic)",
+    "classical_model": "SVC",
+    "quantum_model": "Quantum Support Vector Classifier (QSVC)",
+    "qubits": 4,
+    "classical_accuracy": 0.9649,
+    "quantum_accuracy": 0.6053,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  },
+  {
+    "id": "exp_1790871292_d221e5",
+    "timestamp": "2026-10-01 21:44:52",
+    "dataset_id": "breast_cancer",
+    "dataset_name": "Breast Cancer Wisconsin (Diagnostic)",
+    "classical_model": "SVC",
+    "quantum_model": "Quantum Support Vector Classifier (QSVC)",
+    "qubits": 4,
+    "classical_accuracy": 0.9649,
+    "quantum_accuracy": 0.6053,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  },
+  {
+    "id": "exp_1790870291_e4b913",
+    "timestamp": "2026-10-01 21:28:11",
+    "dataset_id": "breast_cancer",
+    "dataset_name": "Breast Cancer Wisconsin (Diagnostic)",
+    "classical_model": "SVC",
+    "quantum_model": "Quantum Support Vector Classifier (QSVC)",
+    "qubits": 4,
+    "classical_accuracy": 0.9649,
+    "quantum_accuracy": 0.6053,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  },
+  {
+    "id": "exp_1790869794_6c20d3",
+    "timestamp": "2026-10-01 21:19:54",
+    "dataset_id": "breast_cancer",
+    "dataset_name": "Breast Cancer Wisconsin (Diagnostic)",
+    "classical_model": "SVC",
+    "quantum_model": "Quantum Support Vector Classifier (QSVC)",
+    "qubits": 4,
+    "classical_accuracy": 0.9649,
+    "quantum_accuracy": 0.6053,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  },
+  {
+    "id": "exp_1790868998_21d763",
+    "timestamp": "2026-10-01 21:06:38",
+    "dataset_id": "diabetes",
+    "dataset_name": "Pima Indians Diabetes",
+    "classical_model": "RandomForestClassifier",
+    "quantum_model": "Variational Quantum Classifier (VQC)",
+    "qubits": 4,
+    "classical_accuracy": 0.7273,
+    "quantum_accuracy": 0.5779,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  },
+  {
+    "id": "exp_1790868745_593777",
+    "timestamp": "2026-10-01 21:02:25",
+    "dataset_id": "breast_cancer",
+    "dataset_name": "Breast Cancer Wisconsin (Diagnostic)",
+    "classical_model": "SVC",
+    "quantum_model": "Quantum Support Vector Classifier (QSVC)",
+    "qubits": 4,
+    "classical_accuracy": 0.9561,
+    "quantum_accuracy": 0.5351,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  }
+]

@@ -51,6 +51,7 @@ import InsuranceCenter from './pages/insurance/InsuranceCenter'
 import KushiCommunity from './pages/community/KushiCommunity'
 import HealthJourney from './pages/HealthJourney'
 import CareCircle from './pages/CareCircle'
+import QuantumIntelligence from './pages/quantum/QuantumIntelligence'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 import { Agentation } from 'agentation'
@@ -109,6 +110,7 @@ export default function App() {
                                     <Route path="/doctors/:id" element={<DoctorDetail />} />
                                     {/* Shared between patients and doctors */}
                                     <Route path="/chat" element={<AiChat />} />
+                                    <Route path="/quantum-intelligence" element={<QuantumIntelligence />} />
                                     <Route path="/patients" element={<Patients />} />
                                 </Route>
                             </Route>
