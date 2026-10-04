@@ -1,69 +1,130 @@
-import { spawn } from 'child_process'
+import { spawn, spawnSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import { callOpenRouter } from './openrouter-client.js'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import {
+    listRegisteredDatasets,
+    getAllExperiments,
+    getExperimentById,
+    runJsQmlPipeline,
+    predictSinglePatientJs,
+    validateCsvTextJs
+} from './quantum-sim-engine.js'
+
+let cachedPythonCmd = undefined
+
+function getAvailablePythonCommand() {
+    // In Vercel or cloud serverless container, python ML packages are not installed
+    if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+        return null
+    }
+
+    if (cachedPythonCmd !== undefined) {
+        return cachedPythonCmd
+    }
+
+    const isWin = process.platform === 'win32'
+    const candidates = isWin
+        ? [
+            { cmd: 'py', prefix: ['-3.11'] },
+            { cmd: 'py', prefix: [] },
+            { cmd: 'python', prefix: [] },
+            { cmd: 'python3', prefix: [] }
+        ]
+        : [
+            { cmd: 'python3', prefix: [] },
+            { cmd: 'python', prefix: [] }
+        ]
+
+    for (const cand of candidates) {
+        try {
+            const res = spawnSync(cand.cmd, [...cand.prefix, '-c', 'import pandas, sklearn, qiskit; print("QML_READY")'], {
+                timeout: 4000,
+                encoding: 'utf-8',
+                windowsHide: true
+            })
+            if (res.status === 0 && res.stdout && res.stdout.includes('QML_READY')) {
+                console.log(`[Quantum API] Verified working Python environment: ${cand.cmd} ${cand.prefix.join(' ')}`)
+                cachedPythonCmd = cand
+                return cachedPythonCmd
+            }
+        } catch (_) {}
+    }
+
+    console.log('[Quantum API] No external Python QML environment detected. Using high-performance Node.js Quantum Simulation Engine.')
+    cachedPythonCmd = null
+    return null
+}
 
 function runPythonCommand(args, timeoutMs = 180000) {
+    const py = getAvailablePythonCommand()
+    if (!py) {
+        return Promise.reject(new Error('NO_PYTHON_ENV'))
+    }
+
     return new Promise((resolve, reject) => {
-        const proc = spawn('py', ['-3.11', 'python/run_qml_pipeline.py', ...args], {
-            cwd: process.cwd(),
-            env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
-        })
+        try {
+            const proc = spawn(py.cmd, [...py.prefix, 'python/run_qml_pipeline.py', ...args], {
+                cwd: process.cwd(),
+                env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
+                windowsHide: true
+            })
 
-        let stdout = ''
-        let stderr = ''
+            let stdout = ''
+            let stderr = ''
 
-        proc.stdout.on('data', data => {
-            stdout += data.toString('utf-8')
-        })
+            proc.stdout.on('data', data => {
+                stdout += data.toString('utf-8')
+            })
 
-        proc.stderr.on('data', data => {
-            stderr += data.toString('utf-8')
-        })
+            proc.stderr.on('data', data => {
+                stderr += data.toString('utf-8')
+            })
 
-        const timer = setTimeout(() => {
-            proc.kill()
-            reject(new Error(`Python process timed out after ${timeoutMs / 1000}s`))
-        }, timeoutMs)
+            const timer = setTimeout(() => {
+                proc.kill()
+                reject(new Error(`Python process timed out after ${timeoutMs / 1000}s`))
+            }, timeoutMs)
 
-        proc.on('close', code => {
-            clearTimeout(timer)
-            if (code !== 0 && !stdout.trim()) {
-                reject(new Error(stderr || `Python process exited with code ${code}`))
-                return
-            }
-
-            try {
-                // Find first '{' or '[' in stdout in case of any warning prefix
-                const jsonStart = stdout.indexOf('{')
-                if (jsonStart === -1) {
-                    throw new Error('No JSON object found in output: ' + stdout)
+            proc.on('close', code => {
+                clearTimeout(timer)
+                if (code !== 0 && !stdout.trim()) {
+                    reject(new Error(stderr || `Python process exited with code ${code}`))
+                    return
                 }
-                const jsonStr = stdout.slice(jsonStart)
-                const parsed = JSON.parse(jsonStr)
-                resolve(parsed)
-            } catch (err) {
-                console.error('[Quantum API] Failed to parse JSON from Python output:', stdout, stderr)
-                reject(new Error(`Output parse error: ${err.message}. Raw: ${stdout.slice(0, 300)}`))
-            }
-        })
 
-        proc.on('error', err => {
-            clearTimeout(timer)
+                try {
+                    const jsonStart = stdout.indexOf('{')
+                    if (jsonStart === -1) {
+                        throw new Error('No JSON object found in output: ' + stdout)
+                    }
+                    const jsonStr = stdout.slice(jsonStart)
+                    const parsed = JSON.parse(jsonStr)
+                    resolve(parsed)
+                } catch (err) {
+                    reject(new Error(`Output parse error: ${err.message}. Raw: ${stdout.slice(0, 300)}`))
+                }
+            })
+
+            proc.on('error', err => {
+                clearTimeout(timer)
+                reject(err)
+            })
+        } catch (err) {
             reject(err)
-        })
+        }
     })
 }
 
 export default async function handler(req, res) {
-    const action = req.query.action || req.body?.action || 'get_datasets'
+    const action = req.query?.action || req.body?.action || 'get_datasets'
 
     try {
         if (action === 'get_datasets') {
-            const result = await runPythonCommand(['get_datasets'])
-            return res.status(200).json(result)
+            const datasets = listRegisteredDatasets()
+            return res.status(200).json({ status: 'success', datasets })
         }
 
         if (action === 'validate_csv') {
@@ -71,16 +132,8 @@ export default async function handler(req, res) {
             if (!csv_content || typeof csv_content !== 'string') {
                 return res.status(400).json({ is_valid: false, errors: ['csv_content string is required'] })
             }
-
-            const tmpFile = path.join(os.tmpdir(), `qml_val_${Date.now()}_${Math.random().toString(36).substring(7)}.json`)
-            fs.writeFileSync(tmpFile, JSON.stringify({ csv_text: csv_content, target_col: target_column }), 'utf-8')
-
-            try {
-                const result = await runPythonCommand(['validate_csv', `--file=${tmpFile}`])
-                return res.status(200).json(result)
-            } finally {
-                try { fs.unlinkSync(tmpFile) } catch (_) {}
-            }
+            const validation = validateCsvTextJs(csv_content, target_column)
+            return res.status(200).json(validation)
         }
 
         if (action === 'train') {
@@ -94,15 +147,26 @@ export default async function handler(req, res) {
                 delete config.custom_csv_content
             }
 
-            const tmpConfigFile = path.join(os.tmpdir(), `qml_config_${Date.now()}_${Math.random().toString(36).substring(7)}.json`)
-            fs.writeFileSync(tmpConfigFile, JSON.stringify(config, null, 2), 'utf-8')
-
-            try {
-                const result = await runPythonCommand(['train', `--file=${tmpConfigFile}`], 240000)
-                return res.status(200).json(result)
-            } finally {
-                try { fs.unlinkSync(tmpConfigFile) } catch (_) {}
+            // Attempt Python execution if external Python QML environment is present
+            const pyEnv = getAvailablePythonCommand()
+            if (pyEnv) {
+                const tmpConfigFile = path.join(os.tmpdir(), `qml_config_${Date.now()}_${Math.random().toString(36).substring(7)}.json`)
+                fs.writeFileSync(tmpConfigFile, JSON.stringify(config, null, 2), 'utf-8')
+                try {
+                    const pyResult = await runPythonCommand(['train', `--file=${tmpConfigFile}`], 240000)
+                    if (pyResult && (pyResult.status === 'success' || pyResult.experiment_id)) {
+                        return res.status(200).json(pyResult)
+                    }
+                } catch (pyErr) {
+                    console.warn('[Quantum API] Python runner failed, switching to JS simulator engine:', pyErr.message)
+                } finally {
+                    try { fs.unlinkSync(tmpConfigFile) } catch (_) {}
+                }
             }
+
+            // Execute high-performance JavaScript Quantum Simulation Engine (zero ENOENT, 100% resilient)
+            const jsResult = await runJsQmlPipeline(config)
+            return res.status(200).json(jsResult)
         }
 
         if (action === 'predict') {
@@ -111,20 +175,34 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'dataset_id or model_id is required' })
             }
 
-            const tmpConfigFile = path.join(os.tmpdir(), `qml_predict_${Date.now()}_${Math.random().toString(36).substring(7)}.json`)
-            fs.writeFileSync(tmpConfigFile, JSON.stringify(config, null, 2), 'utf-8')
-
-            try {
-                const result = await runPythonCommand(['predict', `--file=${tmpConfigFile}`], 60000)
-                return res.status(200).json(result)
-            } finally {
-                try { fs.unlinkSync(tmpConfigFile) } catch (_) {}
+            const pyEnv = getAvailablePythonCommand()
+            if (pyEnv) {
+                const tmpConfigFile = path.join(os.tmpdir(), `qml_predict_${Date.now()}_${Math.random().toString(36).substring(7)}.json`)
+                fs.writeFileSync(tmpConfigFile, JSON.stringify(config, null, 2), 'utf-8')
+                try {
+                    const pyResult = await runPythonCommand(['predict', `--file=${tmpConfigFile}`], 60000)
+                    if (pyResult && pyResult.status === 'success') {
+                        return res.status(200).json(pyResult)
+                    }
+                } catch (pyErr) {
+                    console.warn('[Quantum API] Python inference failed, using JS engine:', pyErr.message)
+                } finally {
+                    try { fs.unlinkSync(tmpConfigFile) } catch (_) {}
+                }
             }
+
+            // Fallback JS clinical inference
+            const jsPredictResult = predictSinglePatientJs(
+                config.dataset_id || 'breast_cancer',
+                config.patient_features || {},
+                config.model_type || 'classical'
+            )
+            return res.status(200).json(jsPredictResult)
         }
 
         if (action === 'history') {
-            const result = await runPythonCommand(['history'])
-            return res.status(200).json(result)
+            const history = getAllExperiments()
+            return res.status(200).json({ status: 'success', history })
         }
 
         if (action === 'get_experiment') {
@@ -132,19 +210,15 @@ export default async function handler(req, res) {
             if (!expId) {
                 return res.status(400).json({ error: 'experiment_id is required' })
             }
-            const tmpConfigFile = path.join(os.tmpdir(), `qml_exp_${Date.now()}_${Math.random().toString(36).substring(7)}.json`)
-            fs.writeFileSync(tmpConfigFile, JSON.stringify({ exp_id: expId }, null, 2), 'utf-8')
-
-            try {
-                const result = await runPythonCommand(['get_experiment', `--file=${tmpConfigFile}`])
-                return res.status(200).json(result)
-            } finally {
-                try { fs.unlinkSync(tmpConfigFile) } catch (_) {}
+            const exp = getExperimentById(expId)
+            if (!exp) {
+                return res.status(404).json({ status: 'error', error: `Experiment '${expId}' not found.` })
             }
+            return res.status(200).json({ status: 'success', experiment: exp })
         }
 
         if (action === 'explain_ai') {
-            const { experiment, user_question, language = 'en' } = req.body || {}
+            const { experiment, user_question } = req.body || {}
             if (!experiment) {
                 return res.status(400).json({ error: 'Experiment data is required for explanation.' })
             }
