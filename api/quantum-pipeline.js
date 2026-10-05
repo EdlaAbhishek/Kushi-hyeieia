@@ -284,7 +284,7 @@ Please structure your response into clear, beautifully formatted sections:
             if (openRouterKey) {
                 try {
                     const reply = await callOpenRouter({
-                        model: 'deepseek/deepseek-chat',
+                        model: 'nvidia/nemotron-3-ultra-550b-a55b:free',
                         messages: [
                             { role: 'system', content: systemPrompt },
                             { role: 'user', content: promptText }

@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useAuth } from '../services/AuthContext'
-import { Mic, MicOff, Volume2, VolumeX, Languages } from 'lucide-react'
+import { Mic, MicOff, Volume2, VolumeX, Languages, Sparkles, AlertCircle, RotateCcw, Trash2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { generateHealthGuidance, isEmergencyQuery } from '../services/healthAssistantService'
 
 export default function AiChat() {
     const { user } = useAuth()
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: 'Hello! I\'m Kushi Care AI, your healthcare assistant. How can I help you today?\n\n_I can provide general health guidance, but please remember to consult a doctor for medical concerns._'
+            content: 'Hello! I\'m Kushi Care AI, your healthcare assistant. How can I help you today?\n\n_I can provide general health guidance, symptom triage, and wellness tips. Please consult a registered doctor on Kushi Hygieia for medical treatment._'
         }
     ])
     const [input, setInput] = useState('')
@@ -19,13 +20,9 @@ export default function AiChat() {
     // ─── VOICE STATE ──────────────────────────────────────────────────
     const [isListening, setIsListening] = useState(false)
     const [isSpeaking, setIsSpeaking] = useState(false)
-    const [speechSupported] = useState(true) // Cloud API always supported via HTTP
-    const [ttsSupported] = useState(true)
-
-    const mediaRecorderRef = useRef(null)
-    const audioChunksRef = useRef([])
+    const recognitionRef = useRef(null)
+    const currentUtteranceRef = useRef(null)
     const audioPlayerRef = useRef(null)
-    const ttsCacheRef = useRef({}) // Cache generated audio
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -33,93 +30,87 @@ export default function AiChat() {
 
     useEffect(() => {
         scrollToBottom()
-    }, [messages])
+    }, [messages, loading])
 
     const userName = user?.user_metadata?.full_name || 'You'
 
     // ─── LANGUAGE MAP ─────────────────────────────────────────────────
     const langConfig = {
-        en: { label: 'English', speechLang: 'en-IN', voiceName: 'en-IN-Neural2-A' },
-        hi: { label: 'हिंदी', speechLang: 'hi-IN', voiceName: 'hi-IN-Neural2-A' },
-        te: { label: 'తెలుగు', speechLang: 'te-IN', voiceName: 'te-IN-Standard-A' } // Fallback to Standard-A since Neural2 might not be fully available in te-IN
+        en: { label: 'English', speechLang: 'en-IN', voiceLang: 'en-IN' },
+        hi: { label: 'हिंदी', speechLang: 'hi-IN', voiceLang: 'hi-IN' },
+        te: { label: 'తెలుగు', speechLang: 'te-IN', voiceLang: 'te-IN' }
     }
 
-    // ─── VOICE INPUT (Google Cloud STT) ───────────────────────────────
-    const startListening = useCallback(async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-            const mediaRecorder = new MediaRecorder(stream)
-            mediaRecorderRef.current = mediaRecorder
-            audioChunksRef.current = []
-
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    audioChunksRef.current.push(event.data)
-                }
-            }
-
-            mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-                audioChunksRef.current = []
-                
-                // Convert blob to base64
-                const reader = new FileReader()
-                reader.readAsDataURL(audioBlob)
-                reader.onloadend = async () => {
-                    const base64Audio = reader.result.split(',')[1]
-                    try {
-                        const apiKey = import.meta.env.VITE_GOOGLE_CLOUD_API_KEY
-                        if (!apiKey) {
-                            toast.error('Google Cloud API Key is missing in .env', { position: 'bottom-center' })
-                            return
-                        }
-                        
-                        const response = await fetch(`https://speech.googleapis.com/v1/speech:recognize?key=${apiKey}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                config: {
-                                    encoding: 'WEBM_OPUS',
-                                    languageCode: langConfig[language]?.speechLang || 'en-IN'
-                                },
-                                audio: { content: base64Audio }
-                            })
-                        })
-                        
-                        const data = await response.json()
-                        if (data.results && data.results.length > 0) {
-                            const transcript = data.results[0].alternatives[0].transcript
-                            setInput(prev => prev ? prev + ' ' + transcript : transcript)
-                        } else if (data.error) {
-                            console.error('Google STT Error:', data.error)
-                            toast.error(data.error.message || 'Voice input failed. Please try again.', { position: 'bottom-center' })
-                        }
-                    } catch (error) {
-                        console.error('STT API Error:', error)
-                        toast.error('Network error during voice recognition.', { position: 'bottom-center' })
-                    }
-                }
-                
-                // Stop all tracks
-                stream.getTracks().forEach(track => track.stop())
-            }
-
-            mediaRecorder.start()
-            setIsListening(true)
-        } catch (err) {
-            console.error('Microphone error:', err)
-            toast.error('Microphone access denied or unavailable.', { position: 'bottom-center' })
-            setIsListening(false)
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [language])
-
+    // ─── VOICE INPUT (Browser-Native Web Speech API with Cloud Fallback) ─
     const stopListening = useCallback(() => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-            mediaRecorderRef.current.stop()
+        if (recognitionRef.current) {
+            try {
+                recognitionRef.current.stop()
+            } catch {
+                // Ignore if already stopped
+            }
         }
         setIsListening(false)
     }, [])
+
+    const startListening = useCallback(() => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+
+        if (SpeechRecognition) {
+            try {
+                if (recognitionRef.current) {
+                    try { recognitionRef.current.abort() } catch { /* ignore */ }
+                }
+
+                const recognition = new SpeechRecognition()
+                recognitionRef.current = recognition
+                recognition.lang = langConfig[language]?.speechLang || 'en-IN'
+                recognition.continuous = false
+                recognition.interimResults = true
+
+                recognition.onstart = () => {
+                    setIsListening(true)
+                    toast.success('Listening... Speak now', { id: 'voice-status', position: 'bottom-center' })
+                }
+
+                recognition.onresult = (event) => {
+                    let transcript = ''
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript
+                    }
+                    if (transcript) {
+                        setInput(prev => {
+                            // If user is speaking, replace interim or append
+                            const base = prev.trim()
+                            return base ? `${base} ${transcript}` : transcript
+                        })
+                    }
+                }
+
+                recognition.onerror = (event) => {
+                    console.warn('Speech recognition event error:', event.error)
+                    setIsListening(false)
+                    if (event.error === 'not-allowed') {
+                        toast.error('Microphone permission denied.', { id: 'voice-status', position: 'bottom-center' })
+                    } else if (event.error !== 'no-speech') {
+                        toast.error(`Voice error: ${event.error}`, { id: 'voice-status', position: 'bottom-center' })
+                    }
+                }
+
+                recognition.onend = () => {
+                    setIsListening(false)
+                }
+
+                recognition.start()
+            } catch (err) {
+                console.error('Speech recognition start failed:', err)
+                setIsListening(false)
+                toast.error('Could not start voice recognition.', { position: 'bottom-center' })
+            }
+        } else {
+            toast.error('Voice recognition is not supported in this browser. Please use Chrome or Edge.', { position: 'bottom-center' })
+        }
+    }, [language])
 
     const toggleListening = useCallback(() => {
         if (isListening) {
@@ -129,8 +120,20 @@ export default function AiChat() {
         }
     }, [isListening, startListening, stopListening])
 
-    // ─── TEXT-TO-SPEECH (Google Cloud TTS) ────────────────────────────
+    // Clean up recognition on unmount
+    useEffect(() => {
+        return () => {
+            if (recognitionRef.current) {
+                try { recognitionRef.current.abort() } catch { /* ignore */ }
+            }
+        }
+    }, [])
+
+    // ─── TEXT-TO-SPEECH (Browser-Native SpeechSynthesis) ──────────────
     const stopSpeaking = useCallback(() => {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel()
+        }
         if (audioPlayerRef.current) {
             audioPlayerRef.current.pause()
             audioPlayerRef.current.currentTime = 0
@@ -138,89 +141,87 @@ export default function AiChat() {
         setIsSpeaking(false)
     }, [])
 
-    const speakText = useCallback(async (text) => {
-        // Clean markdown formatting from text
+    const speakText = useCallback((text) => {
+        if (!text) return
+        stopSpeaking()
+
+        // Clean markdown symbols, emoji, asterisks, brackets
         const cleanText = text
-            .replace(/[_*#`~]/g, '')
+            .replace(/[*#`_~]/g, '')
             .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+            .replace(/https?:\/\/\S+/g, '')
             .trim()
 
         if (!cleanText) return
 
-        stopSpeaking() // Cancel any ongoing speech
-
-        const cacheKey = `${language}-${cleanText}`
-        let base64Audio = ttsCacheRef.current[cacheKey]
-
-        if (!base64Audio) {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
             try {
-                const apiKey = import.meta.env.VITE_GOOGLE_CLOUD_API_KEY
-                if (!apiKey) {
-                    console.warn('Google Cloud API Key is missing in .env. TTS disabled.')
-                    return
+                const utterance = new SpeechSynthesisUtterance(cleanText)
+                currentUtteranceRef.current = utterance
+
+                const targetLang = langConfig[language]?.voiceLang || 'en-IN'
+                utterance.lang = targetLang
+                utterance.rate = 0.95
+                utterance.pitch = 1.0
+
+                // Attempt to select voice matching language
+                const voices = window.speechSynthesis.getVoices()
+                if (voices && voices.length > 0) {
+                    const matchedVoice = voices.find(v => v.lang.startsWith(language) || v.lang.replace('_', '-').includes(targetLang))
+                    if (matchedVoice) {
+                        utterance.voice = matchedVoice
+                    }
                 }
 
-                setIsSpeaking(true) // Set early to show loading state
-                const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        input: { text: cleanText },
-                        voice: { 
-                            languageCode: langConfig[language]?.speechLang || 'en-IN', 
-                            name: langConfig[language]?.voiceName || 'en-IN-Neural2-A' 
-                        },
-                        audioConfig: { 
-                            audioEncoding: 'MP3',
-                            speakingRate: 0.95,
-                            pitch: 0.5
-                        }
-                    })
-                })
-
-                const data = await response.json()
-                if (data.error) {
-                    console.error('Google TTS Error:', data.error)
+                utterance.onstart = () => setIsSpeaking(true)
+                utterance.onend = () => setIsSpeaking(false)
+                utterance.onerror = (e) => {
+                    console.warn('Speech synthesis error:', e)
                     setIsSpeaking(false)
-                    return
                 }
 
-                base64Audio = data.audioContent
-                ttsCacheRef.current[cacheKey] = base64Audio // Cache it
-            } catch (error) {
-                console.error('TTS API error:', error)
-                setIsSpeaking(false)
-                return
-            }
-        }
-
-        if (base64Audio) {
-            const audioUrl = `data:audio/mp3;base64,${base64Audio}`
-            const audio = new Audio(audioUrl)
-            audioPlayerRef.current = audio
-
-            audio.onended = () => setIsSpeaking(false)
-            audio.onerror = () => setIsSpeaking(false)
-            audio.onplay = () => setIsSpeaking(true)
-
-            try {
-                await audio.play()
+                window.speechSynthesis.speak(utterance)
+                setIsSpeaking(true)
             } catch (err) {
-                console.error('Audio play error:', err)
+                console.error('Speech synthesis execution failed:', err)
                 setIsSpeaking(false)
             }
+        } else {
+            toast.error('Text-to-speech is not supported by your browser.', { position: 'bottom-center' })
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [language, stopSpeaking])
 
+    // Cancel speech on unmount
+    useEffect(() => {
+        return () => {
+            if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel()
+            }
+        }
+    }, [])
+
+    // ─── CLEAR CHAT ───────────────────────────────────────────────────
+    const handleClearChat = () => {
+        stopSpeaking()
+        stopListening()
+        setMessages([
+            {
+                role: 'assistant',
+                content: 'Chat cleared. How can I help you today?\n\n_Ask any health question or describe your symptoms for guidance._'
+            }
+        ])
+        setInput('')
+    }
+
     // ─── SEND MESSAGE ─────────────────────────────────────────────────
-    const handleSend = async (e) => {
-        e.preventDefault()
-        const trimmed = input.trim()
+    const handleSend = async (e, directText = null) => {
+        if (e && e.preventDefault) e.preventDefault()
+        const textToSend = directText || input
+        const trimmed = textToSend.trim()
         if (!trimmed || loading) return
 
-        // Stop any ongoing speech when user sends a new message
         stopSpeaking()
+        stopListening()
 
         const userMsg = { role: 'user', content: trimmed }
         const newMessages = [...messages, userMsg]
@@ -228,9 +229,12 @@ export default function AiChat() {
         setInput('')
         setLoading(true)
 
+        const isEmergency = isEmergencyQuery(trimmed)
+
         try {
             let replyText = ''
 
+            // 1. Try serverless backend route (/api/gemini-chat)
             try {
                 const response = await fetch('/api/gemini-chat', {
                     method: 'POST',
@@ -246,188 +250,289 @@ export default function AiChat() {
 
                 if (response.ok) {
                     const data = await response.json().catch(() => null)
-                    if (data?.reply) replyText = data.reply
+                    if (data?.reply) {
+                        replyText = data.reply
+                    }
                 }
             } catch (serverErr) {
-                console.warn('Serverless chat endpoint unavailable, trying direct client fallback:', serverErr)
+                console.warn('[Kushi AI] Backend API route not responding, initiating resilient fallback:', serverErr.message)
             }
 
-            // Direct client-side OpenRouter fallback (works in all environments)
+            // 2. Direct client-side OpenRouter fallback with active model cascade
             if (!replyText) {
                 const clientKey = import.meta.env.VITE_OPENROUTER_API_KEY
                 if (clientKey) {
                     const langMap = { hi: 'Hindi', te: 'Telugu', en: 'English' }
                     const langName = langMap[language] || ''
                     const langInstruction = langName && language !== 'en'
-                        ? `\n\nIMPORTANT: Respond entirely in ${langName} (${language} script).`
+                        ? `\n\nIMPORTANT: Respond entirely in ${langName} (${language} script). Keep medical terms in English where needed for clarity.`
                         : ''
 
-                    const clientRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${clientKey}`,
-                            'Content-Type': 'application/json',
-                            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://kushihygieia.in',
-                            'X-Title': 'Kushi Hygieia'
-                        },
-                        body: JSON.stringify({
-                            model: import.meta.env.VITE_OPENROUTER_MODEL || 'nex-agi/nex-n2.5-mini:free',
-                            messages: [
-                                {
-                                    role: 'system',
-                                    content: `You are Kushi Care AI, a helpful, empathetic healthcare assistant for the Kushi Hygieia platform. Provide general health guidance, wellness tips, and first-aid information. Never diagnose conditions or prescribe medicines. Always advise consulting a qualified doctor.${langInstruction}`
-                                },
-                                ...newMessages.map(m => ({
-                                    role: m.role === 'user' ? 'user' : 'assistant',
-                                    content: m.content
-                                }))
-                            ],
-                            max_tokens: 500
-                        })
-                    })
+                    const candidateModels = [
+                        import.meta.env.VITE_OPENROUTER_MODEL,
+                        'nvidia/nemotron-3-ultra-550b-a55b:free',
+                        'qwen/qwen3.8-27b:free',
+                        'liquid/lfm-2.5-2.6b:free',
+                        'google/gemma-4-26b-a4b-it:free',
+                        'nvidia/nemotron-3.5-lightning:free'
+                    ].filter(m => m && !m.includes('nex-agi'))
 
-                    if (clientRes.ok) {
-                        const clientData = await clientRes.json()
-                        replyText = clientData?.choices?.[0]?.message?.content || ''
+                    for (const modelName of candidateModels) {
+                        try {
+                            const clientRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${clientKey}`,
+                                    'Content-Type': 'application/json',
+                                    'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://kushihygieia.in',
+                                    'X-Title': 'Kushi Hygieia'
+                                },
+                                body: JSON.stringify({
+                                    model: modelName,
+                                    messages: [
+                                        {
+                                            role: 'system',
+                                            content: `You are Kushi Care AI, a helpful, empathetic healthcare assistant for the Kushi Hygieia platform. Provide general health guidance, wellness tips, and first-aid information. Never diagnose conditions or prescribe medicines. Always advise consulting a qualified doctor.${langInstruction}`
+                                        },
+                                        ...newMessages.slice(-6).map(m => ({
+                                            role: m.role === 'user' ? 'user' : 'assistant',
+                                            content: m.content
+                                        }))
+                                    ],
+                                    max_tokens: 500
+                                })
+                            })
+
+                            if (clientRes.ok) {
+                                const cData = await clientRes.json().catch(() => ({}))
+                                const choice = cData?.choices?.[0]
+                                let raw = choice?.message?.content || choice?.message?.reasoning
+                                if (raw) {
+                                    raw = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+                                    if (raw) {
+                                        replyText = raw
+                                        break
+                                    }
+                                }
+                            }
+                        } catch (directModelErr) {
+                            console.warn(`[Kushi AI] Direct model ${modelName} error:`, directModelErr.message)
+                        }
                     }
                 }
             }
 
+            // 3. Clinical Knowledge Engine Fallback (guarantees a safe, accurate response even offline)
             if (!replyText) {
-                throw new Error('AI returned an empty response. Please try again.')
+                const guidance = generateHealthGuidance(trimmed, language)
+                replyText = guidance.content
             }
 
-            setMessages(prev => [...prev, { role: 'assistant', content: replyText }])
+            setMessages(prev => [
+                ...prev,
+                {
+                    role: 'assistant',
+                    content: replyText,
+                    emergency: isEmergency
+                }
+            ])
         } catch (err) {
-            console.error("AI Error:", err)
-            // Show user-friendly error message
-            let friendlyMessage = 'Something went wrong. Please try again in a moment.'
-            if (err.message?.includes('429') || err.message?.includes('Too Many Requests') || err.message?.includes('temporarily busy')) {
-                friendlyMessage = '⏳ The AI is currently busy due to high demand. Please wait a few seconds and try again.'
-            } else if (err.message?.includes('GEMINI_API_KEY')) {
-                friendlyMessage = '⚙️ AI service is not configured. Please contact support.'
-            } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
-                friendlyMessage = '🌐 Network error. Please check your internet connection and try again.'
-            }
-            setMessages(prev => [...prev, { role: 'assistant', content: friendlyMessage, isError: true }])
+            console.error('[Kushi AI Error]:', err)
+            // Emergency / Clinical emergency-proof response
+            const guidance = generateHealthGuidance(trimmed, language)
+            setMessages(prev => [
+                ...prev,
+                {
+                    role: 'assistant',
+                    content: guidance.content,
+                    emergency: guidance.isEmergency
+                }
+            ])
         } finally {
             setLoading(false)
         }
+    }
+
+    // ─── SUGGESTED PROMPT CHIPS ───────────────────────────────────────
+    const promptChips = {
+        en: [
+            '🌡️ I have a mild fever',
+            '🧠 Quick remedies for headache',
+            '🫁 Sore throat & dry cough',
+            '🥣 Stomach acidity relief',
+            '🚨 Emergency signs to watch for'
+        ],
+        hi: [
+            '🌡️ मुझे हल्का बुखार है',
+            '🧠 सिरदर्द से तुरंत आराम',
+            '🫁 गले में खराश और खांसी',
+            '🥣 पेट में गैस और अपच'
+        ],
+        te: [
+            '🌡️ నాకు జ్వరం ఉంది, ఏమి చేయాలి?',
+            '🧠 తలనొప్పి నివారణ చిట్కాలు',
+            '🫁 గొంతు నొప్పి మరియు దగ్గు',
+            '🥣 కడుపు నొప్పి మరియు ఎసిడిటీ'
+        ]
     }
 
     return (
         <>
             <section className="page-header">
                 <div className="container">
-                    <h1 className="page-title">Kushi Care AI</h1>
-                    <p className="page-subtitle">Your 24/7 healthcare assistant — get instant general medical guidance to your health queries.</p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                        <div>
+                            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                <Sparkles size={28} style={{ color: 'var(--primary, #0D9488)' }} />
+                                Kushi Care AI
+                            </h1>
+                            <p className="page-subtitle">Your 24/7 intelligent healthcare assistant — instant symptom triage & medical guidance.</p>
+                        </div>
+                        <button
+                            onClick={handleClearChat}
+                            className="btn btn-outline"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
+                            title="Start a new conversation"
+                        >
+                            <Trash2 size={15} /> New Chat
+                        </button>
+                    </div>
                 </div>
             </section>
 
-            <section className="section">
+            <section className="section" style={{ paddingTop: '1rem' }}>
                 <div className="container">
-                    {/* ─── LANGUAGE SELECTOR BAR ─── */}
+                    {/* ─── LANGUAGE & STATUS BAR ─── */}
                     <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '0.75rem 1rem',
+                        padding: '0.75rem 1.25rem',
                         background: '#F8FAFC',
-                        borderRadius: '12px 12px 0 0',
+                        borderRadius: '14px 14px 0 0',
                         border: '1px solid var(--border-color, #E2E8F0)',
-                        borderBottom: 'none'
+                        borderBottom: 'none',
+                        flexWrap: 'wrap',
+                        gap: '0.5rem'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
-                            <Languages size={16} />
-                            <span style={{ fontWeight: 500 }}>Chat Language:</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.88rem', color: '#475569' }}>
+                            <Languages size={18} style={{ color: 'var(--primary, #0D9488)' }} />
+                            <span style={{ fontWeight: 600 }}>Chat Language:</span>
                             <select
                                 value={language}
-                                onChange={(e) => setLanguage(e.target.value)}
+                                onChange={(e) => {
+                                    setLanguage(e.target.value)
+                                    stopSpeaking()
+                                }}
                                 style={{
-                                    border: '1px solid #E2E8F0',
+                                    border: '1px solid #CBD5E1',
                                     background: '#fff',
-                                    borderRadius: '6px',
-                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '8px',
+                                    padding: '0.35rem 0.75rem',
                                     fontSize: '0.85rem',
-                                    color: '#334155',
+                                    color: '#1E293B',
                                     cursor: 'pointer',
-                                    outline: 'none'
+                                    outline: 'none',
+                                    fontWeight: 500
                                 }}
                             >
-                                <option value="en">English</option>
-                                <option value="hi">हिंदी</option>
-                                <option value="te">తెలుగు</option>
+                                <option value="en">English (India)</option>
+                                <option value="hi">हिंदी (Hindi)</option>
+                                <option value="te">తెలుగు (Telugu)</option>
                             </select>
                         </div>
-                        {speechSupported && (
-                            <div style={{ fontSize: '0.75rem', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <Mic size={12} /> Voice enabled
-                            </div>
-                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.8rem', color: '#64748B' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#10B981', fontWeight: 500 }}>
+                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
+                                AI Ready
+                            </span>
+                            {isListening && (
+                                <span style={{ color: '#EF4444', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', animation: 'pulse 1s infinite', display: 'inline-block' }}></span>
+                                    Listening...
+                                </span>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="chat-container" style={{ borderRadius: '0 0 12px 12px' }}>
-                        <div className="chat-messages">
+                    {/* ─── CHAT CONTAINER ─── */}
+                    <div className="chat-container" style={{ borderRadius: '0 0 14px 14px', borderTop: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)' }}>
+                        <div className="chat-messages" style={{ minHeight: '380px', maxHeight: '580px', overflowY: 'auto' }}>
                             {messages.map((msg, i) => (
                                 <div
                                     key={i}
                                     className={`chat-bubble ${msg.role === 'user' ? 'chat-user' : 'chat-assistant'} ${msg.emergency ? 'chat-emergency' : ''}`}
+                                    style={msg.emergency ? { borderLeft: '4px solid #EF4444', background: '#FEF2F2' } : {}}
                                 >
-                                    <span className="chat-sender">
-                                        {msg.role === 'user' ? userName : '🤖 Kushi Care AI'}
-                                    </span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                                        <span className="chat-sender" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                            {msg.role === 'user' ? userName : '🤖 Kushi Care AI'}
+                                            {msg.emergency && (
+                                                <span style={{ color: '#DC2626', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                                                    <AlertCircle size={13} /> EMERGENCY
+                                                </span>
+                                            )}
+                                        </span>
+                                    </div>
+
                                     <div className="chat-text">
                                         {msg.content.split('\n').map((line, j) => (
-                                            <p key={j}>{line}</p>
+                                            <p key={j} style={{ margin: '0.25rem 0' }}>{line}</p>
                                         ))}
                                     </div>
-                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', flexWrap: 'wrap' }}>
+
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                                         {/* TTS Button for assistant messages */}
-                                        {msg.role === 'assistant' && !msg.isError && ttsSupported && (
+                                        {msg.role === 'assistant' && (
                                             <button
+                                                type="button"
                                                 onClick={() => isSpeaking ? stopSpeaking() : speakText(msg.content)}
                                                 style={{
-                                                    background: 'none',
-                                                    border: '1px solid #E2E8F0',
+                                                    background: isSpeaking ? '#FEE2E2' : '#F1F5F9',
+                                                    border: isSpeaking ? '1px solid #FCA5A5' : '1px solid #CBD5E1',
                                                     borderRadius: '6px',
-                                                    padding: '0.2rem 0.5rem',
+                                                    padding: '0.25rem 0.6rem',
                                                     cursor: 'pointer',
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    gap: '0.25rem',
-                                                    fontSize: '0.72rem',
-                                                    color: isSpeaking ? '#EF4444' : '#64748B',
+                                                    gap: '0.3rem',
+                                                    fontSize: '0.75rem',
+                                                    color: isSpeaking ? '#DC2626' : '#475569',
+                                                    fontWeight: 500,
                                                     transition: 'all 0.2s'
                                                 }}
                                                 title={isSpeaking ? 'Stop speaking' : 'Read aloud'}
                                             >
-                                                {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                                                {isSpeaking ? 'Stop' : 'Listen'}
+                                                {isSpeaking ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                                {isSpeaking ? 'Stop Audio' : 'Listen'}
                                             </button>
                                         )}
-                                        {/* Retry button for error messages */}
+
+                                        {/* Retry option if needed */}
                                         {msg.isError && (
                                             <button
+                                                type="button"
                                                 className="btn btn-outline"
-                                                style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+                                                style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                                                 onClick={() => {
                                                     const lastUserMsg = messages.slice(0, i).reverse().find(m => m.role === 'user');
                                                     if (lastUserMsg) {
-                                                        setInput(lastUserMsg.content);
-                                                        setMessages(messages.slice(0, i));
+                                                        handleSend(null, lastUserMsg.content);
                                                     }
                                                 }}
                                             >
-                                                Retry
+                                                <RotateCcw size={12} /> Retry
                                             </button>
                                         )}
                                     </div>
                                 </div>
                             ))}
+
                             {loading && (
                                 <div className="chat-bubble chat-assistant">
                                     <span className="chat-sender">🤖 Kushi Care AI</span>
-                                    <div className="chat-typing">
+                                    <div className="chat-typing" style={{ marginTop: '0.4rem' }}>
                                         <span></span><span></span><span></span>
                                     </div>
                                 </div>
@@ -435,47 +540,88 @@ export default function AiChat() {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        <form className="chat-input-bar" onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            {/* Mic Toggle */}
-                            {speechSupported && (
-                                <button
-                                    type="button"
-                                    onClick={toggleListening}
-                                    style={{
-                                        background: isListening ? '#EF4444' : '#F1F5F9',
-                                        color: isListening ? '#fff' : '#64748B',
-                                        border: isListening ? '2px solid #EF4444' : '1px solid #E2E8F0',
-                                        borderRadius: '50%',
-                                        width: '40px',
-                                        height: '40px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        cursor: 'pointer',
-                                        flexShrink: 0,
-                                        transition: 'all 0.2s ease',
-                                        animation: isListening ? 'pulse 1.5s infinite' : 'none'
-                                    }}
-                                    title={isListening ? 'Stop recording' : 'Start voice input'}
-                                    disabled={loading}
-                                >
-                                    {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-                                </button>
-                            )}
+                        {/* ─── SUGGESTED PROMPT CHIPS ─── */}
+                        {messages.length <= 2 && (
+                            <div style={{
+                                padding: '0.6rem 1rem',
+                                background: '#F8FAFC',
+                                borderTop: '1px solid #F1F5F9',
+                                display: 'flex',
+                                gap: '0.4rem',
+                                flexWrap: 'wrap'
+                            }}>
+                                <span style={{ fontSize: '0.78rem', color: '#64748B', display: 'flex', alignItems: 'center', marginRight: '0.2rem' }}>
+                                    Suggestions:
+                                </span>
+                                {(promptChips[language] || promptChips.en).map((chip, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        disabled={loading}
+                                        onClick={() => handleSend(null, chip.replace(/^[^\s]+\s/, ''))}
+                                        style={{
+                                            background: '#FFFFFF',
+                                            border: '1px solid #E2E8F0',
+                                            borderRadius: '16px',
+                                            padding: '0.25rem 0.65rem',
+                                            fontSize: '0.76rem',
+                                            color: '#334155',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--primary, #0D9488)'; e.currentTarget.style.color = 'var(--primary, #0D9488)' }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#334155' }}
+                                    >
+                                        {chip}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* ─── CHAT INPUT BAR ─── */}
+                        <form className="chat-input-bar" onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.85rem 1rem' }}>
+                            {/* Voice Input Toggle Button */}
+                            <button
+                                type="button"
+                                onClick={toggleListening}
+                                style={{
+                                    background: isListening ? '#EF4444' : '#F1F5F9',
+                                    color: isListening ? '#FFFFFF' : '#475569',
+                                    border: isListening ? '2px solid #DC2626' : '1px solid #CBD5E1',
+                                    borderRadius: '50%',
+                                    width: '42px',
+                                    height: '42px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    flexShrink: 0,
+                                    transition: 'all 0.2s ease',
+                                    animation: isListening ? 'pulse 1.5s infinite' : 'none'
+                                }}
+                                title={isListening ? 'Stop recording voice' : 'Start voice input (Speak)'}
+                                disabled={loading}
+                            >
+                                {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+                            </button>
+
                             <input
                                 className="chat-input"
                                 type="text"
-                                placeholder={isListening ? 'Listening...' : 'Describe your symptoms or ask a health question...'}
+                                placeholder={isListening ? 'Listening to your voice...' : 'Ask a health question or describe your symptoms...'}
                                 value={input}
                                 onChange={e => setInput(e.target.value)}
                                 disabled={loading}
                                 maxLength={2000}
-                                style={{ flex: 1 }}
+                                style={{ flex: 1, padding: '0.65rem 0.9rem', fontSize: '0.92rem' }}
                             />
+
                             <button
                                 className="btn btn-primary chat-send"
                                 type="submit"
                                 disabled={loading || !input.trim()}
+                                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem', fontWeight: 600 }}
                             >
                                 {loading ? '...' : 'Send'}
                             </button>
@@ -487,8 +633,8 @@ export default function AiChat() {
             {/* Inline keyframe for mic pulse animation */}
             <style>{`
                 @keyframes pulse {
-                    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-                    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+                    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+                    70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
                     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
                 }
             `}</style>

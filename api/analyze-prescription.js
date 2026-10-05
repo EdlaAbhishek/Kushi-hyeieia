@@ -246,10 +246,9 @@ Respond with ONLY valid JSON:
         if (openRouterKey) {
             // Models capable of multimodal vision on OpenRouter
             const visionModels = [
-                'nex-agi/nex-n2.5-pro:free',
-                process.env.OPENROUTER_MODEL || 'nex-agi/nex-n2.5-mini:free',
-                'google/gemma-4-31b-it:free'
-            ]
+                'google/gemma-4-31b-it:free',
+                process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3-ultra-550b-a55b:free'
+            ].filter(Boolean)
 
             for (const modelName of visionModels) {
                 try {

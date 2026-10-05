@@ -123,34 +123,58 @@ Return ONLY a valid JSON object matching this structure:
   "explainability": ["Key factor 1", "Key factor 2"],
   "preliminaryCarePlan": ["Step 1", "Step 2"]
 }`
-                    const clientRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${clientKey}`,
-                            'Content-Type': 'application/json',
-                            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://kushihygieia.in',
-                            'X-Title': 'Kushi Hygieia'
-                        },
-                        body: JSON.stringify({
-                            model: import.meta.env.VITE_OPENROUTER_MODEL || 'nex-agi/nex-n2.5-mini:free',
-                            messages: [
-                                { role: 'system', content: 'You are an AI medical triage assistant. Output only valid JSON.' },
-                                { role: 'user', content: prompt }
-                            ],
-                            response_format: { type: 'json_object' },
-                            max_tokens: 1200
-                        })
-                    })
+                    const candidateModels = [
+                        import.meta.env.VITE_OPENROUTER_MODEL,
+                        'nvidia/nemotron-3-ultra-550b-a55b:free',
+                        'qwen/qwen3.8-27b:free',
+                        'liquid/lfm-2.5-2.6b:free',
+                        'google/gemma-4-26b-a4b-it:free',
+                        'nvidia/nemotron-3.5-lightning:free'
+                    ].filter(m => m && !m.includes('nex-agi'))
 
-                    if (clientRes.ok) {
-                        const cData = await clientRes.json()
-                        const content = cData?.choices?.[0]?.message?.content
-                        if (content) {
-                            try {
-                                jsonResult = JSON.parse(content)
-                            } catch (e) {
-                                console.warn('Failed to parse client JSON:', e)
+                    for (const candidateModel of candidateModels) {
+                        try {
+                            const clientRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${clientKey}`,
+                                    'Content-Type': 'application/json',
+                                    'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://kushihygieia.in',
+                                    'X-Title': 'Kushi Hygieia'
+                                },
+                                body: JSON.stringify({
+                                    model: candidateModel,
+                                    messages: [
+                                        { role: 'system', content: 'You are an AI medical triage assistant. Output only a valid JSON object matching the requested schema.' },
+                                        { role: 'user', content: prompt }
+                                    ],
+                                    max_tokens: 1000
+                                })
+                            })
+
+                            if (clientRes.ok) {
+                                const cData = await clientRes.json().catch(() => ({}))
+                                const choice = cData?.choices?.[0]
+                                let raw = choice?.message?.content || choice?.message?.reasoning
+                                if (raw) {
+                                    // Strip potential markdown code fences or think tags
+                                    raw = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+                                    const jsonMatch = raw.match(/\{[\s\S]*\}/)
+                                    if (jsonMatch) {
+                                        try {
+                                            const parsed = JSON.parse(jsonMatch[0])
+                                            if (parsed && parsed.triage) {
+                                                jsonResult = parsed
+                                                break
+                                            }
+                                        } catch (parseErr) {
+                                            console.warn('Failed parsing JSON match:', parseErr)
+                                        }
+                                    }
+                                }
                             }
+                        } catch (err) {
+                            console.warn(`Model ${candidateModel} triage error:`, err)
                         }
                     }
                 }
