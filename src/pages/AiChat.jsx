@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { Mic, MicOff, Volume2, VolumeX, Languages, Sparkles, AlertCircle, RotateCcw, Trash2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { isEmergencyQuery } from '../services/healthAssistantService'
 
 export default function AiChat() {
     const { user } = useAuth()
@@ -18,10 +19,12 @@ export default function AiChat() {
 
     // ─── VOICE STATE ──────────────────────────────────────────────────
     const [isListening, setIsListening] = useState(false)
-    const [isSpeaking, setIsSpeaking] = useState(false)
+    const [activeSpeakingIndex, setActiveSpeakingIndex] = useState(null)
+    const [ttsLoadingIndex, setTtsLoadingIndex] = useState(null)
     const recognitionRef = useRef(null)
     const currentUtteranceRef = useRef(null)
     const audioPlayerRef = useRef(null)
+    const audioUrlRef = useRef(null)
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -40,7 +43,7 @@ export default function AiChat() {
         te: { label: 'తెలుగు', speechLang: 'te-IN', voiceLang: 'te-IN' }
     }
 
-    // ─── VOICE INPUT (Browser-Native Web Speech API with Cloud Fallback) ─
+    // ─── VOICE INPUT (Browser-Native Web Speech API with Permission Prompt) ─
     const stopListening = useCallback(() => {
         if (recognitionRef.current) {
             try {
@@ -52,64 +55,95 @@ export default function AiChat() {
         setIsListening(false)
     }, [])
 
-    const startListening = useCallback(() => {
+    const startListening = useCallback(async () => {
+        // Stop any active speech before listening
+        if (audioPlayerRef.current) {
+            audioPlayerRef.current.pause()
+            audioPlayerRef.current = null
+        }
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel()
+        }
+        setActiveSpeakingIndex(null)
+
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 
-        if (SpeechRecognition) {
-            try {
-                if (recognitionRef.current) {
-                    try { recognitionRef.current.abort() } catch { /* ignore */ }
-                }
-
-                const recognition = new SpeechRecognition()
-                recognitionRef.current = recognition
-                recognition.lang = langConfig[language]?.speechLang || 'en-IN'
-                recognition.continuous = false
-                recognition.interimResults = true
-
-                recognition.onstart = () => {
-                    setIsListening(true)
-                    toast.success('Listening... Speak now', { id: 'voice-status', position: 'bottom-center' })
-                }
-
-                recognition.onresult = (event) => {
-                    let transcript = ''
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        transcript += event.results[i][0].transcript
-                    }
-                    if (transcript) {
-                        setInput(prev => {
-                            // If user is speaking, replace interim or append
-                            const base = prev.trim()
-                            return base ? `${base} ${transcript}` : transcript
-                        })
-                    }
-                }
-
-                recognition.onerror = (event) => {
-                    console.warn('Speech recognition event error:', event.error)
-                    setIsListening(false)
-                    if (event.error === 'not-allowed') {
-                        toast.error('Microphone permission denied.', { id: 'voice-status', position: 'bottom-center' })
-                    } else if (event.error !== 'no-speech') {
-                        toast.error(`Voice error: ${event.error}`, { id: 'voice-status', position: 'bottom-center' })
-                    }
-                }
-
-                recognition.onend = () => {
-                    setIsListening(false)
-                }
-
-                recognition.start()
-            } catch (err) {
-                console.error('Speech recognition start failed:', err)
-                setIsListening(false)
-                toast.error('Could not start voice recognition.', { position: 'bottom-center' })
-            }
-        } else {
-            toast.error('Voice recognition is not supported in this browser. Please use Chrome or Edge.', { position: 'bottom-center' })
+        if (!SpeechRecognition) {
+            toast.error('Voice recognition is not supported in this browser. Please use Chrome, Edge, or Safari.', { position: 'bottom-center' })
+            return
         }
-    }, [language])
+
+        // Request microphone permission to ensure prompt appears
+        try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+                stream.getTracks().forEach(t => t.stop())
+            }
+        } catch (permErr) {
+            console.warn('Microphone permission not granted:', permErr)
+            toast.error('Microphone permission required. Please enable it in browser settings.', { position: 'bottom-center', id: 'mic-perm' })
+            return
+        }
+
+        try {
+            if (recognitionRef.current) {
+                try { recognitionRef.current.abort() } catch { /* ignore */ }
+            }
+
+            const recognition = new SpeechRecognition()
+            recognitionRef.current = recognition
+            recognition.lang = langConfig[language]?.speechLang || 'en-IN'
+            recognition.continuous = true
+            recognition.interimResults = true
+
+            let baseTranscript = input ? input.trim() + ' ' : ''
+
+            recognition.onstart = () => {
+                setIsListening(true)
+                toast.success(`Listening (${langConfig[language]?.label})... Speak now`, { id: 'voice-status', position: 'bottom-center' })
+            }
+
+            recognition.onresult = (event) => {
+                let interimTranscript = ''
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript
+                    if (event.results[i].isFinal) {
+                        baseTranscript += transcript + ' '
+                    } else {
+                        interimTranscript += transcript
+                    }
+                }
+                const fullText = (baseTranscript + interimTranscript).trim()
+                if (fullText) {
+                    setInput(fullText)
+                }
+            }
+
+            recognition.onerror = (event) => {
+                console.warn('Speech recognition event error:', event.error)
+                if (event.error === 'not-allowed') {
+                    setIsListening(false)
+                    toast.error('Microphone access blocked. Click the lock icon in the address bar to allow.', { id: 'voice-status', position: 'bottom-center' })
+                } else if (event.error === 'network') {
+                    setIsListening(false)
+                    toast.error('Speech recognition network issue.', { id: 'voice-status', position: 'bottom-center' })
+                } else if (event.error !== 'no-speech') {
+                    setIsListening(false)
+                    toast.error(`Voice error: ${event.error}`, { id: 'voice-status', position: 'bottom-center' })
+                }
+            }
+
+            recognition.onend = () => {
+                setIsListening(false)
+            }
+
+            recognition.start()
+        } catch (err) {
+            console.error('Speech recognition start failed:', err)
+            setIsListening(false)
+            toast.error('Could not activate voice input. Please try again.', { position: 'bottom-center' })
+        }
+    }, [language, input])
 
     const toggleListening = useCallback(() => {
         if (isListening) {
@@ -128,34 +162,155 @@ export default function AiChat() {
         }
     }, [])
 
-    // ─── TEXT-TO-SPEECH (Browser-Native SpeechSynthesis) ──────────────
+    // ─── TEXT-TO-SPEECH (ElevenLabs Natural Voice AI with Multi-Tier Fallback) ─
     const stopSpeaking = useCallback(() => {
+        if (audioPlayerRef.current) {
+            try {
+                audioPlayerRef.current.pause()
+                audioPlayerRef.current.currentTime = 0
+            } catch { /* ignore */ }
+            audioPlayerRef.current = null
+        }
+        if (audioUrlRef.current) {
+            try { URL.revokeObjectURL(audioUrlRef.current) } catch { /* ignore */ }
+            audioUrlRef.current = null
+        }
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
             window.speechSynthesis.cancel()
         }
-        if (audioPlayerRef.current) {
-            audioPlayerRef.current.pause()
-            audioPlayerRef.current.currentTime = 0
-        }
-        setIsSpeaking(false)
+        setActiveSpeakingIndex(null)
+        setTtsLoadingIndex(null)
     }, [])
 
-    const speakText = useCallback((text) => {
+    const speakText = useCallback(async (text, index = 0) => {
         if (!text) return
-        stopSpeaking()
 
-        // Clean markdown symbols, emoji, asterisks, brackets
+        // If clicking currently playing audio, stop it
+        if (activeSpeakingIndex === index) {
+            stopSpeaking()
+            return
+        }
+
+        stopSpeaking()
+        stopListening()
+        setTtsLoadingIndex(index)
+
+        // Clean markdown symbols, emoji, links for natural fluid speech
         const cleanText = text
             .replace(/[*#`_~]/g, '')
             .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
             .replace(/https?:\/\/\S+/g, '')
+            .replace(/[-•]\s*/g, '')
             .trim()
 
-        if (!cleanText) return
+        if (!cleanText) {
+            setTtsLoadingIndex(null)
+            return
+        }
 
+        // Limit speech chunk size to ensure fast generation
+        const textToSpeak = cleanText.length > 1000 ? cleanText.slice(0, 1000) + '...' : cleanText
+
+        let audioBlob = null
+
+        // Tier 1: Backend ElevenLabs serverless API route (/api/elevenlabs-tts)
+        try {
+            const res = await fetch('/api/elevenlabs-tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: textToSpeak,
+                    voiceId: 'EXAVITQu4vr4xnSDxMaL',
+                    modelId: 'eleven_multilingual_v2'
+                })
+            })
+
+            if (res.ok) {
+                audioBlob = await res.blob()
+            }
+        } catch (serverErr) {
+            console.warn('[TTS] Backend route unavailable, trying direct ElevenLabs:', serverErr)
+        }
+
+        // Tier 2: Direct ElevenLabs API client-side fallback
+        if (!audioBlob) {
+            const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY || 'sk_3b2a17dc81908d60de2cf0136e95d420a7e5d3e90303caa1'
+            const voiceId = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL'
+            const modelId = import.meta.env.VITE_ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2'
+
+            if (apiKey) {
+                try {
+                    const clientRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+                        method: 'POST',
+                        headers: {
+                            'xi-api-key': apiKey,
+                            'Content-Type': 'application/json',
+                            'Accept': 'audio/mpeg'
+                        },
+                        body: JSON.stringify({
+                            text: textToSpeak,
+                            model_id: modelId,
+                            voice_settings: {
+                                stability: 0.5,
+                                similarity_boost: 0.75
+                            }
+                        })
+                    })
+
+                    if (clientRes.ok) {
+                        audioBlob = await clientRes.blob()
+                    }
+                } catch (clientErr) {
+                    console.warn('[TTS] Direct ElevenLabs API error:', clientErr)
+                }
+            }
+        }
+
+        // Play audio from ElevenLabs if audioBlob received
+        if (audioBlob) {
+            try {
+                if (audioUrlRef.current) {
+                    URL.revokeObjectURL(audioUrlRef.current)
+                }
+                const audioUrl = URL.createObjectURL(audioBlob)
+                audioUrlRef.current = audioUrl
+                const audio = new Audio(audioUrl)
+                audioPlayerRef.current = audio
+
+                audio.onplay = () => {
+                    setTtsLoadingIndex(null)
+                    setActiveSpeakingIndex(index)
+                }
+
+                audio.onended = () => {
+                    setActiveSpeakingIndex(null)
+                    setTtsLoadingIndex(null)
+                    if (audioUrlRef.current) {
+                        URL.revokeObjectURL(audioUrlRef.current)
+                        audioUrlRef.current = null
+                    }
+                }
+
+                audio.onerror = (e) => {
+                    console.warn('[TTS] Audio playback error:', e)
+                    setActiveSpeakingIndex(null)
+                    setTtsLoadingIndex(null)
+                }
+
+                await audio.play()
+                return
+            } catch (playErr) {
+                console.warn('[TTS] Audio play() failed, falling back to browser synthesis:', playErr)
+            }
+        }
+
+        // Tier 3: Browser-Native SpeechSynthesis Fallback
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
             try {
-                const utterance = new SpeechSynthesisUtterance(cleanText)
+                setTtsLoadingIndex(null)
+                setActiveSpeakingIndex(index)
+
+                const utterance = new SpeechSynthesisUtterance(textToSpeak)
                 currentUtteranceRef.current = utterance
 
                 const targetLang = langConfig[language]?.voiceLang || 'en-IN'
@@ -163,7 +318,6 @@ export default function AiChat() {
                 utterance.rate = 0.95
                 utterance.pitch = 1.0
 
-                // Attempt to select voice matching language
                 const voices = window.speechSynthesis.getVoices()
                 if (voices && voices.length > 0) {
                     const matchedVoice = voices.find(v => v.lang.startsWith(language) || v.lang.replace('_', '-').includes(targetLang))
@@ -172,32 +326,31 @@ export default function AiChat() {
                     }
                 }
 
-                utterance.onstart = () => setIsSpeaking(true)
-                utterance.onend = () => setIsSpeaking(false)
+                utterance.onend = () => setActiveSpeakingIndex(null)
                 utterance.onerror = (e) => {
                     console.warn('Speech synthesis error:', e)
-                    setIsSpeaking(false)
+                    setActiveSpeakingIndex(null)
                 }
 
                 window.speechSynthesis.speak(utterance)
-                setIsSpeaking(true)
             } catch (err) {
                 console.error('Speech synthesis execution failed:', err)
-                setIsSpeaking(false)
+                setActiveSpeakingIndex(null)
+                setTtsLoadingIndex(null)
+                toast.error('Could not play voice guidance.')
             }
         } else {
-            toast.error('Text-to-speech is not supported by your browser.', { position: 'bottom-center' })
+            setTtsLoadingIndex(null)
+            toast.error('Audio playback is not supported by your browser.', { position: 'bottom-center' })
         }
-    }, [language, stopSpeaking])
+    }, [language, activeSpeakingIndex, stopSpeaking, stopListening])
 
     // Cancel speech on unmount
     useEffect(() => {
         return () => {
-            if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-                window.speechSynthesis.cancel()
-            }
+            stopSpeaking()
         }
-    }, [])
+    }, [stopSpeaking])
 
     // ─── CLEAR CHAT ───────────────────────────────────────────────────
     const handleClearChat = () => {
@@ -482,29 +635,58 @@ export default function AiChat() {
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                                        {/* TTS Button for assistant messages */}
+                                        {/* TTS Button for assistant messages (ElevenLabs Human-like Voice) */}
                                         {msg.role === 'assistant' && (
                                             <button
                                                 type="button"
-                                                onClick={() => isSpeaking ? stopSpeaking() : speakText(msg.content)}
+                                                onClick={() => speakText(msg.content, i)}
+                                                disabled={ttsLoadingIndex === i}
                                                 style={{
-                                                    background: isSpeaking ? '#FEE2E2' : '#F1F5F9',
-                                                    border: isSpeaking ? '1px solid #FCA5A5' : '1px solid #CBD5E1',
+                                                    background: activeSpeakingIndex === i ? '#FEE2E2' : (ttsLoadingIndex === i ? '#F8FAFC' : '#F1F5F9'),
+                                                    border: activeSpeakingIndex === i ? '1px solid #FCA5A5' : '1px solid #CBD5E1',
                                                     borderRadius: '6px',
-                                                    padding: '0.25rem 0.6rem',
-                                                    cursor: 'pointer',
+                                                    padding: '0.25rem 0.65rem',
+                                                    cursor: ttsLoadingIndex === i ? 'wait' : 'pointer',
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    gap: '0.3rem',
+                                                    gap: '0.35rem',
                                                     fontSize: '0.75rem',
-                                                    color: isSpeaking ? '#DC2626' : '#475569',
+                                                    color: activeSpeakingIndex === i ? '#DC2626' : '#475569',
                                                     fontWeight: 500,
                                                     transition: 'all 0.2s'
                                                 }}
-                                                title={isSpeaking ? 'Stop speaking' : 'Read aloud'}
+                                                title={activeSpeakingIndex === i ? 'Stop audio' : 'Listen with ElevenLabs AI Voice'}
                                             >
-                                                {isSpeaking ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                                                {isSpeaking ? 'Stop Audio' : 'Listen'}
+                                                {ttsLoadingIndex === i ? (
+                                                    <>
+                                                        <span style={{
+                                                            width: '12px',
+                                                            height: '12px',
+                                                            border: '2px solid #94A3B8',
+                                                            borderTopColor: '#0D9488',
+                                                            borderRadius: '50%',
+                                                            animation: 'spin 0.8s linear infinite',
+                                                            display: 'inline-block'
+                                                        }}></span>
+                                                        <span>Generating Voice...</span>
+                                                    </>
+                                                ) : activeSpeakingIndex === i ? (
+                                                    <>
+                                                        <VolumeX size={14} />
+                                                        <span>Stop Audio</span>
+                                                        <span style={{ display: 'inline-flex', gap: '2px', alignItems: 'flex-end', height: '10px', marginLeft: '2px' }}>
+                                                            <span style={{ width: '2px', height: '8px', background: '#DC2626', animation: 'equalizer 0.8s infinite ease-in-out' }}></span>
+                                                            <span style={{ width: '2px', height: '12px', background: '#DC2626', animation: 'equalizer 0.8s 0.2s infinite ease-in-out' }}></span>
+                                                            <span style={{ width: '2px', height: '6px', background: '#DC2626', animation: 'equalizer 0.8s 0.4s infinite ease-in-out' }}></span>
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Volume2 size={14} />
+                                                        <span>Listen</span>
+                                                        <span style={{ fontSize: '0.68rem', color: '#0D9488', background: '#CCFBF1', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>ElevenLabs</span>
+                                                    </>
+                                                )}
                                             </button>
                                         )}
 
@@ -629,12 +811,20 @@ export default function AiChat() {
                 </div>
             </section>
 
-            {/* Inline keyframe for mic pulse animation */}
+            {/* Inline keyframes for voice and mic animations */}
             <style>{`
                 @keyframes pulse {
                     0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
                     70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
                     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                @keyframes equalizer {
+                    0%, 100% { height: 4px; }
+                    50% { height: 12px; }
                 }
             `}</style>
         </>
