@@ -213,7 +213,7 @@ export default function AiChat() {
 
         let audioBlob = null
 
-        // Tier 1: Backend ElevenLabs serverless API route (/api/elevenlabs-tts)
+        // Tier 1: Backend healthcare voice API route (/api/elevenlabs-tts)
         try {
             const res = await fetch('/api/elevenlabs-tts', {
                 method: 'POST',
@@ -221,7 +221,8 @@ export default function AiChat() {
                 body: JSON.stringify({
                     text: textToSpeak,
                     voiceId: 'EXAVITQu4vr4xnSDxMaL',
-                    modelId: 'eleven_multilingual_v2'
+                    modelId: 'eleven_multilingual_v2',
+                    language
                 })
             })
 
@@ -229,39 +230,55 @@ export default function AiChat() {
                 audioBlob = await res.blob()
             }
         } catch (serverErr) {
-            console.warn('[TTS] Backend route unavailable, trying direct ElevenLabs:', serverErr)
+            console.warn('[TTS] Backend route unavailable, trying direct client-side voice:', serverErr)
         }
 
-        // Tier 2: Direct ElevenLabs API client-side fallback
+        // Tier 2: Direct Indic Voice or ElevenLabs API client-side fallback
         if (!audioBlob) {
-            const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY || 'sk_3b2a17dc81908d60de2cf0136e95d420a7e5d3e90303caa1'
-            const voiceId = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL'
-            const modelId = import.meta.env.VITE_ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2'
+            const isTelugu = /[\u0C00-\u0C7F]/.test(textToSpeak) || language === 'te'
+            const isHindi = /[\u0900-\u097F]/.test(textToSpeak) || language === 'hi'
 
-            if (apiKey) {
+            if (isTelugu || isHindi) {
+                const indicLang = isTelugu ? 'te' : 'hi'
                 try {
-                    const clientRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-                        method: 'POST',
-                        headers: {
-                            'xi-api-key': apiKey,
-                            'Content-Type': 'application/json',
-                            'Accept': 'audio/mpeg'
-                        },
-                        body: JSON.stringify({
-                            text: textToSpeak,
-                            model_id: modelId,
-                            voice_settings: {
-                                stability: 0.5,
-                                similarity_boost: 0.75
-                            }
-                        })
-                    })
-
-                    if (clientRes.ok) {
-                        audioBlob = await clientRes.blob()
+                    const indicUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textToSpeak.slice(0, 180))}&tl=${indicLang}&client=tw-ob`
+                    const indicRes = await fetch(indicUrl)
+                    if (indicRes.ok) {
+                        audioBlob = await indicRes.blob()
                     }
-                } catch (clientErr) {
-                    console.warn('[TTS] Direct ElevenLabs API error:', clientErr)
+                } catch (indicErr) {
+                    console.warn('[TTS] Client Indic voice error:', indicErr)
+                }
+            } else {
+                const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY || 'sk_3b2a17dc81908d60de2cf0136e95d420a7e5d3e90303caa1'
+                const voiceId = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL'
+                const modelId = import.meta.env.VITE_ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2'
+
+                if (apiKey) {
+                    try {
+                        const clientRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+                            method: 'POST',
+                            headers: {
+                                'xi-api-key': apiKey,
+                                'Content-Type': 'application/json',
+                                'Accept': 'audio/mpeg'
+                            },
+                            body: JSON.stringify({
+                                text: textToSpeak,
+                                model_id: modelId,
+                                voice_settings: {
+                                    stability: 0.5,
+                                    similarity_boost: 0.75
+                                }
+                            })
+                        })
+
+                        if (clientRes.ok) {
+                            audioBlob = await clientRes.blob()
+                        }
+                    } catch (clientErr) {
+                        console.warn('[TTS] Direct ElevenLabs API error:', clientErr)
+                    }
                 }
             }
         }
@@ -684,7 +701,9 @@ export default function AiChat() {
                                                     <>
                                                         <Volume2 size={14} />
                                                         <span>Listen</span>
-                                                        <span style={{ fontSize: '0.68rem', color: '#0D9488', background: '#CCFBF1', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>ElevenLabs</span>
+                                                        <span style={{ fontSize: '0.68rem', color: '#0D9488', background: '#CCFBF1', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                                                            {language === 'te' || /[\u0C00-\u0C7F]/.test(msg.content) ? 'తెలుగు Voice' : language === 'hi' || /[\u0900-\u097F]/.test(msg.content) ? 'हिंदी Voice' : 'ElevenLabs'}
+                                                        </span>
                                                     </>
                                                 )}
                                             </button>
