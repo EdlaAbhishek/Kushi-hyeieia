@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useAuth } from '../services/AuthContext'
 import { Mic, MicOff, Volume2, VolumeX, Languages, Sparkles, AlertCircle, RotateCcw, Trash2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
-import { generateHealthGuidance, isEmergencyQuery } from '../services/healthAssistantService'
 
 export default function AiChat() {
     const { user } = useAuth()
