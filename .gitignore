@@ -50,8 +50,12 @@ frontend/dist/
 backend/dist/
 dist/
 
-# --- Logs ---
+# --- Logs & Test Artifacts ---
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-testsprite_tests/tmp/
+testsprite_tests/
+supabase/.temp/
+appt_schema.json
+output.json
+db_*.json

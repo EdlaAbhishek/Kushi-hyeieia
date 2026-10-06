@@ -2,7 +2,8 @@ from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
 
 
-OUT = Path(__file__).resolve().parents[1] / "KHUSHI_HYGIEIA_Key_Features.png"
+OUT = Path(__file__).resolve().parents[1] / "docs" / "images" / "KHUSHI_HYGIEIA_Key_Features.png"
+OUT.parent.mkdir(parents=True, exist_ok=True)
 W, H, S = 1920, 1080, 2
 NAVY = "#0B1F33"
 TEXT = "#172B3A"
