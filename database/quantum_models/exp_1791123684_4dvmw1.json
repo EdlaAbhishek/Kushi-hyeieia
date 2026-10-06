@@ -1,0 +1,454 @@
+{
+  "status": "success",
+  "experiment_id": "exp_1791123684_4dvmw1",
+  "id": "exp_1791123684_4dvmw1",
+  "dataset_id": "breast_cancer",
+  "dataset_name": "Breast Cancer Wisconsin (Diagnostic)",
+  "random_seed": 42,
+  "backend": "Qiskit Aer Simulator (Local Statevector)",
+  "execution_time_total_ms": 621,
+  "dataset_info": {
+    "name": "Breast Cancer Wisconsin (Diagnostic)",
+    "target_column": "target",
+    "total_samples": 569,
+    "train_samples": 456,
+    "test_samples": 113,
+    "original_features_count": 30,
+    "quantum_qubits": 4,
+    "features_used": [
+      "PC1",
+      "PC2",
+      "PC3",
+      "PC4"
+    ],
+    "sample_reduction": {
+      "reduced_samples": 80,
+      "total_train_samples": 456,
+      "reason": "Subsampled for polynomial-time quantum kernel evaluation on statevector simulator."
+    }
+  },
+  "preprocessing_applied": {
+    "scaling": "standard",
+    "imputation": "median (train-fitted)",
+    "dimensionality_reduction": "pca",
+    "data_leakage_prevented": true
+  },
+  "classical_evaluation": {
+    "model_name": "RandomForestClassifier",
+    "metrics": {
+      "accuracy": 0.9115,
+      "balanced_accuracy": 0.8955,
+      "precision": 0.9067,
+      "recall": 0.9577,
+      "specificity": 0.8333,
+      "f1_score": 0.9315,
+      "roc_auc": 0.9799,
+      "pr_auc": null,
+      "confusion_matrix": {
+        "tp": 68,
+        "fp": 7,
+        "tn": 35,
+        "fn": 3
+      },
+      "roc_curve": [
+        {
+          "fpr": 0,
+          "tpr": 0
+        },
+        {
+          "fpr": 0,
+          "tpr": 0.155
+        },
+        {
+          "fpr": 0,
+          "tpr": 0.31
+        },
+        {
+          "fpr": 0,
+          "tpr": 0.465
+        },
+        {
+          "fpr": 0,
+          "tpr": 0.62
+        },
+        {
+          "fpr": 0.024,
+          "tpr": 0.761
+        },
+        {
+          "fpr": 0.048,
+          "tpr": 0.901
+        },
+        {
+          "fpr": 0.167,
+          "tpr": 0.986
+        },
+        {
+          "fpr": 0.405,
+          "tpr": 1
+        },
+        {
+          "fpr": 0.667,
+          "tpr": 1
+        },
+        {
+          "fpr": 0.929,
+          "tpr": 1
+        },
+        {
+          "fpr": 1,
+          "tpr": 1
+        }
+      ],
+      "training_time_ms": 466
+    },
+    "feature_importance": [
+      {
+        "feature": "worst_concave_points",
+        "importance": 0.00880000000000003,
+        "normalized_importance": 0.0572
+      },
+      {
+        "feature": "mean_radius",
+        "importance": 0.005,
+        "normalized_importance": 0.0325
+      },
+      {
+        "feature": "mean_texture",
+        "importance": 0.005,
+        "normalized_importance": 0.0325
+      },
+      {
+        "feature": "mean_perimeter",
+        "importance": 0.005,
+        "normalized_importance": 0.0325
+      },
+      {
+        "feature": "mean_area",
+        "importance": 0.005,
+        "normalized_importance": 0.0325
+      },
+      {
+        "feature": "mean_smoothness",
+        "importance": 0.005,
+        "normalized_importance": 0.0325
+      }
+    ]
+  },
+  "quantum_evaluation": {
+    "model_name": "Variational Quantum Classifier (VQC)",
+    "metrics": {
+      "accuracy": 0.5841,
+      "balanced_accuracy": 0.5766,
+      "precision": 0.6935,
+      "recall": 0.6056,
+      "specificity": 0.5476,
+      "f1_score": 0.6466,
+      "roc_auc": 0.5781,
+      "pr_auc": null,
+      "confusion_matrix": {
+        "tp": 43,
+        "fp": 19,
+        "tn": 23,
+        "fn": 28
+      },
+      "roc_curve": [
+        {
+          "fpr": 0,
+          "tpr": 0
+        },
+        {
+          "fpr": 0.071,
+          "tpr": 0.113
+        },
+        {
+          "fpr": 0.167,
+          "tpr": 0.211
+        },
+        {
+          "fpr": 0.238,
+          "tpr": 0.324
+        },
+        {
+          "fpr": 0.333,
+          "tpr": 0.423
+        },
+        {
+          "fpr": 0.429,
+          "tpr": 0.521
+        },
+        {
+          "fpr": 0.476,
+          "tpr": 0.648
+        },
+        {
+          "fpr": 0.571,
+          "tpr": 0.746
+        },
+        {
+          "fpr": 0.738,
+          "tpr": 0.803
+        },
+        {
+          "fpr": 0.857,
+          "tpr": 0.887
+        },
+        {
+          "fpr": 0.976,
+          "tpr": 0.972
+        },
+        {
+          "fpr": 1,
+          "tpr": 1
+        }
+      ],
+      "training_time_ms": 57
+    },
+    "feature_map": "PAULIFeatureMap",
+    "qubits": 4,
+    "shots": 2048,
+    "measurement_counts": {
+      "1000": 158,
+      "1001": 12,
+      "1010": 4,
+      "1011": 22,
+      "1100": 197,
+      "1101": 14,
+      "1111": 9,
+      "0111": 123,
+      "0100": 276,
+      "0001": 49,
+      "0011": 559,
+      "0000": 544,
+      "0101": 24,
+      "0010": 47,
+      "0110": 10
+    },
+    "circuit": {
+      "num_qubits": 4,
+      "depth": 10,
+      "total_gates": 26,
+      "ops_count": {
+        "h": 4,
+        "rx": 4,
+        "rz": 8,
+        "cnot": 6,
+        "ry": 4
+      },
+      "gates_sequence": [
+        {
+          "gate": "H",
+          "qubit": 0,
+          "qubits": [
+            0
+          ]
+        },
+        {
+          "gate": "RX",
+          "qubit": 0,
+          "qubits": [
+            0
+          ],
+          "param": -6.268623882083088
+        },
+        {
+          "gate": "RZ",
+          "qubit": 0,
+          "qubits": [
+            0
+          ],
+          "param": -6.268623882083088
+        },
+        {
+          "gate": "H",
+          "qubit": 1,
+          "qubits": [
+            1
+          ]
+        },
+        {
+          "gate": "RX",
+          "qubit": 1,
+          "qubits": [
+            1
+          ],
+          "param": 0.6800947980761787
+        },
+        {
+          "gate": "RZ",
+          "qubit": 1,
+          "qubits": [
+            1
+          ],
+          "param": 0.6800947980761787
+        },
+        {
+          "gate": "H",
+          "qubit": 2,
+          "qubits": [
+            2
+          ]
+        },
+        {
+          "gate": "RX",
+          "qubit": 2,
+          "qubits": [
+            2
+          ],
+          "param": 2.116235913286574
+        },
+        {
+          "gate": "RZ",
+          "qubit": 2,
+          "qubits": [
+            2
+          ],
+          "param": 2.116235913286574
+        },
+        {
+          "gate": "H",
+          "qubit": 3,
+          "qubits": [
+            3
+          ]
+        },
+        {
+          "gate": "RX",
+          "qubit": 3,
+          "qubits": [
+            3
+          ],
+          "param": 0.027990179256478814
+        },
+        {
+          "gate": "RZ",
+          "qubit": 3,
+          "qubits": [
+            3
+          ],
+          "param": 0.027990179256478814
+        },
+        {
+          "gate": "CNOT",
+          "control": 0,
+          "target": 1,
+          "qubits": [
+            0,
+            1
+          ]
+        },
+        {
+          "gate": "CNOT",
+          "control": 1,
+          "target": 2,
+          "qubits": [
+            1,
+            2
+          ]
+        },
+        {
+          "gate": "CNOT",
+          "control": 2,
+          "target": 3,
+          "qubits": [
+            2,
+            3
+          ]
+        },
+        {
+          "gate": "RY",
+          "qubit": 0,
+          "qubits": [
+            0
+          ],
+          "param": -0.7957749440333557
+        },
+        {
+          "gate": "RZ",
+          "qubit": 0,
+          "qubits": [
+            0
+          ],
+          "param": 0.5568843709019677
+        },
+        {
+          "gate": "RY",
+          "qubit": 1,
+          "qubits": [
+            1
+          ],
+          "param": 1.44674299846587
+        },
+        {
+          "gate": "RZ",
+          "qubit": 1,
+          "qubits": [
+            1
+          ],
+          "param": 1.449761386228854
+        },
+        {
+          "gate": "RY",
+          "qubit": 2,
+          "qubits": [
+            2
+          ],
+          "param": -0.16193305763590726
+        },
+        {
+          "gate": "RZ",
+          "qubit": 2,
+          "qubits": [
+            2
+          ],
+          "param": 1.4058410107204944
+        },
+        {
+          "gate": "RY",
+          "qubit": 3,
+          "qubits": [
+            3
+          ],
+          "param": -1.012636716183319
+        },
+        {
+          "gate": "RZ",
+          "qubit": 3,
+          "qubits": [
+            3
+          ],
+          "param": 1.3718120137375698
+        },
+        {
+          "gate": "CNOT",
+          "control": 0,
+          "target": 1,
+          "qubits": [
+            0,
+            1
+          ]
+        },
+        {
+          "gate": "CNOT",
+          "control": 1,
+          "target": 2,
+          "qubits": [
+            1,
+            2
+          ]
+        },
+        {
+          "gate": "CNOT",
+          "control": 2,
+          "target": 3,
+          "qubits": [
+            2,
+            3
+          ]
+        }
+      ],
+      "ascii_diagram": "q_0: ─[H]──[RX]──[RZ]────────────────────────────────────────────────■─────────────[RY]──[RZ]─────────────────────────────────■─────────────[M]─\nq_1: ────────────────[H]──[RX]──[RZ]─────────────────────────────────X────■──────────────────[RY]──[RZ]───────────────────────X────■────────[M]─\nq_2: ───────────────────────────────[H]──[RX]──[RZ]───────────────────────X────■───────────────────────[RY]──[RZ]──────────────────X────■───[M]─\nq_3: ──────────────────────────────────────────────[H]──[RX]──[RZ]─────────────X─────────────────────────────────[RY]──[RZ]─────────────X───[M]─"
+    }
+  },
+  "timestamp": "2026-10-04 14:21:24"
+}

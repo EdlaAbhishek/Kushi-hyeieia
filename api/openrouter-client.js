@@ -8,20 +8,21 @@ const KNOWN_DEPRECATED_MODELS = new Set([
 ])
 
 const DEFAULT_RELIABLE_FALLBACKS = [
+    'nvidia/nemotron-3-super-120b-a12b:free',
     'nvidia/nemotron-3-ultra-550b-a55b:free',
-    'qwen/qwen3.8-27b:free',
-    'liquid/lfm-2.5-2.6b:free',
-    'google/gemma-4-26b-a4b-it:free',
     'nvidia/nemotron-3.5-lightning:free',
+    'liquid/lfm-2.5-2.6b:free',
+    'openrouter/free',
     'deepseek/deepseek-chat'
 ]
 
 export async function callOpenRouter({
     messages,
-    model = process.env.OPENROUTER_MODEL || process.env.VITE_OPENROUTER_MODEL || 'nvidia/nemotron-3-ultra-550b-a55b:free',
-    temperature = 0.3,
-    maxTokens = 600,
+    model = process.env.OPENROUTER_MODEL || process.env.VITE_OPENROUTER_MODEL || 'nvidia/nemotron-3-super-120b-a12b:free',
+    temperature = 0.2,
+    maxTokens = 1500,
     responseFormat = null,
+    reasoning = undefined,
     maxRetries = 1
 }) {
     const apiKey = process.env.OPENROUTER_API_KEY ||
@@ -60,7 +61,11 @@ export async function callOpenRouter({
                     model: currentModel,
                     messages,
                     temperature,
-                    max_tokens: Math.min(maxTokens, 800)
+                    max_tokens: maxTokens || 1500
+                }
+
+                if (reasoning !== undefined) {
+                    payload.reasoning = reasoning
                 }
 
                 if (responseFormat) {

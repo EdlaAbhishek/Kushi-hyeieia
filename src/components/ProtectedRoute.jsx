@@ -7,9 +7,40 @@ export default function ProtectedRoute({ allowedRoles }) {
 
     if (loading) {
         return (
-            <div className="auth-page">
-                <div className="loading-spinner"></div>
-                <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>Loading your dashboard...</p>
+            <div
+                className="auth-page"
+                style={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '2rem',
+                    textAlign: 'center'
+                }}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div
+                        className="loading-spinner"
+                        style={{
+                            margin: '0 auto 1.25rem',
+                            width: 44,
+                            height: 44,
+                            borderWidth: 3.5
+                        }}
+                    ></div>
+                    <p
+                        style={{
+                            color: 'var(--text-muted)',
+                            margin: 0,
+                            fontWeight: 500,
+                            fontSize: '1rem',
+                            letterSpacing: '0.01em'
+                        }}
+                    >
+                        Loading your dashboard...
+                    </p>
+                </div>
             </div>
         )
     }

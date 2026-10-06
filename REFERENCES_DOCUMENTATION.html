@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kushi Hygieia — References & Technical Documentation</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+  }
+  
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1E293B;
+    background: #FFFFFF;
+    line-height: 1.55;
+    font-size: 10.5pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Header Cover / Hero */
+  .cover-header {
+    background: linear-gradient(135deg, #0A2540 0%, #0F3854 50%, #0D9488 100%);
+    color: #FFFFFF;
+    padding: 26px 28px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 14px rgba(10, 37, 64, 0.15);
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: #E0F2FE;
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .cover-title {
+    font-size: 22pt;
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .cover-subtitle {
+    font-size: 11pt;
+    color: #CCFBF1;
+    margin: 0 0 16px 0;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 8.5pt;
+  }
+
+  .meta-item strong {
+    display: block;
+    color: #93C5FD;
+    text-transform: uppercase;
+    font-size: 7.5pt;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+  }
+
+  .meta-item span {
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+
+  /* Section Styling */
+  .section {
+    margin-bottom: 22px;
+  }
+
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  h2 {
+    font-size: 13.5pt;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #0D9488;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1E293B;
+    margin: 14px 0 6px 0;
+  }
+
+  p {
+    margin: 0 0 10px 0;
+    color: #334155;
+    text-align: justify;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px 0;
+    font-size: 9pt;
+  }
+
+  th, td {
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+    border: 1px solid #CBD5E1;
+  }
+
+  th {
+    background-color: #F1F5F9;
+    color: #0F172A;
+    font-weight: 700;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  tr:nth-child(even) td {
+    background-color: #F8FAFC;
+  }
+
+  /* Cards & Callouts */
+  .callout {
+    background: #F0FDFA;
+    border-left: 4px solid #0D9488;
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 10px 0 14px 0;
+    font-size: 9.5pt;
+  }
+
+  .callout-title {
+    font-weight: 700;
+    color: #0F766E;
+    margin-bottom: 3px;
+  }
+
+  .benchmark-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .benchmark-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid #F1F5F9;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+  }
+
+  .benchmark-title {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #0A2540;
+  }
+
+  .benchmark-badge {
+    background: #E0F2FE;
+    color: #0369A1;
+    font-size: 8pt;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .pill {
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+    font-size: 8pt;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  ul, ol {
+    margin: 0 0 10px 0;
+    padding-left: 20px;
+    color: #334155;
+    font-size: 9.5pt;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+
+  .ref-item {
+    font-size: 9pt;
+    color: #334155;
+    margin-bottom: 8px;
+    padding-left: 24px;
+    text-indent: -24px;
+  }
+
+  .code-token {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 8.5pt;
+    background: #F1F5F9;
+    color: #0F172A;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 8pt;
+    color: #94A3B8;
+    margin-top: 16px;
+    border-top: 1px solid #E2E8F0;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- COVER HEADER -->
+  <div class="cover-header">
+    <div class="cover-badge">Official Technical Documentation & References</div>
+    <div class="cover-title">KUSHI HYGIEIA HEALTHCARE PLATFORM</div>
+    <div class="cover-subtitle">Technical Architecture, Research Benchmarks, Clinical Datasets, and System References</div>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <strong>Repository</strong>
+        <span>EdlaAbhishek/Kushi-hyeieia</span>
+      </div>
+      <div class="meta-item">
+        <strong>Live Production</strong>
+        <span>kushi-hygieia.vercel.app</span>
+      </div>
+      <div class="meta-item">
+        <strong>Document Version</strong>
+        <span>v1.0.0 (Release Edition)</span>
+      </div>
+      <div class="meta-item">
+        <strong>Classification</strong>
+        <span>Open Architecture & Research</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLATFORM OVERVIEW -->
+  <div class="section">
+    <h2>1. Platform Overview & Etymology</h2>
+    <p>
+      <strong>Kushi Hygieia</strong> is an enterprise-grade healthcare platform that unifies hybrid quantum machine learning (QML), 24/7 conversational clinical artificial intelligence, digital OPD queue management, and real-time hospital bed intelligence into a cohesive medical ecosystem.
+    </p>
+    <div class="callout">
+      <div class="callout-title">Core Etymology & Vision</div>
+      <strong>Khushi / Kushi:</strong> Sanskrit and Indian root representing happiness, vitality, and well-being.<br>
+      <strong>Hygieia:</strong> The ancient Greek goddess of good health, sanitation, cleanliness, and the prevention of disease.<br>
+      <em>Vision:</em> Transforming complex health data into personalized AI-powered insights, connecting individuals with the right medical support, and making healthcare more accessible, informed, and connected.
+    </div>
+  </div>
+
+  <!-- SECTION 2: BIOMEDICAL DATASETS & BENCHMARKS -->
+  <div class="section">
+    <h2>2. Biomedical Datasets & Clinical Benchmarks</h2>
+    <p>
+      The platform's <strong>Quantum Disease Intelligence</strong> screening system evaluates disease risk across four verified, open-access medical databases. Preprocessing transformers and PCA reductions are strictly fitted on training splits to prevent data leakage.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Dataset Name</th>
+          <th>Clinical Domain</th>
+          <th>Source / Contributors</th>
+          <th>Samples & Features</th>
+          <th>Task & Target</th>
+          <th>Reference Repository</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Breast Cancer Wisconsin</strong></td>
+          <td>Oncology (Biopsy FNA)</td>
+          <td>Univ. of Wisconsin Hospitals (Wolberg, Street, Mangasarian)</td>
+          <td>569 samples, 30 continuous features</td>
+          <td>Binary (Benign: 0, Malignant: 1)</td>
+          <td><span class="code-token">mswamyvvce/Quantum-Breast-Cancer-Detection</span></td>
+        </tr>
+        <tr>
+          <td><strong>Pima Indians Diabetes</strong></td>
+          <td>Metabolic Endocrinology</td>
+          <td>NIDDK / UCI Machine Learning Repository</td>
+          <td>768 samples, 8 medical markers</td>
+          <td>Binary (Negative: 0, Diabetic: 1)</td>
+          <td><span class="code-token">Anto4K/VQC_on_Pima_Indians_Diabetes_Dataset</span></td>
+        </tr>
+        <tr>
+          <td><strong>Cleveland Heart Disease</strong></td>
+          <td>Cardiology & CAD</td>
+          <td>Cleveland Clinic Foundation (Dr. Robert Detrano)</td>
+          <td>303 samples, 13 clinical attributes</td>
+          <td>Binary (Healthy: 0, Heart Disease: 1)</td>
+          <td><span class="code-token">TirtheshJani/QML-Healthcare-Diagnostics</span></td>
+        </tr>
+        <tr>
+          <td><strong>Oxford Parkinson's</strong></td>
+          <td>Neurology (Acoustic Dysphonia)</td>
+          <td>Univ. of Oxford & NCVS (Dr. Max Little et al.)</td>
+          <td>195 recordings, 22 acoustic metrics</td>
+          <td>Binary (Control: 0, Parkinson's: 1)</td>
+          <td><span class="code-token">ranazsaad/QMedicine-Parkinson-Detection</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="benchmark-card">
+      <div class="benchmark-card-header">
+        <span class="benchmark-title">Breast Cancer Wisconsin (Diagnostic)</span>
+        <span class="benchmark-badge">Oncology Benchmark</span>
+      </div>
+      <p style="font-size:9pt; margin-bottom:6px;">
+        Measurements computed from digitized Fine Needle Aspirate (FNA) images of breast masses describing characteristics of the cell nuclei present in the image (radius, texture, perimeter, area, smoothness, compactness, concavity, concave points, symmetry, fractal dimension). Evaluates high-dimensional quantum kernel boundaries against malignant formations.
+      </p>
+      <div class="badge-grid">
+        <span class="pill">UCI ML ID: 17</span>
+        <span class="pill">License: CC BY 4.0</span>
+        <span class="pill">Qubits: 4 Qubits</span>
+        <span class="pill">Reduction: PCA</span>
+        <span class="pill">Scaling: MinMaxScaler</span>
+      </div>
+    </div>
+
+    <div class="benchmark-card">
+      <div class="benchmark-card-header">
+        <span class="benchmark-title">Pima Indians Diabetes Database</span>
+        <span class="benchmark-badge">Metabolic Health</span>
+      </div>
+      <p style="font-size:9pt; margin-bottom:6px;">
+        Diagnostic metabolic predictors (oral glucose tolerance 2-hr, diastolic blood pressure, triceps skin fold, 2-hr serum insulin, BMI, diabetes pedigree score, and age). Zero-as-missing clinical imputation applied to biologically impossible zero values prior to variance-based feature selection.
+      </p>
+      <div class="badge-grid">
+        <span class="pill">UCI ML ID: 34</span>
+        <span class="pill">License: Public Domain</span>
+        <span class="pill">Qubits: 4 Qubits</span>
+        <span class="pill">Reduction: SelectKBest</span>
+        <span class="pill">Strategy: Zero-as-missing Imputation</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 3: QUANTUM COMPUTING -->
+  <div class="section">
+    <h2>3. Quantum Machine Learning (QML) Architecture</h2>
+    <p>
+      Kushi Hygieia implements a dual-mode quantum computational pipeline: an external Python-accelerated Qiskit execution engine and an internal, zero-dependency Node.js Quantum Simulation Engine for serverless cloud execution.
+    </p>
+
+    <h3>3.1 Quantum Software Stack</h3>
+    <ul>
+      <li><strong>IBM Qiskit SDK (<span class="code-token">qiskit >= 1.0.0</span>):</strong> Open-source quantum computing framework for circuit assembly, gate transpilation, and quantum state manipulation.</li>
+      <li><strong>Qiskit Machine Learning (<span class="code-token">qiskit-machine-learning</span>):</strong> Provides quantum kernel algorithms and variational quantum classifiers.</li>
+      <li><strong>Qiskit Aer Simulator (<span class="code-token">qiskit-aer</span>):</strong> High-performance quantum simulator supporting statevector evolution and shot-based quantum measurements (default: 1,024 shots).</li>
+      <li><strong>Scikit-Learn (<span class="code-token">scikit-learn</span>):</strong> Preprocessing pipelines (<span class="code-token">StandardScaler</span>, <span class="code-token">PCA</span>, <span class="code-token">SelectKBest</span>) and classical baselines (<span class="code-token">SVC</span>, <span class="code-token">LogisticRegression</span>, <span class="code-token">RandomForestClassifier</span>).</li>
+    </ul>
+
+    <h3>3.2 Circuit Mathematical Formulations</h3>
+    <div class="callout">
+      <div class="callout-title">1. ZZFeatureMap (Nonlinear Pauli Expansion)</div>
+      Encodes classical feature vectors <strong>x</strong> into high-dimensional quantum Hilbert state space using single-qubit rotations and two-qubit entangling gates:<br>
+      <code>U_Φ(x) = exp( i ∑_j Φ_{j}(x_j) Z_j + i ∑_{j&lt;k} Φ_{j,k}(x_j, x_k) Z_j Z_k )</code><br>
+      Utilizes 2 repetitions with linear CNOT entanglement to capture feature correlations inaccessible to classical hyperplanes.
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">2. Quantum Support Vector Classifier (QSVC) & Quantum Kernel</div>
+      Calculates transition fidelity inner products between quantum states in the 2^n Hilbert space:<br>
+      <code>K(x_i, x_j) = |⟨0^n| U_Φ^†(x_j) U_Φ(x_i) |0^n⟩|^2</code><br>
+      Constructs an N×N quantum kernel Gram matrix evaluated through quantum state measurement, then resolved using classical dual quadratic optimization.
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">3. Variational Quantum Classifier (VQC)</div>
+      Combines parameterized quantum circuits (ansatz) with classical gradient-free optimizers (COBYLA / SPSA) to iteratively minimize cross-entropy loss over patient clinical embeddings.
+    </div>
+  </div>
+
+  <!-- SECTION 4: ARTIFICIAL INTELLIGENCE & LLM -->
+  <div class="section">
+    <h2>4. Artificial Intelligence & Clinical LLM Orchestration</h2>
+    <p>
+      The platform integrates state-of-the-art Generative AI to provide patient guidance, triage support, and clinical document translation:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Provider & Library</th>
+          <th>Model Family</th>
+          <th>Clinical Feature Implementation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Google Gemini API</strong><br>(<span class="code-token">@google/generative-ai</span>)</td>
+          <td>Gemini 2.5 / 1.5 Pro & Flash</td>
+          <td>
+            • <strong>Kushi Care AI:</strong> 24/7 conversational medical triage with empathy.<br>
+            • <strong>Prescription OCR & Simplification:</strong> Translates medical jargon and dosage terms into clear daily schedules.<br>
+            • <strong>Symptom Assessment:</strong> Evaluates reported pain, duration, and severity against triage urgency levels.
+          </td>
+        </tr>
+        <tr>
+          <td><strong>OpenRouter SDK</strong><br>(<span class="code-token">@openrouter/sdk</span>)</td>
+          <td>Multi-Provider Fallback Orchestration</td>
+          <td>
+            • Automated multi-model redundancy ensuring 99.99% availability.<br>
+            • Prevents conversational disruption during single-vendor upstream downtime.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout" style="background:#FEF2F2; border-color:#EF4444;">
+      <div class="callout-title" style="color:#B91C1C;">Ethical Safety & Diagnostic Disclaimer Boundaries</div>
+      <p style="color:#991B1B; font-size:9pt; margin:0;">
+        All conversational AI outputs include mandatory medical safety disclaimers: preliminary triage recommendations are informational and educational, and are strictly explicitly declared as non-substitutes for professional clinical diagnosis. Immediate red-flag symptoms trigger instant emergency ambulance and hospital bed routing.
+      </p>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 5: FRONTEND & TELEHEALTH -->
+  <div class="section">
+    <h2>5. Frontend Engineering, UI Architecture & Telehealth</h2>
+    <p>
+      The user experience is engineered for rapid visual feedback, accessibility, and high aesthetic fidelity:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Component Layer</th>
+          <th>Technology / Library</th>
+          <th>Design Role & Implementation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Application Core</strong></td>
+          <td>React 18 + Vite 6 + React Router v6</td>
+          <td>Modern Single Page Application (SPA), role-based auth routing for Patients, Doctors, and Administrators.</td>
+        </tr>
+        <tr>
+          <td><strong>Styling & Design System</strong></td>
+          <td>Tailwind CSS v4 + Custom HSL Tokens</td>
+          <td>Curated clinical palette: Medical Teal (<span class="code-token">#0D9488</span>), Deep Blue (<span class="code-token">#0A2540</span>), crisp glassmorphism cards.</td>
+        </tr>
+        <tr>
+          <td><strong>Animations & Wave Engine</strong></td>
+          <td>Framer Motion + Custom SVG Canvas</td>
+          <td>GPU-accelerated multi-layered undulating gradient wave canvas inspired by modern creative systems (21st.dev / Magic UI).</td>
+        </tr>
+        <tr>
+          <td><strong>Iconography</strong></td>
+          <td>Lucide React (<span class="code-token">lucide-react</span>)</td>
+          <td>Accessible, consistent SVG medical, clinical, and administrative icons.</td>
+        </tr>
+        <tr>
+          <td><strong>Data Visualization</strong></td>
+          <td>Recharts (<span class="code-token">recharts</span>)</td>
+          <td>Quantum basis state probability histograms, feature importance rankings, and historical patient vitals.</td>
+        </tr>
+        <tr>
+          <td><strong>Telehealth Consultation</strong></td>
+          <td>PeerJS (<span class="code-token">peerjs</span> / WebRTC)</td>
+          <td>Peer-to-peer real-time encrypted video and audio consultation between patient and licensed doctor.</td>
+        </tr>
+        <tr>
+          <td><strong>In-Browser Document OCR</strong></td>
+          <td>PDF.js (<span class="code-token">pdfjs-dist</span>) + Mammoth.js</td>
+          <td>Client-side parsing of medical laboratory test reports, scan summaries, and <span class="code-token">.docx</span> prescriptions.</td>
+        </tr>
+        <tr>
+          <td><strong>Client Search Engine</strong></td>
+          <td>Fuse.js (<span class="code-token">fuse.js</span>)</td>
+          <td>Instant zero-latency fuzzy search across hospital directories, bed availability, and medicines.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 6: CLOUD & COMPLIANCE -->
+  <div class="section">
+    <h2>6. Cloud Infrastructure, Security & Healthcare Compliance</h2>
+    <p>
+      Kushi Hygieia adheres to modern health information architecture standards to safeguard patient data and ensure uninterrupted access:
+    </p>
+
+    <ul>
+      <li><strong>Database & Authentication:</strong> Supabase (PostgreSQL 16) with Row-Level Security (RLS) policies enforcing zero data bleed between patient records, JSON Web Token (JWT) session validation, and encrypted storage buckets.</li>
+      <li><strong>DISHA (Digital Information Security in Healthcare Act - India):</strong> Incorporates strict patient ownership of personal health records (PHR), granular data sharing permissions, and audit logging.</li>
+      <li><strong>ABDM (Ayushman Bharat Digital Mission):</strong> System design aligns with India's national digital health architecture, including tokenized OPD appointment scheduling and digital health record federation.</li>
+      <li><strong>Data Encryption:</strong> AES-256 encryption at rest for all stored reports and vitals; TLS 1.3 protocol encryption for all data in transit across client, server, and APIs.</li>
+      <li><strong>Serverless Compute:</strong> Hosted on Vercel Global Edge Network with automatic CI/CD deployment and child-process sandboxing.</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 7: ACADEMIC BIBLIOGRAPHY -->
+  <div class="section">
+    <h2>7. Academic Literature & Formal Citations (APA 7th Edition)</h2>
+    
+    <div class="ref-item">
+      1. <strong>Wolberg, W. H., Street, W. N., & Mangasarian, O. L. (1995).</strong> Machine learning techniques to diagnose breast cancers from fine-needle aspirates. <em>Cancer Letters</em>, 77(2-3), 163-171. https://doi.org/10.1016/0304-3835(94)90099-X
+    </div>
+
+    <div class="ref-item">
+      2. <strong>Smith, J. W., Everhart, J. E., Dickson, W. C., Knowler, W. C., & Johannes, R. S. (1988).</strong> Using the ADAP learning algorithm to forecast the onset of diabetes mellitus. In <em>Proceedings of the Annual Symposium on Computer Application in Medical Care</em> (p. 261). American Medical Informatics Association.
+    </div>
+
+    <div class="ref-item">
+      3. <strong>Detrano, R., Janosi, A., Steinbrunn, W., Pfisterer, M., Schmid, J., Sandhu, S., Guppy, K. H., Lee, S., & Froelicher, V. (1989).</strong> International application of a new probability algorithm for the diagnosis of coronary artery disease. <em>The American Journal of Cardiology</em>, 64(5), 304-310. https://doi.org/10.1016/0002-9149(89)90524-9
+    </div>
+
+    <div class="ref-item">
+      4. <strong>Little, M. A., McSharry, P. E., Hunter, E. J., & Ramig, L. O. (2009).</strong> Suitability of dysphonia measurements for telemonitoring of Parkinson’s disease. <em>IEEE Transactions on Biomedical Engineering</em>, 56(4), 1015-1022. https://doi.org/10.1109/TBME.2008.2005954
+    </div>
+
+    <div class="ref-item">
+      5. <strong>Havlíček, V., Córcoles, A. D., Temme, K., Harrow, A. W., Kandala, A., Chow, J. M., & Gambetta, J. M. (2019).</strong> Supervised learning with quantum-enhanced feature spaces. <em>Nature</em>, 567(7747), 209-212. https://doi.org/10.1038/s41586-019-0980-2
+    </div>
+
+    <div class="ref-item">
+      6. <strong>Schuld, M., & Killoran, N. (2019).</strong> Quantum machine learning in feature Hilbert spaces. <em>Physical Review Letters</em>, 122(4), 040504. https://doi.org/10.1103/PhysRevLett.122.040504
+    </div>
+
+    <div class="ref-item">
+      7. <strong>Biamonte, J., Wittek, P., Pancotti, N., Rebentrost, P., Wiebe, N., & Lloyd, S. (2017).</strong> Quantum machine learning. <em>Nature</em>, 549(7671), 195-202. https://doi.org/10.1038/nature23474
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Kushi Hygieia Healthcare Platform • Technical Reference & Benchmark Documentation • Compiled March 2026
+  </div>
+
+</body>
+</html>

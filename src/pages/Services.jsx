@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes, Languages, FileText, Loader2 } from 'lucide-react'
+import { Droplet, ScanLine, Upload, FileImage, X, Calendar, Shield, CheckCircle, ExternalLink, Info, Phone, Activity, TestTubes, Languages, FileText, Loader2, Copy } from 'lucide-react'
 import { useAuth } from '../services/AuthContext'
 import InfoTooltip from '../components/ui/InfoTooltip'
 import { toast } from 'react-hot-toast'
@@ -36,7 +36,7 @@ async function extractTextFromDOCX(file) {
 }
 
 // ─── Helper: Downscale high-res images for fast, reliable AI OCR ─────
-function compressImageForOcr(file, maxDimension = 1280, quality = 0.82) {
+function compressImageForOcr(file, maxDimension = 1600, quality = 0.88) {
     return new Promise((resolve) => {
         const reader = new FileReader()
         reader.onload = (e) => {
@@ -56,6 +56,8 @@ function compressImageForOcr(file, maxDimension = 1280, quality = 0.82) {
                 canvas.width = width
                 canvas.height = height
                 const ctx = canvas.getContext('2d')
+                // Gentle contrast boost to make faint pencil/pen handwriting legible
+                ctx.filter = 'contrast(1.08) brightness(1.02)'
                 ctx.drawImage(img, 0, 0, width, height)
                 canvas.toBlob(
                     (blob) => resolve(blob || file),
@@ -164,14 +166,14 @@ export default function Services() {
     const getFileTypeIcon = (file) => {
         if (!file) return null
         const ext = file.name.split('.').pop().toLowerCase()
-        if (['jpg', 'jpeg', 'png'].includes(ext)) return '🖼️'
+        if (['jpg', 'jpeg', 'png', 'webp', 'bmp', 'heic', 'heif'].includes(ext)) return '🖼️'
         if (ext === 'pdf') return '📄'
         if (['doc', 'docx'].includes(ext)) return '📝'
         return '📄'
     }
 
     const isImageFile = (file) => {
-        return file && (file.type.startsWith('image/') || ['jpg', 'jpeg', 'png'].includes(file.name.split('.').pop().toLowerCase()))
+        return file && (file.type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'heic', 'heif'].includes(file.name.split('.').pop().toLowerCase()))
     }
 
     // ─── HANDLERS ─────────────────────────────────────────────────────
@@ -179,13 +181,13 @@ export default function Services() {
         const selected = e.target.files[0]
         if (selected) {
             // Validate file type
-            const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf',
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/bmp', 'image/heic', 'image/heif', 'application/pdf',
                 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-            const validExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx']
+            const validExtensions = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'heic', 'heif', 'pdf', 'doc', 'docx']
             const ext = selected.name.split('.').pop().toLowerCase()
 
             if (!validTypes.includes(selected.type) && !validExtensions.includes(ext)) {
-                toast.error('Please upload a JPG, PNG, PDF, DOC, or DOCX file.', { position: 'bottom-center' })
+                toast.error('Please upload a JPG, PNG, WEBP, PDF, DOC, or DOCX file.', { position: 'bottom-center' })
                 return
             }
             // Validate file size (10MB max for documents)
@@ -312,7 +314,7 @@ export default function Services() {
 
                                 {!scanResult ? (
                                     <div className="scan-dropzone" style={{ border: '2px dashed var(--border)', borderRadius: '12px', padding: '3rem', textAlign: 'center', background: '#F8FAFC', cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
-                                        <input type="file" ref={fileInputRef} hidden accept="image/jpeg,image/png,image/jpg,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleFileChange} />
+                                        <input type="file" ref={fileInputRef} hidden accept="image/jpeg,image/png,image/jpg,image/webp,image/bmp,image/heic,image/heif,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleFileChange} />
                                         {file ? (
                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                                                 <div style={{ position: 'relative' }}>
@@ -320,7 +322,7 @@ export default function Services() {
                                                         <img src={file.__previewUrl || (file.__previewUrl = URL.createObjectURL(file))} alt="Preview" style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                                                     ) : (
                                                         <div style={{ width: '120px', height: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', background: '#F8FAFC', border: '1px solid var(--border)' }}>
-                                                            <span style={{ fontSize: '3rem' }}>{getFileTypeIcon(file)}</span>
+                                                             <span style={{ fontSize: '3rem' }}>{getFileTypeIcon(file)}</span>
                                                             <span style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.5rem', textTransform: 'uppercase', fontWeight: 700 }}>{file.name.split('.').pop()}</span>
                                                         </div>
                                                     )}
@@ -363,42 +365,30 @@ export default function Services() {
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            {/* Document Type Badge */}
                                             <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #64748B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <div>
                                                     <strong style={{ fontSize: '0.85rem', color: '#475569', display: 'block' }}>Document Type:</strong>
-                                                    <span style={{ fontSize: '1rem', color: '#0F172A', fontWeight: 'bold', textTransform: 'capitalize' }}>{scanResult.document_type.replace('_', ' ')}</span>
+                                                    <span style={{ fontSize: '1rem', color: '#0F172A', fontWeight: 'bold', textTransform: 'capitalize' }}>
+                                                        {(scanResult.document_type || 'Prescription').replace(/_/g, ' ')}
+                                                    </span>
                                                 </div>
                                                 <FileText size={24} color="#64748B" />
                                             </div>
 
-                                            {scanResult.document_type?.toLowerCase() === 'prescription' ? (
-                                                <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
-                                                    <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
-                                                    <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>
-                                                        {scanResult.medicines && scanResult.medicines.length > 0 
-                                                            ? `${scanResult.medicines.length} medicine(s) found.`
-                                                            : 'Prescription detected, but specific medicines could not be clearly identified.'
-                                                        }
-                                                    </p>
-                                                </div>
-                                            ) : scanResult.document_type?.toLowerCase() !== 'general' ? (
-                                                <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
-                                                    <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
-                                                    <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0 }}>
-                                                        {scanResult.summary || 'Extracted details below.'}
-                                                    </p>
-                                                </div>
-                                            ) : (
-                                                <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #94A3B8' }}>
-                                                    <strong style={{ fontSize: '0.85rem', color: '#475569', display: 'block', marginBottom: '0.25rem' }}>Note:</strong>
-                                                    <p style={{ fontSize: '0.9rem', color: '#475569', margin: 0 }}>
-                                                        The system could not automatically structure this document. Please review the raw extracted text below.
-                                                    </p>
-                                                </div>
-                                            )}
+                                            {/* Document Summary Card */}
+                                            <div style={{ padding: '1rem', background: '#F0F9FF', borderRadius: '8px', borderLeft: '4px solid #0EA5E9' }}>
+                                                <strong style={{ fontSize: '0.85rem', color: '#0369A1', display: 'block', marginBottom: '0.25rem' }}>Summary:</strong>
+                                                <p style={{ fontSize: '0.9rem', color: '#0C4A6E', margin: 0, lineHeight: 1.5 }}>
+                                                    {scanResult.summary || (scanResult.medicines && scanResult.medicines.length > 0
+                                                        ? `${scanResult.medicines.length} medicine(s) found with dosage instructions.`
+                                                        : (scanResult.raw_text ? 'Document text scanned successfully. Review details below.' : 'Prescription scanned.'))
+                                                    }
+                                                </p>
+                                            </div>
 
                                             {/* ─── PRESCRIPTION: Medicine Cards ─── */}
-                                            {scanResult.document_type?.toLowerCase() === 'prescription' && scanResult.medicines && scanResult.medicines.length > 0 && (
+                                            {scanResult.medicines && scanResult.medicines.length > 0 && (
                                                 <div style={{ marginTop: '0.5rem' }}>
                                                     <h4 style={{ fontSize: '1rem', color: '#334155', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                         💊 Detected Medicines ({scanResult.medicines.length})
@@ -433,10 +423,10 @@ export default function Services() {
                                                                     <span style={{ color: '#0F172A' }}>{med.purpose}</span>
                                                                 </div>
 
-                                                                {/* Does */}
-                                                                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                                                                {/* Instructions / Does */}
+                                                                <div style={{ fontSize: '0.85rem', color: '#334155', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '0.5rem', background: '#F8FAFC', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
                                                                     {med.instructions && (
-                                                                        <div><strong>Does:</strong> {med.instructions}</div>
+                                                                        <div><strong style={{ color: '#475569' }}>Instructions:</strong> {med.instructions}</div>
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -445,16 +435,37 @@ export default function Services() {
                                                 </div>
                                             )}
 
-                                            {/* ─── PRESCRIPTION: Fallback if empty ─── */}
-                                            {scanResult.document_type?.toLowerCase() === 'prescription' && (!scanResult.medicines || scanResult.medicines.length === 0) && (
+                                            {/* ─── EXTRACTED READABLE TEXT CARD ─── */}
+                                            {scanResult.raw_text ? (
                                                 <div style={{ marginTop: '0.5rem' }}>
-                                                    <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', borderLeft: '4px solid #94A3B8' }}>
-                                                        <strong style={{ fontSize: '0.85rem', color: '#475569', display: 'block', marginBottom: '0.25rem' }}>Extracted Text:</strong>
-                                                        <p style={{ fontSize: '0.9rem', color: '#475569', margin: 0, whiteSpace: 'pre-wrap' }}>
-                                                            {scanResult.raw_text || "The image was processed, but no readable text was returned by the scanner."}
-                                                        </p>
+                                                    <div style={{ padding: '1rem', background: '#F8FAFC', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                                            <strong style={{ fontSize: '0.85rem', color: '#475569' }}>Extracted Document Text:</strong>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    navigator.clipboard?.writeText(scanResult.raw_text)
+                                                                    toast.success('Text copied to clipboard!')
+                                                                }}
+                                                                style={{ background: '#E2E8F0', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#334155' }}
+                                                            >
+                                                                <Copy size={12} /> Copy Text
+                                                            </button>
+                                                        </div>
+                                                        <pre style={{ fontSize: '0.88rem', color: '#1E293B', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'inherit', maxHeight: '220px', overflowY: 'auto', background: '#FFFFFF', padding: '0.75rem', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                                                            {scanResult.raw_text}
+                                                        </pre>
                                                     </div>
                                                 </div>
+                                            ) : (
+                                                (!scanResult.medicines || scanResult.medicines.length === 0) && (
+                                                    <div style={{ marginTop: '0.5rem', padding: '1rem', background: '#FEF3C7', borderRadius: '8px', borderLeft: '4px solid #F59E0B' }}>
+                                                        <strong style={{ fontSize: '0.85rem', color: '#92400E', display: 'block', marginBottom: '0.25rem' }}>Notice:</strong>
+                                                        <p style={{ fontSize: '0.9rem', color: '#92400E', margin: 0 }}>
+                                                            No clear text or medicines could be recognized. Please upload a well-lit, sharp photo taken directly from above.
+                                                        </p>
+                                                    </div>
+                                                )
                                             )}
 
                                             {/* ─── BILL ─── */}

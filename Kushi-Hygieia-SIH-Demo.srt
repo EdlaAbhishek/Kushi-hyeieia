@@ -1,0 +1,68 @@
+1
+00:00:00,000 --> 00:00:19,861
+Healthcare is becoming more data-driven, yet complex biomedical records can make early risk assessment difficult. Kushi Hygieia brings AI-assisted care, predictive tools, connected health records, hospital access, and a hybrid quantum machine-learning workflow into one platform.
+
+2
+00:00:25,000 --> 00:00:34,303
+Quantum Disease Intelligence explores how classical and quantum models can be tested against real biomedical data for disease-risk assessment.
+
+3
+00:00:40,000 --> 00:00:56,222
+The research workflow begins with a verified healthcare dataset. Preprocessing is kept separate from held-out evaluation. A classical baseline and a quantum model are configured, then compared on the same test samples.
+
+4
+00:01:00,000 --> 00:01:10,333
+This run uses Breast Cancer Wisconsin, with 569 samples and 30 features, from a documented open-source dataset.
+
+5
+00:01:15,000 --> 00:01:26,632
+The pipeline uses StandardScaler, median imputation, and principal component reduction. The page specifies that transformers are fit on training data only.
+
+6
+00:01:30,000 --> 00:01:37,743
+A support vector classifier provides the classical reference alongside a quantum support vector classifier.
+
+7
+00:01:45,000 --> 00:01:54,843
+The circuit uses a ZZFeatureMap, two repetitions, 1,024 simulation shots, and random seed 42.
+
+8
+00:02:05,000 --> 00:02:14,518
+I will not start a live training run on this deployment. Instead, its persistent experiment history lets us open a completed run.
+
+9
+00:02:30,000 --> 00:02:40,487
+This report records 114 holdout samples and 110.73 seconds of execution time for the selected cached experiment.
+
+10
+00:02:50,000 --> 00:03:03,532
+In this run, the classical SVC reached 96.5 percent accuracy while the QSVC reached 60.5 percent. Performance is measured, not presumed.
+
+11
+00:03:15,000 --> 00:03:23,988
+The report lists four qubits, 17 gates, linear CNOT entanglement, and a circuit depth of 11.
+
+12
+00:03:35,000 --> 00:03:44,008
+It shows permutation feature importance, basis-state measurements, and metadata including seed 42 and the Qiskit Aer simulator.
+
+13
+00:04:00,000 --> 00:04:11,372
+Kushi Care AI is the conversational guidance interface. The general question submitted here returned an error, so no response is presented as successful.
+
+14
+00:04:25,000 --> 00:04:30,908
+The symptom checker presents an assessment form and clearly says it is not medical advice.
+
+15
+00:04:40,000 --> 00:04:51,602
+The Health Vault organizes records by category and provides controls to view, share, and manage them. This demonstration stays at the category level.
+
+16
+00:04:55,000 --> 00:05:01,934
+The hospital directory lists partner facilities and indicates video-call or in-person availability.
+
+17
+00:05:10,000 --> 00:05:21,927
+Kushi Hygieia brings AI-assisted care, connected records, hospital services, and reproducible quantum machine learning together, with measurable results and clear limits.
+

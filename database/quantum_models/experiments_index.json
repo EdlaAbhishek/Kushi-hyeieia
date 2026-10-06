@@ -1,5 +1,31 @@
 [
   {
+    "id": "exp_1791123979_0ejo82",
+    "timestamp": "2026-10-04 14:26:19",
+    "dataset_id": "parkinsons",
+    "dataset_name": "Oxford Parkinson's Disease",
+    "classical_model": "SVC",
+    "quantum_model": "Variational Quantum Classifier (VQC)",
+    "qubits": 4,
+    "classical_accuracy": 0.7632,
+    "quantum_accuracy": 0.5,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  },
+  {
+    "id": "exp_1791123684_4dvmw1",
+    "timestamp": "2026-10-04 14:21:24",
+    "dataset_id": "breast_cancer",
+    "dataset_name": "Breast Cancer Wisconsin (Diagnostic)",
+    "classical_model": "RandomForestClassifier",
+    "quantum_model": "Variational Quantum Classifier (VQC)",
+    "qubits": 4,
+    "classical_accuracy": 0.9115,
+    "quantum_accuracy": 0.5841,
+    "backend": "Qiskit Aer Simulator (Local Statevector)",
+    "status": "completed"
+  },
+  {
     "id": "exp_1790874071_494527",
     "timestamp": "2026-10-01 22:31:11",
     "dataset_id": "parkinsons",

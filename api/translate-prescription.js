@@ -55,7 +55,7 @@ Return ONLY valid JSON.`
                     ],
                     responseFormat: { type: 'json_object' },
                     temperature: 0.1,
-                    maxTokens: 1500
+                    maxTokens: 3000
                 })
             } catch (err) {
                 console.warn('OpenRouter prescription translation failed, trying Gemini:', err.message)
@@ -80,13 +80,21 @@ Return ONLY valid JSON.`
             return res.status(200).json(content)
         }
 
-        let clean = responseText.replace(/```json/gi, '').replace(/```/g, '').trim()
+        let clean = responseText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+        clean = clean.replace(/```json/gi, '').replace(/```/g, '').trim()
         const firstBrace = clean.indexOf('{')
         const lastBrace = clean.lastIndexOf('}')
         if (firstBrace !== -1 && lastBrace > firstBrace) {
             clean = clean.slice(firstBrace, lastBrace + 1)
         }
-        const parsed = JSON.parse(clean)
+        
+        let parsed = null
+        try {
+            parsed = JSON.parse(clean)
+        } catch (e) {
+            console.warn('Could not parse translation JSON, returning original content:', e.message)
+            return res.status(200).json(content)
+        }
 
         if (!parsed.document_type && parsed.documentType) {
             parsed.document_type = parsed.documentType
